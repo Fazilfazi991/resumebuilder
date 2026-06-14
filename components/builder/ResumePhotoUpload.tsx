@@ -38,6 +38,10 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
 
     setIsUploading(true);
     try {
+      const localUrl = await readAsDataUrl(file);
+      onChange(localUrl);
+      setStatus("Photo preview added. Uploading to cloud storage...");
+
       const supabase = createClient();
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
@@ -45,8 +49,6 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
       const resumeId = params?.resumeId ?? "sample-resume";
 
       if (!userId) {
-        const localUrl = await readAsDataUrl(file);
-        onChange(localUrl);
         setStatus("Photo preview added. Sign in to save it to cloud storage.");
         return;
       }
@@ -66,7 +68,8 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
       setStatus("Photo uploaded.");
     } catch (uploadError) {
       console.error(uploadError);
-      setError("Photo upload failed. Check the storage bucket and try again.");
+      setStatus("Photo preview added. Cloud upload needs the resume-photos storage bucket/policies.");
+      setError("Cloud upload was not available, so the preview is using a local photo for now.");
     } finally {
       setIsUploading(false);
     }

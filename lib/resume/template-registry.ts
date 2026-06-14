@@ -4,6 +4,7 @@ import { ElegantTwoColumn } from "@/components/resume-templates/ElegantTwoColumn
 import { ExecutivePro } from "@/components/resume-templates/ExecutivePro";
 import { FreshGraduate } from "@/components/resume-templates/FreshGraduate";
 import { ModernMinimal } from "@/components/resume-templates/ModernMinimal";
+import { PremiumCorporate } from "@/components/resume-templates/PremiumCorporate";
 import { SalesResume } from "@/components/resume-templates/SalesResume";
 import { SimpleOnePage } from "@/components/resume-templates/SimpleOnePage";
 import { TechResume } from "@/components/resume-templates/TechResume";
@@ -34,6 +35,18 @@ export const resumeTemplates: TemplateDefinition[] = [
     isPremium: false,
     supportsPhoto: false,
     component: ModernMinimal,
+  },
+  {
+    id: "premium-corporate",
+    name: "Premium Corporate",
+    category: "Executive",
+    description: "Premium two-column layout with a navy sidebar, photo, skill bars, and refined corporate hierarchy.",
+    bestFor: "Product, business, and leadership applications",
+    tags: ["Photo CV", "Photo supported", "Two Column", "Premium", "Metrics Focused"],
+    features: ["Reference-inspired navy sidebar", "Timeline experience", "Sidebar skill bars"],
+    isPremium: true,
+    supportsPhoto: true,
+    component: PremiumCorporate,
   },
   {
     id: "uae-professional",
