@@ -10,6 +10,7 @@ export type TemplateDefinition = {
   description: string;
   bestFor: string;
   tags: string[];
+  features: string[];
   isPremium: boolean;
   component?: ComponentType<ResumeTemplateProps>;
 };

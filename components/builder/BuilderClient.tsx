@@ -3,6 +3,9 @@
 import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
 import { TemplatePreviewModal } from "@/components/app/TemplatePreviewModal";
+import { ResumeAssistant } from "@/components/builder/ResumeAssistant";
+import { VoiceInputButton } from "@/components/builder/VoiceInputButton";
+import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { defaultResumeData, defaultSectionOrder } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import type { ResumeData, ResumeSection } from "@/types/resume";
@@ -27,12 +30,14 @@ import {
   WandSparkles,
   MoreHorizontal,
   LayoutTemplate,
+  Bot,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
-type Tab = "edit" | "preview" | "templates";
+type Tab = "edit" | "preview" | "templates" | "assistant";
 
 const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] = [
   { id: "personal", label: "Personal Details", icon: UserRound },
@@ -58,10 +63,44 @@ export function BuilderClient() {
   const [mobileTab, setMobileTab] = useState<Tab>("edit");
   const [zoom, setZoom] = useState<"fit" | 75 | 100>("fit");
   const [isTemplatePreviewOpen, setIsTemplatePreviewOpen] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const pdfRef = useRef<HTMLDivElement>(null);
   const sectionOrder = useMemo(() => defaultSectionOrder, []);
 
   const setPersonal = (field: keyof ResumeData["personal"], value: string) => {
     setData((current) => ({ ...current, personal: { ...current.personal, [field]: value } }));
+  };
+
+  const downloadPdf = async () => {
+    if (!pdfRef.current || isDownloading) {
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const canvas = await html2canvas(pdfRef.current, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const imageData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "a4",
+        compress: true,
+      });
+      pdf.addImage(imageData, "PNG", 0, 0, 595.28, 841.89, undefined, "FAST");
+      pdf.save(`${slugify(resumeTitle || "resume")}.pdf`);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -93,15 +132,16 @@ export function BuilderClient() {
               ))}
             </select>
             <AppButton variant="secondary" onClick={() => setIsTemplatePreviewOpen(true)}><Eye size={16} aria-hidden="true" /> Template Preview</AppButton>
-            <AppButton><Download size={16} aria-hidden="true" /> Download PDF</AppButton>
+            <AppButton variant="secondary" onClick={() => setIsAssistantOpen(true)}><Bot size={16} aria-hidden="true" /> Assistant</AppButton>
+            <AppButton onClick={downloadPdf} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
           </div>
         </div>
-        <div className="grid grid-cols-3 border-t border-slate-200 bg-white lg:hidden">
-          {(["edit", "preview", "templates"] as Tab[]).map((tab) => (
+        <div className="grid grid-cols-4 border-t border-slate-200 bg-white lg:hidden">
+          {(["edit", "preview", "templates", "assistant"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setMobileTab(tab)}
-              className={`relative min-h-12 py-3 text-sm font-bold capitalize ${mobileTab === tab ? "text-teal-700 after:absolute after:inset-x-5 after:bottom-0 after:h-0.5 after:bg-teal-700" : "text-slate-500"}`}
+              className={`relative min-h-12 py-3 text-xs font-bold capitalize sm:text-sm ${mobileTab === tab ? "text-teal-700 after:absolute after:inset-x-5 after:bottom-0 after:h-0.5 after:bg-teal-700" : "text-slate-500"}`}
             >
               {tab}
             </button>
@@ -172,16 +212,37 @@ export function BuilderClient() {
           <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 p-4"><p className="text-xs font-bold uppercase tracking-[0.12em] text-teal-700">Selected template</p><p className="mt-1 font-bold text-slate-950">{resumeTemplates.find((template) => template.id === templateId)?.name}</p></div>
           <div className="space-y-3">{resumeTemplates.map((template) => <article key={template.id} className={`grid grid-cols-[92px_1fr] gap-3 rounded-lg border bg-white p-3 ${template.id === templateId ? "border-teal-600 ring-2 ring-teal-100" : "border-slate-200"}`}><div className="h-28 overflow-hidden rounded-md bg-slate-100"><A4Preview templateId={template.id} /></div><div className="min-w-0"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-slate-950">{template.name}</h3><p className="mt-0.5 text-xs font-semibold text-slate-500">{template.category}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${template.isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span></div><button onClick={() => { setTemplateId(template.id); setMobileTab("preview"); }} className="mt-4 min-h-11 w-full rounded-lg bg-teal-700 text-sm font-bold text-white">{template.id === templateId ? "Selected" : "Select Template"}</button></div></article>)}</div>
         </section>
+        <section className={`${mobileTab === "assistant" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
+          <ResumeAssistant data={data} setData={setData} onPreview={() => setMobileTab("preview")} />
+        </section>
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <button onClick={() => setMobileTab("preview")} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold ${mobileTab === "preview" ? "text-teal-700" : "text-slate-500"}`}><Eye size={19} />Preview</button>
         <button onClick={() => setMobileTab("templates")} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold ${mobileTab === "templates" ? "text-teal-700" : "text-slate-500"}`}><LayoutTemplate size={19} />Templates</button>
-        <button className="flex min-h-16 flex-col items-center justify-center gap-1 bg-teal-700 text-xs font-bold text-white"><Download size={19} />Download</button>
+        <button onClick={downloadPdf} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-teal-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
       </nav>
+      <div className="pointer-events-none fixed -left-[10000px] top-0 h-[1123px] w-[794px] overflow-hidden bg-white" aria-hidden="true">
+        <div ref={pdfRef} className="h-[1123px] w-[794px] bg-white">
+          <ResumeRenderer data={data} sectionOrder={sectionOrder} templateId={templateId} isWatermarked={false} />
+        </div>
+      </div>
       <TemplatePreviewModal
         template={isTemplatePreviewOpen ? resumeTemplates.find((template) => template.id === templateId) ?? null : null}
         onClose={() => setIsTemplatePreviewOpen(false)}
       />
+      {isAssistantOpen ? (
+        <div className="fixed inset-0 z-[65] bg-slate-950/35 lg:block">
+          <aside className="ml-auto flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
+            <div className="flex min-h-14 items-center justify-between border-b border-slate-200 px-4">
+              <p className="font-bold text-slate-950">Assistant</p>
+              <button onClick={() => setIsAssistantOpen(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Close assistant"><X size={18} /></button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+              <ResumeAssistant data={data} setData={setData} onPreview={() => setIsAssistantOpen(false)} />
+            </div>
+          </aside>
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -440,7 +501,10 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 function TextArea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
     <label className="block">
-      <span className="text-sm font-bold text-slate-700">{label}</span>
+      <span className="mb-2 flex items-center justify-between gap-3 text-sm font-bold text-slate-700">
+        {label}
+        <VoiceInputButton compact onTranscript={(text) => onChange(joinText(value, text))} />
+      </span>
       <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none focus:border-teal-400" />
     </label>
   );
@@ -455,13 +519,15 @@ function BulletEditor({ bullets, onChange }: { bullets: string[]; onChange: (bul
       </div>
       <div className="space-y-2">
         {bullets.map((bullet, index) => (
-          <input
-            key={index}
-            value={bullet}
-            onChange={(event) => onChange(bullets.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)))}
-            className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400"
-            placeholder="Achievement-focused bullet"
-          />
+          <div key={index} className="grid gap-2 sm:grid-cols-[1fr_auto]">
+            <input
+              value={bullet}
+              onChange={(event) => onChange(bullets.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)))}
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400"
+              placeholder="Achievement-focused bullet"
+            />
+            <VoiceInputButton compact onTranscript={(text) => onChange(bullets.map((item, itemIndex) => (itemIndex === index ? joinText(item, text) : item)))} />
+          </div>
         ))}
       </div>
     </div>
@@ -474,4 +540,15 @@ function labelize(value: string) {
 
 function uid(prefix: string) {
   return `${prefix.toLowerCase()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function joinText(current: string, next: string) {
+  return [current, next].filter(Boolean).join(current ? " " : "");
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "") || "resume";
 }

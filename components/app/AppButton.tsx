@@ -6,17 +6,18 @@ type AppButtonProps = {
   href?: string;
   variant?: "primary" | "secondary" | "ghost" | "danger";
   type?: "button" | "submit";
-  onClick?: () => void;
+  onClick?: () => void | Promise<void>;
+  disabled?: boolean;
 };
 
-export function AppButton({ children, href, variant = "primary", type = "button", onClick }: AppButtonProps) {
-  const className = `inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition active:scale-[0.98] ${styles[variant]}`;
+export function AppButton({ children, href, variant = "primary", type = "button", onClick, disabled = false }: AppButtonProps) {
+  const className = `inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${styles[variant]}`;
 
   if (href) {
     return <Link href={href} className={className}>{children}</Link>;
   }
 
-  return <button type={type} onClick={onClick} className={className}>{children}</button>;
+  return <button type={type} onClick={onClick} disabled={disabled} className={className}>{children}</button>;
 }
 
 const styles = {

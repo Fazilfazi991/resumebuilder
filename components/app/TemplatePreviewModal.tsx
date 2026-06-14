@@ -35,7 +35,11 @@ export function TemplatePreviewModal({ template, onClose }: { template: Template
           <div className="mt-4"><SectionBadge tone={template.isPremium ? "teal" : "emerald"}>{template.isPremium ? "Premium" : "Free"}</SectionBadge></div>
           <p className="mt-5 text-sm text-slate-600"><span className="font-bold text-slate-950">Best for:</span> {template.bestFor}</p>
           <div className="mt-4 flex flex-wrap gap-2">{template.tags.map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">{tag}</span>)}</div>
-          <ul className="mt-6 space-y-3 border-t border-slate-200 pt-5 text-sm text-slate-600"><li>Print-friendly A4 layout</li><li>Live builder compatible</li><li>Switch without rewriting content</li></ul>
+          <ul className="mt-6 space-y-3 border-t border-slate-200 pt-5 text-sm text-slate-600">
+            {template.features.map((feature) => <li key={feature}>{feature}</li>)}
+            <li>Print-friendly A4 layout</li>
+            <li>Live builder compatible</li>
+          </ul>
           <div className="mt-7 hidden gap-3 lg:grid">
             <AppButton href={`/builder/sample-resume?template=${template.id}`}>Use Template</AppButton>
             <AppButton href={`/builder/sample-resume?template=${template.id}`} variant="secondary">Open in Builder</AppButton>

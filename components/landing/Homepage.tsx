@@ -25,15 +25,15 @@ import { HeroVisual } from "./HeroVisual";
 import { PricingCard } from "./PricingCard";
 import { SectionHeading } from "./SectionHeading";
 import { TemplateCard } from "./TemplateCard";
+import { resumeTemplates } from "@/lib/resume/template-registry";
 
-const templates = [
-  { name: "Classic ATS", badge: "Free", accent: "slate" },
-  { name: "Modern Minimal", badge: "Free", accent: "blue" },
-  { name: "Executive Pro", badge: "Premium", accent: "emerald" },
-  { name: "Fresh Graduate", badge: "Free", accent: "orange" },
-  { name: "Creative Designer", badge: "Premium", accent: "purple" },
-  { name: "UAE Professional", badge: "Premium", accent: "emerald" },
-] as const;
+const featuredTemplates = resumeTemplates.slice(0, 6).map((template) => ({
+  id: template.id,
+  name: template.name,
+  category: template.category,
+  bestFor: template.bestFor,
+  badge: template.isPremium ? "Premium" as const : "Free" as const,
+}));
 
 const pricing = [
   {
@@ -145,16 +145,19 @@ export function Homepage() {
         </div>
       </section>
 
-      <section className="bg-white py-16" id="templates">
+      <section className="bg-white py-20" id="templates">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             title="Professional templates for every career stage"
             subtitle="Switch templates anytime without rewriting your resume."
           />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {templates.map((template) => (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredTemplates.map((template) => (
               <TemplateCard key={template.name} {...template} />
             ))}
+          </div>
+          <div className="mt-8 text-center">
+            <ButtonLink href="/templates" variant="secondary">Browse all templates</ButtonLink>
           </div>
         </div>
       </section>

@@ -7,7 +7,7 @@ import { Search } from "lucide-react";
 
 const categories = ["Getting Started", "Resume Builder", "Templates", "Downloads", "Payments", "Account"];
 const faqs = [
-  { question: "Can I download as PDF?", answer: "PDF export is planned for the backend phase. The frontend already uses print-friendly A4 template components." },
+  { question: "Can I download as PDF?", answer: "Yes. The builder can export the selected resume template as a browser-generated A4 PDF." },
   { question: "Are templates ATS-friendly?", answer: "Classic ATS and Simple One Page are designed to be simple, readable, and ATS-friendly." },
   { question: "Can I edit later?", answer: "Yes. The builder uses shared resume data now; persistent editing will come once Supabase is connected." },
   { question: "Can I create multiple resumes?", answer: "Yes. The portal includes dashboard and My Resumes flows for managing multiple resumes." },
