@@ -1,12 +1,15 @@
 import type { ResumeTemplateProps } from "@/types/resume";
 import { RenderSection, Watermark } from "./TemplateHelpers";
-import { contactItems } from "./template-utils";
+import { contactItems, hasText } from "./template-utils";
 
 export function ElegantTwoColumn({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
   return (
     <div className="resume-page grid grid-cols-[0.31fr_0.69fr] bg-[#fbfaf7] font-[Arial] text-slate-900">
       <Watermark show={isWatermarked} />
       <aside className="bg-[#e9e4da] px-[10mm] py-[14mm]">
+        {hasText(data.personal.photoUrl) ? (
+          <img src={data.personal.photoUrl} alt="" className="mb-5 h-[28mm] w-[28mm] rounded-full border-[3px] border-white object-cover shadow-sm" />
+        ) : null}
         <p className="text-[8.5px] font-bold uppercase tracking-[0.25em] text-stone-500">Curriculum Vitae</p>
         <h1 className="mt-4 font-[Georgia] text-[26px] font-bold leading-[1.15] text-[#292b2d]">{data.personal.fullName}</h1>
         <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-stone-600">{data.personal.jobTitle}</p>

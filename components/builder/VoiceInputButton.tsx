@@ -59,7 +59,7 @@ export function VoiceInputButton({ onTranscript, compact = false }: { onTranscri
 
   const startListening = () => {
     if (!isSupported) {
-      setMessage("Voice input is not supported in this browser.");
+      setMessage("Quick dictation is not supported in this browser. Use audio recording instead.");
       return;
     }
 
@@ -108,7 +108,7 @@ export function VoiceInputButton({ onTranscript, compact = false }: { onTranscri
         onClick={startListening}
         className={`${compact ? "h-9 w-9" : "h-10 w-10"} inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700`}
         aria-label={isRecording ? "Listening" : "Start voice input"}
-        title={message || (isSupported ? "Start voice input" : "Voice input is not supported in this browser")}
+        title={message || (isSupported ? "Quick Dictation" : "Quick dictation is not supported in this browser. Use audio recording instead.")}
       >
         {isRecording ? <MicOff size={16} aria-hidden="true" /> : <Mic size={16} aria-hidden="true" />}
       </button>

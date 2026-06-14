@@ -4,7 +4,9 @@ import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
 import { TemplatePreviewModal } from "@/components/app/TemplatePreviewModal";
 import { ResumeAssistant } from "@/components/builder/ResumeAssistant";
+import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
 import { VoiceInputButton } from "@/components/builder/VoiceInputButton";
+import { VoiceRecorder } from "@/components/builder/VoiceRecorder";
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { defaultResumeData, defaultSectionOrder } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
@@ -287,8 +289,16 @@ function EditorPanel({
   if (activeSection === "personal") {
     return (
       <Panel title="Personal Details" description="This information appears in the resume header.">
+        <ResumePhotoUpload value={data.personal.photoUrl} onChange={(value) => setPersonal("photoUrl", value)} />
+        <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
+          <p className="text-sm font-bold text-slate-700">Manual image URL</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Advanced option for externally hosted profile photos.</p>
+          <div className="mt-3">
+            <Field label="Photo URL" value={data.personal.photoUrl} onChange={(next) => setPersonal("photoUrl", next)} />
+          </div>
+        </div>
         <div className="grid gap-4 md:grid-cols-2">
-          {Object.entries(data.personal).map(([field, value]) => (
+          {Object.entries(data.personal).filter(([field]) => field !== "photoUrl").map(([field, value]) => (
             <Field
               key={field}
               label={labelize(field)}
@@ -305,6 +315,7 @@ function EditorPanel({
     return (
       <Panel title="Summary" description="Write a focused opening summary for your target role.">
         <TextArea label="Professional summary" value={data.summary} onChange={(value) => setData((current) => ({ ...current, summary: value }))} />
+        <div className="mt-3"><VoiceRecorder /></div>
         <div className="mt-4 [&>button]:w-full sm:[&>button]:w-auto"><AppButton variant="secondary"><WandSparkles size={16} aria-hidden="true" /> Improve with AI</AppButton></div>
       </Panel>
     );
@@ -367,6 +378,7 @@ function ExperienceEditor({ data, setData }: { data: ResumeData; setData: React.
               </label>
             </div>
             <div className="mt-4"><TextArea label="Description" value={item.description} onChange={(value) => update(item.id, { description: value })} /></div>
+            <div className="mt-3"><VoiceRecorder /></div>
             <BulletEditor bullets={item.bullets} onChange={(bullets) => update(item.id, { bullets })} />
           </EditorCard>
         ))}
@@ -416,6 +428,7 @@ function ProjectsEditor({ data, setData }: { data: ResumeData; setData: React.Di
               ))}
             </div>
             <div className="mt-4"><TextArea label="Description" value={item.description} onChange={(value) => update(item.id, { description: value })} /></div>
+            <div className="mt-3"><VoiceRecorder /></div>
             <BulletEditor bullets={item.bullets} onChange={(bullets) => update(item.id, { bullets })} />
           </EditorCard>
         ))}
@@ -529,7 +542,10 @@ function TextArea({ label, value, onChange }: { label: string; value: string; on
     <label className="block">
       <span className="mb-2 flex items-center justify-between gap-3 text-sm font-bold text-slate-700">
         {label}
-        <VoiceInputButton compact onTranscript={(text) => onChange(joinText(value, text))} />
+        <span className="flex shrink-0 items-center gap-1">
+          <span className="hidden text-xs font-semibold text-slate-400 sm:inline">Quick Dictation</span>
+          <VoiceInputButton compact onTranscript={(text) => onChange(joinText(value, text))} />
+        </span>
       </span>
       <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none focus:border-teal-400" />
     </label>
@@ -553,6 +569,7 @@ function BulletEditor({ bullets, onChange }: { bullets: string[]; onChange: (bul
               placeholder="Achievement-focused bullet"
             />
             <VoiceInputButton compact onTranscript={(text) => onChange(bullets.map((item, itemIndex) => (itemIndex === index ? joinText(item, text) : item)))} />
+            <div className="sm:col-span-2"><VoiceRecorder compact /></div>
           </div>
         ))}
       </div>

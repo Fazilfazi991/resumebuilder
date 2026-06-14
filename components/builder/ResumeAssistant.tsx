@@ -5,6 +5,7 @@ import type { ResumeData } from "@/types/resume";
 import { Bot, ChevronLeft, ChevronRight, RotateCcw, Send, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { VoiceInputButton } from "./VoiceInputButton";
+import { VoiceRecorder } from "./VoiceRecorder";
 
 type AssistantMessage = {
   id: string;
@@ -63,6 +64,7 @@ export function ResumeAssistant({
     { id: "hello", role: "assistant", content: "Tell me what you want to improve. I can collect the details here and apply them to your resume draft." },
   ]);
   const [status, setStatus] = useState("");
+  const [audioMessageUrl, setAudioMessageUrl] = useState("");
 
   const currentQuestion = questions[step];
   const progress = useMemo(() => Math.round(((step + 1) / questions.length) * 100), [step]);
@@ -158,6 +160,10 @@ export function ResumeAssistant({
               <VoiceInputButton compact onTranscript={(text) => setInput((current) => joinText(current, text))} />
               <button onClick={() => addAnswer(input)} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white"><Send size={16} />Send</button>
             </div>
+            <div className="mt-3">
+              <VoiceRecorder compact onAudioReady={(_, url) => setAudioMessageUrl(url)} />
+              {audioMessageUrl ? <p className="mt-2 text-xs font-semibold text-slate-500">Recorded audio is attached locally for playback.</p> : null}
+            </div>
           </div>
         </div>
       ) : (
@@ -173,6 +179,7 @@ export function ResumeAssistant({
             </span>
             <textarea value={input} onChange={(event) => setInput(event.target.value)} rows={8} className="w-full rounded-lg border border-slate-200 px-3 py-3 text-sm leading-6 outline-none focus:border-teal-400" />
           </label>
+          <div className="mt-3"><VoiceRecorder compact /></div>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <button onClick={() => setStep((current) => Math.max(0, current - 1))} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-lg border border-slate-200 text-sm font-bold text-slate-600"><ChevronLeft size={16} />Back</button>
             <button onClick={() => { setInput(""); setStep((current) => Math.min(questions.length - 1, current + 1)); }} className="min-h-11 rounded-lg border border-slate-200 text-sm font-bold text-slate-600">Skip</button>

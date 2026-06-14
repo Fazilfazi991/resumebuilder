@@ -11,10 +11,11 @@ type TemplateGalleryCardProps = {
   tags: string[];
   features: string[];
   isPremium: boolean;
+  supportsPhoto?: boolean;
   onPreview?: () => void;
 };
 
-export function TemplateGalleryCard({ id, name, category, description, bestFor, tags, features, isPremium, onPreview }: TemplateGalleryCardProps) {
+export function TemplateGalleryCard({ id, name, category, description, bestFor, tags, features, isPremium, supportsPhoto, onPreview }: TemplateGalleryCardProps) {
   return (
     <article className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1.5 hover:border-teal-200 hover:shadow-xl hover:shadow-slate-300/60">
       <div className="relative bg-slate-100 p-3 pb-0 sm:p-4"><A4Preview templateId={id} /><div className="pointer-events-none absolute inset-x-3 bottom-0 h-12 bg-gradient-to-t from-slate-100 to-transparent sm:inset-x-4 sm:h-16" /></div>
@@ -27,6 +28,11 @@ export function TemplateGalleryCard({ id, name, category, description, bestFor, 
         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>
           {isPremium ? <LockKeyhole size={12} aria-hidden="true" /> : <WandSparkles size={12} aria-hidden="true" />}
           {isPremium ? "Premium" : "Free"}
+        </span>
+      </div>
+      <div className="mt-3">
+        <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${supportsPhoto ? "bg-cyan-50 text-cyan-700" : "bg-slate-100 text-slate-500"}`}>
+          {supportsPhoto ? "Photo supported" : "No photo"}
         </span>
       </div>
       <p className="mt-3 text-sm leading-5 text-slate-600">{description}</p>

@@ -12,5 +12,6 @@ export type TemplateDefinition = {
   tags: string[];
   features: string[];
   isPremium: boolean;
+  supportsPhoto?: boolean;
   component?: ComponentType<ResumeTemplateProps>;
 };
