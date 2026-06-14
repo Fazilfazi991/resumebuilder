@@ -29,7 +29,7 @@ export function PricingCard({ name, price, features, featured = false }: Pricing
         ))}
       </ul>
       <div className="mt-7">
-        <ButtonLink href="#builder" variant={featured ? "primary" : "secondary"}>
+        <ButtonLink href="/pricing" variant={featured ? "primary" : "secondary"}>
           Start Building
         </ButtonLink>
       </div>

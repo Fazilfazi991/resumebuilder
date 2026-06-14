@@ -65,6 +65,7 @@ export function BuilderClient() {
   const [isTemplatePreviewOpen, setIsTemplatePreviewOpen] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
   const pdfRef = useRef<HTMLDivElement>(null);
   const sectionOrder = useMemo(() => defaultSectionOrder, []);
 
@@ -78,18 +79,24 @@ export function BuilderClient() {
     }
 
     setIsDownloading(true);
+    setDownloadError("");
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import("html2canvas"),
+      await document.fonts?.ready;
+      const [{ toPng }, { jsPDF }] = await Promise.all([
+        import("html-to-image"),
         import("jspdf"),
       ]);
-      const canvas = await html2canvas(pdfRef.current, {
+      const imageData = await toPng(pdfRef.current, {
         backgroundColor: "#ffffff",
-        scale: 2,
-        useCORS: true,
-        logging: false,
+        cacheBust: true,
+        pixelRatio: 2,
+        width: 794,
+        height: 1123,
+        style: {
+          margin: "0",
+          transform: "none",
+        },
       });
-      const imageData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "pt",
@@ -97,7 +104,18 @@ export function BuilderClient() {
         compress: true,
       });
       pdf.addImage(imageData, "PNG", 0, 0, 595.28, 841.89, undefined, "FAST");
-      pdf.save(`${slugify(resumeTitle || "resume")}.pdf`);
+      const pdfBlob = pdf.output("blob");
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+      const anchor = document.createElement("a");
+      anchor.href = downloadUrl;
+      anchor.download = `${slugify(resumeTitle || "resume")}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    } catch (error) {
+      console.error(error);
+      setDownloadError("PDF export failed. Please try again after switching to Preview.");
     } finally {
       setIsDownloading(false);
     }
@@ -206,6 +224,9 @@ export function BuilderClient() {
           {data.experience.length + data.projects.length + data.education.length > 6 ? (
             <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">Content may overflow one page. Consider a compact template or shorter bullets.</p>
           ) : null}
+          {downloadError ? (
+            <p className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{downloadError}</p>
+          ) : null}
         </aside>
 
         <section className={`${mobileTab === "templates" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
@@ -226,6 +247,11 @@ export function BuilderClient() {
           <ResumeRenderer data={data} sectionOrder={sectionOrder} templateId={templateId} isWatermarked={false} />
         </div>
       </div>
+      {downloadError ? (
+        <div className="fixed inset-x-3 bottom-20 z-[70] rounded-lg border border-rose-200 bg-white p-3 text-sm font-semibold text-rose-700 shadow-xl lg:bottom-4 lg:left-auto lg:right-4 lg:max-w-sm">
+          {downloadError}
+        </div>
+      ) : null}
       <TemplatePreviewModal
         template={isTemplatePreviewOpen ? resumeTemplates.find((template) => template.id === templateId) ?? null : null}
         onClose={() => setIsTemplatePreviewOpen(false)}

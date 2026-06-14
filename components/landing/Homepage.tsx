@@ -95,8 +95,8 @@ export function Homepage() {
               Fill your details once, choose from professional templates, and download a polished PDF resume instantly.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="#builder">Create My Resume</ButtonLink>
-              <ButtonLink href="#templates" variant="secondary">
+              <ButtonLink href="/builder/sample-resume">Create My Resume</ButtonLink>
+              <ButtonLink href="/templates" variant="secondary">
                 View Templates
               </ButtonLink>
             </div>
@@ -238,7 +238,7 @@ export function Homepage() {
             </p>
           </div>
           <a
-            href="#builder"
+            href="/builder/sample-resume"
             className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-3 text-sm font-bold text-teal-800 shadow-lg transition hover:bg-teal-50"
           >
             Create Resume Now
