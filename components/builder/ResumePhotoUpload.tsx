@@ -17,6 +17,7 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
   const params = useParams<{ resumeId?: string }>();
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
+  const [note, setNote] = useState("");
   const [status, setStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
@@ -24,6 +25,7 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
 
   const uploadFile = async (file: File) => {
     setError("");
+    setNote("");
     setStatus("");
 
     if (!ACCEPTED_TYPES.includes(file.type)) {
@@ -56,6 +58,7 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
       const path = `${userId}/${resumeId}/profile-photo-${Date.now()}.${extension}`;
       const { error: uploadError } = await supabase.storage.from("resume-photos").upload(path, file, {
         cacheControl: "3600",
+        contentType: file.type,
         upsert: true,
       });
 
@@ -68,8 +71,8 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
       setStatus("Photo uploaded.");
     } catch (uploadError) {
       console.error(uploadError);
-      setStatus("Photo preview added. Cloud upload needs the resume-photos storage bucket/policies.");
-      setError("Cloud upload was not available, so the preview is using a local photo for now.");
+      setStatus("Photo added to preview.");
+      setNote("Cloud sync is pending until the resume-photos storage bucket and policies are active.");
     } finally {
       setIsUploading(false);
     }
@@ -103,6 +106,7 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
                   onChange("");
                   setStatus("Photo removed.");
                   setError("");
+                  setNote("");
                 }}
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-rose-100 bg-white px-4 text-sm font-bold text-rose-700"
               >
@@ -113,6 +117,7 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
           </div>
           <p className="mt-3 text-sm leading-5 text-slate-600">JPG, PNG, or WEBP. Maximum 5MB.</p>
           {status ? <p className="mt-2 text-sm font-semibold text-emerald-700">{status}</p> : null}
+          {note ? <p className="mt-2 text-sm font-semibold text-amber-700">{note}</p> : null}
           {error ? <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p> : null}
         </div>
       </div>
