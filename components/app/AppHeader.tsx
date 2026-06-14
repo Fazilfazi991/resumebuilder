@@ -1,4 +1,4 @@
-import { FileText, LayoutDashboard, UserRound } from "lucide-react";
+import { FileText, UserRound } from "lucide-react";
 import Link from "next/link";
 
 const links = [
@@ -27,13 +27,7 @@ export function AppHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600 md:hidden"
-            aria-label="Dashboard"
-          >
-            <LayoutDashboard size={18} aria-hidden="true" />
-          </Link>
+          <Link href="/settings" className="hidden h-10 items-center rounded-lg border border-slate-200 px-3 text-sm font-bold text-slate-600 sm:inline-flex lg:hidden">Settings</Link>
           <Link
             href="/account"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-700"

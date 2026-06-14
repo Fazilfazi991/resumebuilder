@@ -1,4 +1,5 @@
-import { FileText, Menu } from "lucide-react";
+import { FileText } from "lucide-react";
+import { MobileNavbar } from "./MobileNavbar";
 
 const navItems = [
   { label: "Templates", href: "/templates" },
@@ -39,12 +40,7 @@ export function Navbar() {
           >
             Create Resume
           </a>
-          <button
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 lg:hidden"
-            aria-label="Open navigation menu"
-          >
-            <Menu size={20} aria-hidden="true" />
-          </button>
+          <MobileNavbar />
         </div>
       </nav>
     </header>

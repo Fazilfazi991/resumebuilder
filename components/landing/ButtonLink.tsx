@@ -16,7 +16,7 @@ export function ButtonLink({ children, href, variant = "primary" }: ButtonLinkPr
   return (
     <a
       href={href}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition ${classes}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition active:scale-[0.98] ${classes}`}
     >
       {children}
       {variant === "primary" ? <ArrowRight size={17} aria-hidden="true" /> : null}

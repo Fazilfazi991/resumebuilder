@@ -31,7 +31,7 @@ export function TemplateGalleryCard({ id, name, category, description, bestFor, 
       <p className="mt-3 text-sm leading-5 text-slate-600">{description}</p>
       <p className="mt-3 text-sm text-slate-600"><span className="font-bold text-slate-900">Best for:</span> {bestFor}</p>
       <div className="mt-3 flex flex-wrap gap-1.5">{tags.map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">{tag}</span>)}</div>
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-4 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
         <AppButton href={`/builder/sample-resume?template=${id}`}>Use Template</AppButton>
         <AppButton variant="secondary" onClick={onPreview}><Eye size={16} aria-hidden="true" /> Preview</AppButton>
       </div>

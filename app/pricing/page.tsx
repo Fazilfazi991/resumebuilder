@@ -48,7 +48,7 @@ export default function PricingPage() {
           ))}
         </section>
         <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
             <table className="w-full min-w-[680px] text-left text-sm">
               <thead className="bg-slate-100 text-slate-950">
                 <tr>{["Feature", "Free", "Premium", "Lifetime", "Career Pro"].map((item) => <th key={item} className="p-4 font-bold">{item}</th>)}</tr>

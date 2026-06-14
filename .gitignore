@@ -17,6 +17,8 @@ npm-debug.log*
 # Generated visual audit screenshots
 *-quality.png
 *-premium-final.png
+mobile-*.png
+tablet-*.png
 
 # TypeScript cache
 *.tsbuildinfo
