@@ -1,0 +1,41 @@
+import { Eye, LockKeyhole, WandSparkles } from "lucide-react";
+import { A4Preview } from "./A4Preview";
+import { AppButton } from "./AppButton";
+
+type TemplateGalleryCardProps = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  bestFor: string;
+  tags: string[];
+  isPremium: boolean;
+  onPreview?: () => void;
+};
+
+export function TemplateGalleryCard({ id, name, category, description, bestFor, tags, isPremium, onPreview }: TemplateGalleryCardProps) {
+  return (
+    <article className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1.5 hover:border-teal-200 hover:shadow-xl hover:shadow-slate-300/60">
+      <div className="relative bg-slate-100 p-4 pb-0"><A4Preview templateId={id} /><div className="pointer-events-none absolute inset-x-4 bottom-0 h-16 bg-gradient-to-t from-slate-100 to-transparent" /></div>
+      <div className="p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-bold text-slate-950">{name}</h3>
+          <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{category}</p>
+        </div>
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>
+          {isPremium ? <LockKeyhole size={12} aria-hidden="true" /> : <WandSparkles size={12} aria-hidden="true" />}
+          {isPremium ? "Premium" : "Free"}
+        </span>
+      </div>
+      <p className="mt-3 text-sm leading-5 text-slate-600">{description}</p>
+      <p className="mt-3 text-sm text-slate-600"><span className="font-bold text-slate-900">Best for:</span> {bestFor}</p>
+      <div className="mt-3 flex flex-wrap gap-1.5">{tags.map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">{tag}</span>)}</div>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <AppButton href={`/builder/sample-resume?template=${id}`}>Use Template</AppButton>
+        <AppButton variant="secondary" onClick={onPreview}><Eye size={16} aria-hidden="true" /> Preview</AppButton>
+      </div>
+      </div>
+    </article>
+  );
+}

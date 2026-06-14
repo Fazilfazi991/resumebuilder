@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --primary: #0f8f7f;
+  --primary-dark: #0f766e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1,
+h2 {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.resume-paper {
+  background-image:
+    linear-gradient(#f1f5f9 1px, transparent 1px),
+    linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.resume-page {
+  position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #111827;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.resume-section {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-item,
+.avoid-break {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .resume-page {
+    margin: 0;
+    box-shadow: none !important;
+  }
+}

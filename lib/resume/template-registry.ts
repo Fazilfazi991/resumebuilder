@@ -1,0 +1,118 @@
+import { ClassicATS } from "@/components/resume-templates/ClassicATS";
+import { CreativeDesigner } from "@/components/resume-templates/CreativeDesigner";
+import { ElegantTwoColumn } from "@/components/resume-templates/ElegantTwoColumn";
+import { ExecutivePro } from "@/components/resume-templates/ExecutivePro";
+import { FreshGraduate } from "@/components/resume-templates/FreshGraduate";
+import { ModernMinimal } from "@/components/resume-templates/ModernMinimal";
+import { SalesResume } from "@/components/resume-templates/SalesResume";
+import { SimpleOnePage } from "@/components/resume-templates/SimpleOnePage";
+import { TechResume } from "@/components/resume-templates/TechResume";
+import { UAEProfessional } from "@/components/resume-templates/UAEProfessional";
+import type { TemplateDefinition } from "@/types/template";
+
+export const resumeTemplates: TemplateDefinition[] = [
+  {
+    id: "classic-ats",
+    name: "Classic ATS",
+    category: "ATS",
+    description: "Simple single-column resume for corporate applications.",
+    bestFor: "Corporate applications",
+    tags: ["ATS Friendly", "No Photo", "Single Column"],
+    isPremium: false,
+    component: ClassicATS,
+  },
+  {
+    id: "modern-minimal",
+    name: "Modern Minimal",
+    category: "Modern",
+    description: "Clean professional layout with a subtle accent color.",
+    bestFor: "General professionals",
+    tags: ["Clean", "Modern", "Minimal"],
+    isPremium: false,
+    component: ModernMinimal,
+  },
+  {
+    id: "uae-professional",
+    name: "UAE Professional",
+    category: "UAE",
+    description: "Two-column profile-friendly resume for UAE hiring standards.",
+    bestFor: "UAE job applications",
+    tags: ["Photo CV", "Two Column", "Professional"],
+    isPremium: true,
+    component: UAEProfessional,
+  },
+  {
+    id: "executive-pro",
+    name: "Executive Pro",
+    category: "Executive",
+    description: "Leadership-focused layout for senior professionals.",
+    bestFor: "Managers and directors",
+    tags: ["Leadership", "Premium", "Senior Roles"],
+    isPremium: true,
+    component: ExecutivePro,
+  },
+  {
+    id: "fresh-graduate",
+    name: "Fresh Graduate",
+    category: "Freshers",
+    description: "Education and projects-first template for new applicants.",
+    bestFor: "Students and freshers",
+    tags: ["Education First", "Projects", "Entry Level"],
+    isPremium: false,
+    component: FreshGraduate,
+  },
+  {
+    id: "tech-resume",
+    name: "Tech Resume",
+    category: "Tech",
+    description: "Skills-heavy template for engineers and technical roles.",
+    bestFor: "Developers and IT roles",
+    tags: ["Skills Heavy", "Projects", "Portfolio"],
+    isPremium: true,
+    component: TechResume,
+  },
+  {
+    id: "sales-resume",
+    name: "Sales Resume",
+    category: "Sales",
+    description: "Metrics-led resume for business development and sales roles.",
+    bestFor: "Sales and business development",
+    tags: ["Metrics", "Achievements", "Growth"],
+    isPremium: true,
+    component: SalesResume,
+  },
+  {
+    id: "creative-designer",
+    name: "Creative Designer",
+    category: "Creative",
+    description: "Portfolio-friendly design for creative professionals.",
+    bestFor: "Designers and creatives",
+    tags: ["Portfolio", "Creative", "Visual"],
+    isPremium: true,
+    component: CreativeDesigner,
+  },
+  {
+    id: "elegant-two-column",
+    name: "Elegant Two Column",
+    category: "Modern",
+    description: "Premium two-column layout with refined spacing.",
+    bestFor: "Experienced professionals",
+    tags: ["Premium", "Two Column", "Polished"],
+    isPremium: true,
+    component: ElegantTwoColumn,
+  },
+  {
+    id: "simple-one-page",
+    name: "Simple One Page",
+    category: "ATS",
+    description: "Compact one-page format optimized for scanning.",
+    bestFor: "Compact applications",
+    tags: ["One Page", "Clean", "Fast Scan"],
+    isPremium: false,
+    component: SimpleOnePage,
+  },
+];
+
+export function getTemplateById(templateId: string) {
+  return resumeTemplates.find((template) => template.id === templateId) ?? resumeTemplates[0];
+}
