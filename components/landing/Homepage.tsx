@@ -176,22 +176,30 @@ export function Homepage() {
         </div>
       </section>
 
-      <section className="bg-white py-16" id="builder">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.25fr_0.75fr] lg:px-8">
+      <section className="builder-showcase overflow-hidden bg-white py-16 sm:py-20" id="builder">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.18fr_0.82fr] lg:px-8">
           <BuilderMockup />
-          <div>
-            <h2 className="text-4xl font-bold text-slate-950">Edit once. Preview instantly.</h2>
+          <div className="scroll-reveal scroll-reveal-delay">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-sm font-bold text-teal-700">
+              <Sparkles size={15} aria-hidden="true" />
+              Live builder workspace
+            </p>
+            <h2 className="max-w-md text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">Edit once. Preview instantly.</h2>
             <p className="mt-5 text-base leading-7 text-slate-600">
-              Your resume updates live as you type. Add sections, reorder content, switch templates, and keep everything perfectly aligned.
+              Your resume updates live as you type, with polished templates, photo support, AI writing help, and export-ready formatting in one focused workspace.
             </p>
             <ul className="mt-7 space-y-4">
-              {["Live resume preview", "Drag-and-drop sections", "Add unlimited experience and education items", "Switch templates anytime", "Auto-save resumes"].map((feature) => (
-                <li key={feature} className="flex items-center gap-3 text-sm font-semibold text-slate-700">
+              {["Photo-ready resume preview", "Drag-and-drop sections", "Add unlimited experience and education items", "Switch templates anytime", "Auto-save resumes"].map((feature) => (
+                <li key={feature} className="builder-feature-item flex items-center gap-3 text-sm font-semibold text-slate-700">
                   <CheckCircle2 size={18} className="text-teal-700" aria-hidden="true" />
                   {feature}
                 </li>
               ))}
             </ul>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href="/builder/sample-resume">Try the Builder</ButtonLink>
+              <ButtonLink href="/templates" variant="secondary">View Photo Templates</ButtonLink>
+            </div>
           </div>
         </div>
       </section>

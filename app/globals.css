@@ -50,6 +50,100 @@ a {
   background-size: 24px 24px;
 }
 
+.builder-showcase {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(15, 143, 127, 0.08), transparent 28rem),
+    radial-gradient(circle at 82% 18%, rgba(37, 99, 235, 0.06), transparent 24rem),
+    #ffffff;
+}
+
+.scroll-reveal {
+  animation: section-reveal both ease-out;
+  animation-timeline: view();
+  animation-range: entry 8% cover 34%;
+}
+
+.scroll-reveal-delay {
+  animation-range: entry 14% cover 42%;
+}
+
+.builder-mockup-shell {
+  transform-origin: center;
+}
+
+.builder-float-card {
+  animation: soft-float 5s ease-in-out infinite;
+}
+
+.builder-float-card-delay {
+  animation-delay: 1.2s;
+}
+
+.builder-feature-item {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: feature-rise 0.55s ease-out forwards;
+}
+
+.builder-feature-item:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.builder-feature-item:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.builder-feature-item:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.builder-feature-item:nth-child(5) {
+  animation-delay: 0.32s;
+}
+
+@keyframes section-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(42px) scale(0.96);
+    filter: blur(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes soft-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes feature-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .builder-float-card,
+  .builder-feature-item {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
 .resume-page {
   position: relative;
   width: 210mm;
