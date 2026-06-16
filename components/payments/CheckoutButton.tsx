@@ -1,9 +1,10 @@
 "use client";
 
 import { AppButton } from "@/components/app/AppButton";
+import { currencyStorageKey, type PaymentCurrency } from "@/lib/payments/currency";
 import type { PaidPlanId } from "@/lib/payments/plans";
 import { CreditCard } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type CheckoutButtonProps = {
   planId: PaidPlanId;
@@ -14,6 +15,20 @@ type CheckoutButtonProps = {
 export function CheckoutButton({ planId, children = "Upgrade", variant = "primary" }: CheckoutButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [currency, setCurrency] = useState<PaymentCurrency>("aed");
+
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem(currencyStorageKey);
+    setCurrency(savedCurrency === "inr" ? "inr" : "aed");
+
+    const syncCurrency = (event: Event) => {
+      const nextCurrency = event instanceof CustomEvent && event.detail === "inr" ? "inr" : "aed";
+      setCurrency(nextCurrency);
+    };
+
+    window.addEventListener("resumecraft:currency-change", syncCurrency);
+    return () => window.removeEventListener("resumecraft:currency-change", syncCurrency);
+  }, []);
 
   const startCheckout = async () => {
     if (isLoading) {
@@ -27,7 +42,7 @@ export function CheckoutButton({ planId, children = "Upgrade", variant = "primar
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planId, currency }),
       });
       const payload = await response.json();
 

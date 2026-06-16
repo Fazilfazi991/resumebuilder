@@ -23,6 +23,7 @@ import { ButtonLink } from "./ButtonLink";
 import { FeatureCard } from "./FeatureCard";
 import { HeroVisual } from "./HeroVisual";
 import { PricingCard } from "./PricingCard";
+import { CurrencySelector } from "@/components/payments/CurrencySelector";
 import { SectionHeading } from "./SectionHeading";
 import { TemplateCard } from "./TemplateCard";
 import { resumeTemplates } from "@/lib/resume/template-registry";
@@ -43,13 +44,13 @@ const pricing = [
   },
   {
     name: "Premium",
-    price: "AED 19 / INR 399",
+    planId: "premium" as const,
     features: ["Premium templates", "No watermark", "PDF download", "AI writing tools", "Cover letter"],
     featured: true,
   },
   {
     name: "Lifetime",
-    price: "AED 49 / INR 999",
+    planId: "lifetime" as const,
     features: ["Unlimited resumes", "All templates", "Lifetime access", "Priority templates"],
   },
 ];
@@ -228,7 +229,10 @@ export function Homepage() {
 
       <section className="border-y border-slate-200 bg-slate-50 py-16" id="pricing">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading title="Simple, transparent pricing" subtitle="Choose the plan that matches how often you apply." />
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <SectionHeading title="Simple, transparent pricing" subtitle="Choose AED or INR and pay in the currency that works for you." />
+            <CurrencySelector />
+          </div>
           <div className="grid gap-6 lg:grid-cols-3">
             {pricing.map((plan) => (
               <PricingCard key={plan.name} {...plan} />

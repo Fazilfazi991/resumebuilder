@@ -4,6 +4,8 @@ import { PublicPageHeader } from "@/components/app/PublicPageHeader";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { CheckoutButton } from "@/components/payments/CheckoutButton";
+import { CurrencySelector } from "@/components/payments/CurrencySelector";
+import { PlanPrice } from "@/components/payments/PlanPrice";
 import { Check } from "lucide-react";
 
 const plans = [
@@ -31,11 +33,20 @@ export default function PricingPage() {
         actions={<AppButton href="/builder/sample-resume">Start Building</AppButton>}
       />
       <main className="bg-slate-50">
+        <section className="border-b border-slate-200 bg-white">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+            <div>
+              <p className="text-sm font-bold text-slate-950">Choose payment currency</p>
+              <p className="mt-1 text-sm text-slate-600">Your selected currency is used through checkout.</p>
+            </div>
+            <CurrencySelector />
+          </div>
+        </section>
         <section className="mx-auto grid max-w-7xl gap-5 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           {plans.map((plan) => (
             <article key={plan.name} className={`rounded-lg border bg-white p-6 shadow-sm ${plan.featured ? "border-teal-600 ring-4 ring-teal-100" : "border-slate-200"}`}>
               <h2 className="text-xl font-bold text-slate-950">{plan.name}</h2>
-              <p className="mt-4 text-2xl font-bold text-slate-950">{plan.price}</p>
+              <p className="mt-4 text-2xl font-bold text-slate-950">{plan.planId ? <PlanPrice planId={plan.planId} /> : plan.price}</p>
               <ul className="mt-6 space-y-3">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex gap-2 text-sm text-slate-600">

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPaidPlan } from "@/lib/payments/plans";
+import { getPaymentCurrency } from "@/lib/payments/currency";
 
 const stripeCheckoutUrl = "https://api.stripe.com/v1/checkout/sessions";
 
@@ -10,8 +11,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Stripe is not configured." }, { status: 500 });
   }
 
-  const body = await request.json().catch(() => null) as { planId?: string } | null;
+  const body = await request.json().catch(() => null) as { planId?: string; currency?: string } | null;
   const plan = getPaidPlan(body?.planId);
+  const currency = getPaymentCurrency(body?.currency);
 
   if (!plan) {
     return NextResponse.json({ error: "Invalid plan selected." }, { status: 400 });
@@ -23,11 +25,12 @@ export async function POST(request: Request) {
     success_url: `${origin}/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/pricing?checkout=canceled`,
     "line_items[0][quantity]": "1",
-    "line_items[0][price_data][currency]": plan.currency,
-    "line_items[0][price_data][unit_amount]": String(plan.amount),
+    "line_items[0][price_data][currency]": currency,
+    "line_items[0][price_data][unit_amount]": String(plan.amounts[currency]),
     "line_items[0][price_data][product_data][name]": `ResumeCraft ${plan.name}`,
     "line_items[0][price_data][product_data][description]": plan.description,
     "metadata[plan_id]": plan.id,
+    "metadata[currency]": currency,
   });
 
   const response = await fetch(stripeCheckoutUrl, {

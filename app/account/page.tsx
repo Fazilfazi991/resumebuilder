@@ -1,6 +1,7 @@
 import { AppButton } from "@/components/app/AppButton";
 import { AppHeader } from "@/components/app/AppHeader";
 import { CheckoutButton } from "@/components/payments/CheckoutButton";
+import { CurrencySelector } from "@/components/payments/CurrencySelector";
 import { ReferralUnlockCard } from "@/components/account/ReferralUnlockCard";
 import { CreditCard, Download, Settings, ShieldCheck, UserRound } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
@@ -36,7 +37,10 @@ export default function AccountPage() {
             <AccountPanel icon={CreditCard} title="Plan">
               <p className="text-2xl font-bold text-slate-950">Free</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">Upgrade for premium templates, AI tools, and watermark-free PDF exports.</p>
-              <div className="mt-5"><CheckoutButton planId="premium">Upgrade to Premium</CheckoutButton></div>
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <CurrencySelector compact />
+                <CheckoutButton planId="premium">Upgrade to Premium</CheckoutButton>
+              </div>
             </AccountPanel>
           </div>
 
