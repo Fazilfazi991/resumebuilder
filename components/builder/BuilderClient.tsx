@@ -299,12 +299,20 @@ function EditorPanel({
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           {Object.entries(data.personal).filter(([field]) => field !== "photoUrl").map(([field, value]) => (
-            <Field
-              key={field}
-              label={labelize(field)}
-              value={value}
-              onChange={(next) => setPersonal(field as keyof ResumeData["personal"], next)}
-            />
+            field === "portfolio" ? (
+              <PortfolioField
+                key={field}
+                value={value}
+                onChange={(next) => setPersonal("portfolio", next)}
+              />
+            ) : (
+              <Field
+                key={field}
+                label={labelize(field)}
+                value={value}
+                onChange={(next) => setPersonal(field as keyof ResumeData["personal"], next)}
+              />
+            )
           ))}
         </div>
       </Panel>
@@ -532,6 +540,26 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
   return (
     <label className="block">
       <span className="text-sm font-bold text-slate-700">{label}</span>
+      <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400" />
+    </label>
+  );
+}
+
+function PortfolioField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="block">
+      <span className="flex items-center justify-between gap-3 text-sm font-bold text-slate-700">
+        Portfolio
+        <a
+          href="https://portfoliobuilder-rose.vercel.app/"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-md text-xs font-bold text-teal-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-teal-300"
+        >
+          Don't have a portfolio? Create your portfolio
+          <LinkIcon size={13} aria-hidden="true" />
+        </a>
+      </span>
       <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400" />
     </label>
   );
