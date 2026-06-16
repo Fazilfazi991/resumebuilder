@@ -5,6 +5,7 @@ import { ExecutivePro } from "@/components/resume-templates/ExecutivePro";
 import { FreshGraduate } from "@/components/resume-templates/FreshGraduate";
 import { ModernMinimal } from "@/components/resume-templates/ModernMinimal";
 import { PremiumCorporate } from "@/components/resume-templates/PremiumCorporate";
+import { PremiumImpact } from "@/components/resume-templates/PremiumImpact";
 import { SalesResume } from "@/components/resume-templates/SalesResume";
 import { SimpleOnePage } from "@/components/resume-templates/SimpleOnePage";
 import { TechResume } from "@/components/resume-templates/TechResume";
@@ -35,6 +36,18 @@ export const resumeTemplates: TemplateDefinition[] = [
     isPremium: false,
     supportsPhoto: false,
     component: ModernMinimal,
+  },
+  {
+    id: "premium-impact",
+    name: "Premium Impact",
+    category: "Executive",
+    description: "A polished navy-and-gold resume designed for experienced professionals who want to highlight leadership, achievements, and measurable impact.",
+    bestFor: "Senior professionals, product managers, business leaders",
+    tags: ["Photo CV", "Executive", "Metrics", "Premium", "Photo supported"],
+    features: ["Navy-and-gold executive style", "Dynamic metric highlights", "Timeline achievements"],
+    isPremium: true,
+    supportsPhoto: true,
+    component: PremiumImpact,
   },
   {
     id: "premium-corporate",
