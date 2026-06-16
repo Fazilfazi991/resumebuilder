@@ -12,10 +12,13 @@ type TemplateGalleryCardProps = {
   features: string[];
   isPremium: boolean;
   supportsPhoto?: boolean;
+  isReferralUnlocked?: boolean;
   onPreview?: () => void;
 };
 
-export function TemplateGalleryCard({ id, name, category, description, bestFor, tags, features, isPremium, supportsPhoto, onPreview }: TemplateGalleryCardProps) {
+export function TemplateGalleryCard({ id, name, category, description, bestFor, tags, features, isPremium, supportsPhoto, isReferralUnlocked = false, onPreview }: TemplateGalleryCardProps) {
+  const premiumLabel = isReferralUnlocked ? "Referral unlocked" : "Premium";
+
   return (
     <article className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1.5 hover:border-teal-200 hover:shadow-xl hover:shadow-slate-300/60">
       <div className="relative bg-slate-100 p-3 pb-0 sm:p-4"><A4Preview templateId={id} /><div className="pointer-events-none absolute inset-x-3 bottom-0 h-12 bg-gradient-to-t from-slate-100 to-transparent sm:inset-x-4 sm:h-16" /></div>
@@ -25,9 +28,9 @@ export function TemplateGalleryCard({ id, name, category, description, bestFor, 
           <h3 className="font-bold text-slate-950">{name}</h3>
           <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{category}</p>
         </div>
-        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${isReferralUnlocked ? "bg-amber-50 text-amber-700" : isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>
           {isPremium ? <LockKeyhole size={12} aria-hidden="true" /> : <WandSparkles size={12} aria-hidden="true" />}
-          {isPremium ? "Premium" : "Free"}
+          {isPremium ? premiumLabel : "Free"}
         </span>
       </div>
       <div className="mt-3">
@@ -42,7 +45,7 @@ export function TemplateGalleryCard({ id, name, category, description, bestFor, 
       </ul>
       <div className="mt-3 flex flex-wrap gap-1.5">{tags.map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">{tag}</span>)}</div>
       <div className="mt-4 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-        <AppButton href={`/builder/sample-resume?template=${id}`}>Use Template</AppButton>
+        <AppButton href={`/builder/sample-resume?template=${id}`}>{isReferralUnlocked ? "Use Unlocked" : "Use Template"}</AppButton>
         <AppButton variant="secondary" onClick={onPreview}><Eye size={16} aria-hidden="true" /> Preview</AppButton>
       </div>
       </div>

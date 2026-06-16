@@ -353,10 +353,18 @@ function EditorPanel({
     return <CertificatesEditor data={data} setData={setData} />;
   }
 
+  if (activeSection === "achievements") {
+    return <AchievementsEditor data={data} setData={setData} />;
+  }
+
+  if (activeSection === "references") {
+    return <ReferencesEditor data={data} setData={setData} />;
+  }
+
   return (
     <Panel title={sections.find((section) => section.id === activeSection)?.label ?? "Section"} description="This section is ready for the next product pass.">
-      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-600">
-        Working form coming next. The shared data model already supports this section.
+      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm leading-6 text-slate-600">
+        Add optional sections from the data model in the next product pass.
       </div>
     </Panel>
   );
@@ -468,6 +476,51 @@ function CertificatesEditor({ data, setData }: { data: ResumeData; setData: Reac
   );
 }
 
+function AchievementsEditor({ data, setData }: { data: ResumeData; setData: React.Dispatch<React.SetStateAction<ResumeData>> }) {
+  const update = (id: string, patch: Partial<ResumeData["achievements"][number]>) => {
+    setData((current) => ({ ...current, achievements: current.achievements.map((item) => (item.id === id ? { ...item, ...patch } : item)) }));
+  };
+
+  return (
+    <Panel title="Achievements" description="Highlight awards, recognition, and measurable wins.">
+      <div className="mb-4 [&>button]:w-full sm:[&>button]:w-auto"><AppButton onClick={() => setData((current) => ({ ...current, achievements: [...current.achievements, { id: uid("ach"), title: "", description: "" }] }))}><Plus size={16} aria-hidden="true" /> Add Achievement</AppButton></div>
+      <div className="space-y-4">
+        {data.achievements.map((item) => (
+          <EditorCard key={item.id} title={item.title || "New achievement"} onRemove={() => setData((current) => ({ ...current, achievements: current.achievements.filter((entry) => entry.id !== item.id) }))}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Title" value={item.title} onChange={(value) => update(item.id, { title: value })} />
+              <TextArea label="Description" value={item.description} onChange={(value) => update(item.id, { description: value })} />
+            </div>
+          </EditorCard>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+function ReferencesEditor({ data, setData }: { data: ResumeData; setData: React.Dispatch<React.SetStateAction<ResumeData>> }) {
+  const update = (id: string, patch: Partial<ResumeData["references"][number]>) => {
+    setData((current) => ({ ...current, references: current.references.map((item) => (item.id === id ? { ...item, ...patch } : item)) }));
+  };
+
+  return (
+    <Panel title="References" description="Add references or leave this section out when not required.">
+      <div className="mb-4 [&>button]:w-full sm:[&>button]:w-auto"><AppButton onClick={() => setData((current) => ({ ...current, references: [...current.references, { id: uid("ref"), name: "", role: "", company: "", email: "", phone: "" }] }))}><Plus size={16} aria-hidden="true" /> Add Reference</AppButton></div>
+      <div className="space-y-4">
+        {data.references.map((item) => (
+          <EditorCard key={item.id} title={item.name || "New reference"} onRemove={() => setData((current) => ({ ...current, references: current.references.filter((entry) => entry.id !== item.id) }))}>
+            <div className="grid gap-4 md:grid-cols-2">
+              {(["name", "role", "company", "email", "phone"] as const).map((field) => (
+                <Field key={field} label={labelize(field)} value={item[field]} onChange={(value) => update(item.id, { [field]: value })} />
+              ))}
+            </div>
+          </EditorCard>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
 function SimpleListEditor<T extends { id: string; name: string; level: string }>({
   title,
   addLabel,
@@ -548,16 +601,16 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 function PortfolioField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
     <label className="block">
-      <span className="flex items-center justify-between gap-3 text-sm font-bold text-slate-700">
+      <span className="grid gap-1 text-sm font-bold text-slate-700 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-3">
         Portfolio
         <a
           href="https://portfoliobuilder-rose.vercel.app/"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-md text-xs font-bold text-teal-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-teal-300"
+          className="inline-flex min-h-7 min-w-0 items-center gap-1.5 rounded-md text-xs font-bold leading-5 text-teal-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-teal-300"
         >
-          Don't have a portfolio? Create your portfolio
-          <LinkIcon size={13} aria-hidden="true" />
+          <span className="min-w-0 whitespace-normal">Don't have a portfolio? Create your portfolio</span>
+          <LinkIcon size={13} className="shrink-0" aria-hidden="true" />
         </a>
       </span>
       <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400" />

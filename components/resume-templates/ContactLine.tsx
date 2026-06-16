@@ -6,7 +6,7 @@ export function ContactLine({ data, align = "left", separator = " | ", className
   if (!items.length) return null;
 
   return (
-    <p className={`break-words text-[10px] leading-[1.5] text-slate-600 ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"} ${className}`}>
+    <p className={`max-w-full overflow-hidden break-words text-[10px] leading-[1.5] text-slate-600 ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"} ${className}`}>
       {items.join(separator)}
     </p>
   );

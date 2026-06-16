@@ -80,8 +80,8 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
 
   return (
     <section className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-      <div className="grid gap-4 sm:grid-cols-[96px_1fr]">
-        <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="grid gap-4 sm:grid-cols-[88px_1fr]">
+        <div className="flex h-[88px] w-[88px] items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white sm:h-24 sm:w-24">
           {value ? (
             <img src={value} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -117,7 +117,7 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
           </div>
           <p className="mt-3 text-sm leading-5 text-slate-600">JPG, PNG, or WEBP. Maximum 5MB.</p>
           {status ? <p className="mt-2 text-sm font-semibold text-emerald-700">{status}</p> : null}
-          {note ? <p className="mt-2 text-sm font-semibold text-amber-700">{note}</p> : null}
+          {note ? <p className="mt-2 max-w-md text-sm font-semibold leading-5 text-amber-700">{note}</p> : null}
           {error ? <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p> : null}
         </div>
       </div>
