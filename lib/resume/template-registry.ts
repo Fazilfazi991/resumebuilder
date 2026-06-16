@@ -1,9 +1,11 @@
 import { ClassicATS } from "@/components/resume-templates/ClassicATS";
+import { CreativePortfolio } from "@/components/resume-templates/CreativePortfolio";
 import { CreativeDesigner } from "@/components/resume-templates/CreativeDesigner";
 import { ElegantTwoColumn } from "@/components/resume-templates/ElegantTwoColumn";
 import { ExecutivePro } from "@/components/resume-templates/ExecutivePro";
 import { FreshGraduate } from "@/components/resume-templates/FreshGraduate";
 import { ModernMinimal } from "@/components/resume-templates/ModernMinimal";
+import { ModernEngineer } from "@/components/resume-templates/ModernEngineer";
 import { PremiumCorporate } from "@/components/resume-templates/PremiumCorporate";
 import { PremiumImpact } from "@/components/resume-templates/PremiumImpact";
 import { SalesResume } from "@/components/resume-templates/SalesResume";
@@ -36,6 +38,30 @@ export const resumeTemplates: TemplateDefinition[] = [
     isPremium: false,
     supportsPhoto: false,
     component: ModernMinimal,
+  },
+  {
+    id: "creative-portfolio",
+    name: "Creative Portfolio",
+    category: "Creative",
+    description: "A polished purple-accent resume template for designers and creatives who want to showcase portfolio projects, design skills, and achievements with a modern visual layout.",
+    bestFor: "UX/UI designers, product designers, visual designers, and creative professionals",
+    tags: ["Photo CV", "Portfolio", "Creative", "Project Cards", "Premium", "Photo supported"],
+    features: ["Portfolio-focused", "Project cards", "Skill sliders"],
+    isPremium: true,
+    supportsPhoto: true,
+    component: CreativePortfolio,
+  },
+  {
+    id: "modern-engineer",
+    name: "Modern Engineer",
+    category: "Tech",
+    description: "A polished green-and-white technical resume designed for software engineers and IT professionals who want to highlight skills, projects, certifications, and measurable achievements.",
+    bestFor: "Software engineers, developers, IT professionals, and technical roles",
+    tags: ["Photo CV", "Tech", "Projects", "Skills Heavy", "Premium", "Photo supported"],
+    features: ["Developer friendly", "Skills progress bars", "Project-focused achievement cards"],
+    isPremium: true,
+    supportsPhoto: true,
+    component: ModernEngineer,
   },
   {
     id: "premium-impact",
