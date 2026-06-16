@@ -3,13 +3,14 @@ import { FAQAccordion } from "@/components/app/FAQAccordion";
 import { PublicPageHeader } from "@/components/app/PublicPageHeader";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
+import { CheckoutButton } from "@/components/payments/CheckoutButton";
 import { Check } from "lucide-react";
 
 const plans = [
-  { name: "Free", price: "$0", features: ["Create resumes", "Basic templates", "Preview resume", "Watermarked downloads"] },
-  { name: "Premium", price: "AED 19 / INR 399", features: ["Premium templates", "No watermark", "PDF download", "AI writing tools", "Cover letters"], featured: true },
-  { name: "Lifetime", price: "AED 49 / INR 999", features: ["Unlimited resumes", "All templates", "Lifetime access", "Priority templates"] },
-  { name: "Career Pro", price: "Coming soon", features: ["Job tracker", "AI matching", "Interview prep", "LinkedIn tools"] },
+  { name: "Free", price: "$0", features: ["Create resumes", "Basic templates", "Preview resume", "Watermarked downloads"], href: "/builder/sample-resume" },
+  { name: "Premium", price: "AED 19 / INR 399", features: ["Premium templates", "No watermark", "PDF download", "AI writing tools", "Cover letters"], featured: true, planId: "premium" as const },
+  { name: "Lifetime", price: "AED 49 / INR 999", features: ["Unlimited resumes", "All templates", "Lifetime access", "Priority templates"], planId: "lifetime" as const },
+  { name: "Career Pro", price: "Coming soon", features: ["Job tracker", "AI matching", "Interview prep", "LinkedIn tools"], disabled: true },
 ];
 
 const faqs = [
@@ -43,7 +44,15 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-6"><AppButton href="/builder/sample-resume" variant={plan.featured ? "primary" : "secondary"}>Choose Plan</AppButton></div>
+              <div className="mt-6">
+                {plan.planId ? (
+                  <CheckoutButton planId={plan.planId} variant={plan.featured ? "primary" : "secondary"}>Choose Plan</CheckoutButton>
+                ) : plan.href ? (
+                  <AppButton href={plan.href} variant="secondary">Choose Plan</AppButton>
+                ) : (
+                  <AppButton disabled variant="secondary">Coming Soon</AppButton>
+                )}
+              </div>
             </article>
           ))}
         </section>
