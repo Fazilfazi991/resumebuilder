@@ -3,7 +3,7 @@
 import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
 import { TemplatePreviewModal } from "@/components/app/TemplatePreviewModal";
-import { AtsScorePanel, toneFor } from "@/components/builder/AtsScorePanel";
+import { AtsInsightsCompact, AtsScorePanel, toneFor } from "@/components/builder/AtsScorePanel";
 import { ResumeAssistant } from "@/components/builder/ResumeAssistant";
 import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
@@ -37,6 +37,9 @@ import {
   ChevronDown,
   ChevronUp,
   Target,
+  CheckCircle2,
+  AlertTriangle,
+  Circle,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -55,7 +58,7 @@ const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] =
   { id: "certificates", label: "Certificates", icon: FileBadge },
   { id: "achievements", label: "Achievements", icon: Award },
   { id: "references", label: "References", icon: BookOpen },
-  { id: "customSections", label: "Custom Sections", icon: Plus },
+  { id: "customSections", label: "Additional", icon: Plus },
 ];
 
 export function BuilderClient() {
@@ -199,20 +202,20 @@ export function BuilderClient() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-slate-100 pb-20 lg:pb-0">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
-        <div className="flex min-h-16 items-center justify-between gap-2 px-3 py-2 lg:px-4 lg:py-3">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm shadow-slate-200/60 backdrop-blur-xl">
+        <div className="flex min-h-[76px] items-center justify-between gap-3 px-3 py-3 lg:px-5">
           <div className="flex min-w-0 items-center gap-3">
-            <Link href="/dashboard" className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Back to dashboard">
+            <Link href="/dashboard" className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm" aria-label="Back to dashboard">
               <ArrowLeft size={18} aria-hidden="true" />
             </Link>
             <input
               value={resumeTitle}
               onChange={(event) => setResumeTitle(event.target.value)}
-              className="min-w-0 flex-1 truncate rounded-lg border border-transparent bg-slate-50 px-2 py-2 text-sm font-bold text-slate-950 outline-none focus:border-teal-300 focus:bg-white sm:text-lg"
+              className="min-w-0 flex-1 truncate rounded-lg border border-transparent bg-white px-2 py-2 text-sm font-bold text-slate-950 outline-none focus:border-teal-300 focus:bg-slate-50 sm:text-lg"
               aria-label="Resume title"
             />
           </div>
-          <span className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-emerald-50 px-2 text-xs font-bold text-emerald-700 sm:px-3 sm:text-sm"><Save size={15} />Saved</span>
+          <span className="hidden h-11 shrink-0 items-center gap-2 border-l border-slate-200 pl-4 text-xs font-semibold text-slate-500 md:inline-flex"><Save size={16} className="text-emerald-600" />All changes saved <span className="font-medium text-slate-400">Just now</span></span>
           <button onClick={() => setMobileTab("ats")} className={`hidden h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-bold sm:inline-flex sm:px-3 sm:text-sm ${atsTone.badge}`} aria-label="Open ATS score">
             <Target size={15} aria-hidden="true" />
             ATS Score: {atsScore.percentage}%
@@ -222,7 +225,7 @@ export function BuilderClient() {
             <select
               value={templateId}
               onChange={(event) => setTemplateId(event.target.value)}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-teal-400"
+              className="h-12 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-teal-400"
               aria-label="Template selector"
             >
               {resumeTemplates.map((template) => (
@@ -248,17 +251,18 @@ export function BuilderClient() {
         </div>
       </header>
 
-      <div className="grid min-h-[calc(100vh-64px)] lg:grid-cols-[260px_minmax(420px,1fr)_minmax(420px,0.95fr)]">
+      <div className="grid min-h-[calc(100vh-76px)] lg:grid-cols-[260px_minmax(420px,1fr)_minmax(420px,0.95fr)] xl:grid-cols-[260px_minmax(460px,1fr)_280px_minmax(420px,0.82fr)]">
         <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block">
           <div className="mb-4 rounded-lg bg-teal-50 p-4">
-            <p className="text-sm font-bold text-teal-800">Builder sections</p>
-            <p className="mt-1 text-xs leading-5 text-teal-700">Drag sections or use arrows to reorder the resume preview.</p>
+            <p className="text-sm font-bold text-teal-800">Build your resume</p>
+            <p className="mt-1 text-xs leading-5 text-teal-700">Add and organize sections for a professional resume.</p>
           </div>
           <nav className="space-y-1">
             {orderedSections.map((section) => {
               const Icon = section.icon;
               const isActive = activeSection === section.id;
               const canMove = section.id !== "personal";
+              const category = atsScore.categories.find((item) => item.id === atsCategoryId(section.id));
               return (
                 <button
                   key={section.id}
@@ -277,6 +281,11 @@ export function BuilderClient() {
                   <GripVertical size={14} className={isActive ? "text-teal-100" : "text-slate-300"} aria-hidden="true" />
                   <Icon size={17} aria-hidden="true" />
                   <span className="flex-1">{section.label}</span>
+                  {category ? (
+                    category.issues > 0 ? <AlertTriangle size={15} className={isActive ? "text-amber-100" : "text-amber-500"} aria-hidden="true" /> : <CheckCircle2 size={15} className={isActive ? "text-teal-100" : "text-teal-700"} aria-hidden="true" />
+                  ) : (
+                    <Circle size={13} className={isActive ? "text-teal-100" : "text-slate-300"} aria-hidden="true" />
+                  )}
                   {canMove ? (
                     <span className="flex shrink-0 items-center gap-1" onClick={(event) => event.stopPropagation()}>
                       <span role="button" tabIndex={0} onClick={() => moveSection(section.id, -1)} className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${isActive ? "bg-teal-600 text-white" : "bg-slate-50 text-slate-500"}`} aria-label={`Move ${section.label} up`}><ChevronUp size={14} /></span>
@@ -289,9 +298,13 @@ export function BuilderClient() {
               );
             })}
           </nav>
+          <button onClick={() => openEditorSection("customSections")} className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white text-sm font-bold text-teal-700 transition hover:bg-teal-50">
+            <Plus size={16} aria-hidden="true" />
+            Add Section
+          </button>
         </aside>
 
-        <section className={`${mobileTab === "edit" ? "block" : "hidden"} overflow-y-auto px-3 py-4 ${mobileTab === "ats" ? "lg:hidden" : "lg:block"} lg:p-6`}>
+        <section className={`${mobileTab === "edit" ? "block" : "hidden"} overflow-y-auto px-3 py-4 lg:block lg:p-6`}>
           <div className="mx-auto max-w-3xl">
             <div className="-mx-3 mb-4 overflow-x-auto border-b border-slate-200 bg-white px-3 pb-3 lg:hidden">
               <div className="flex w-max gap-2">{orderedSections.map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
@@ -300,17 +313,19 @@ export function BuilderClient() {
           </div>
         </section>
 
-        <section className={`${mobileTab === "ats" ? "block" : "hidden"} overflow-y-auto px-3 py-4 lg:p-6`}>
+        <section className={`${mobileTab === "ats" ? "block" : "hidden"} overflow-y-auto px-3 py-4 xl:hidden lg:p-6`}>
           <div className="mx-auto max-w-3xl">
             <AtsScorePanel data={data} onFixSection={openEditorSection} />
           </div>
         </section>
 
-        <aside className={`${mobileTab === "preview" ? "block" : "hidden"} min-w-0 border-l border-slate-200 bg-slate-200/70 p-3 ${mobileTab === "ats" ? "lg:hidden" : "lg:block"} lg:p-6`}>
+        <AtsInsightsCompact data={data} onViewRecommendations={() => setMobileTab("ats")} />
+
+        <aside className={`${mobileTab === "preview" ? "block" : "hidden"} min-w-0 border-l border-slate-200 bg-slate-200/70 p-3 lg:block lg:p-5`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-slate-950">Live resume preview</p>
-              <p className="text-xs text-slate-500">Updates as you type</p>
+              <p className="text-sm font-bold text-slate-950">Live Preview</p>
+              <p className="text-xs text-slate-500">See how your resume looks</p>
             </div>
             <div className="flex items-center gap-1.5">
               {(["fit", 75, 100] as const).map((value) => <button key={value} onClick={() => setZoom(value)} className={`min-h-10 rounded-lg border px-3 text-xs font-bold ${zoom === value ? "border-teal-700 bg-teal-700 text-white" : "border-slate-300 bg-white text-slate-600"}`}>{value === "fit" ? "Fit" : `${value}%`}</button>)}
@@ -391,13 +406,6 @@ function EditorPanel({
     return (
       <Panel title="Personal Details" description="This information appears in the resume header.">
         <ResumePhotoUpload value={data.personal.photoUrl} onChange={(value) => setPersonal("photoUrl", value)} />
-        <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-sm font-bold text-slate-700">Manual image URL</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">Advanced option for externally hosted profile photos.</p>
-          <div className="mt-3">
-            <Field label="Photo URL" value={data.personal.photoUrl} onChange={(next) => setPersonal("photoUrl", next)} />
-          </div>
-        </div>
         <div className="grid gap-4 md:grid-cols-2">
           {Object.entries(data.personal).filter(([field]) => field !== "photoUrl").map(([field, value]) => (
             field === "portfolio" ? (
@@ -416,6 +424,12 @@ function EditorPanel({
             )
           ))}
         </div>
+        <details className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <summary className="cursor-pointer text-sm font-bold text-teal-700">Show more fields</summary>
+          <div className="mt-3">
+            <Field label="Manual Photo URL" value={data.personal.photoUrl} onChange={(next) => setPersonal("photoUrl", next)} />
+          </div>
+        </details>
       </Panel>
     );
   }
@@ -813,4 +827,19 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "") || "resume";
+}
+
+function atsCategoryId(sectionId: ResumeSection) {
+  const map: Partial<Record<ResumeSection, string>> = {
+    personal: "personal",
+    summary: "summary",
+    skills: "skills",
+    experience: "experience",
+    projects: "projects",
+    education: "education",
+    certificates: "certifications-languages",
+    languages: "certifications-languages",
+  };
+
+  return map[sectionId] ?? "";
 }
