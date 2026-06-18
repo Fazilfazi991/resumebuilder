@@ -5,8 +5,6 @@ import { AppButton } from "@/components/app/AppButton";
 import { TemplatePreviewModal } from "@/components/app/TemplatePreviewModal";
 import { ResumeAssistant } from "@/components/builder/ResumeAssistant";
 import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
-import { VoiceInputButton } from "@/components/builder/VoiceInputButton";
-import { VoiceRecorder } from "@/components/builder/VoiceRecorder";
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { defaultResumeData, defaultSectionOrder } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
@@ -34,10 +32,12 @@ import {
   LayoutTemplate,
   Bot,
   X,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 type Tab = "edit" | "preview" | "templates" | "assistant";
 
@@ -69,10 +69,61 @@ export function BuilderClient() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const pdfRef = useRef<HTMLDivElement>(null);
-  const sectionOrder = useMemo(() => defaultSectionOrder, []);
+  const [sectionOrder, setSectionOrder] = useState<ResumeSection[]>(defaultSectionOrder as ResumeSection[]);
+  const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
 
   const setPersonal = (field: keyof ResumeData["personal"], value: string) => {
     setData((current) => ({ ...current, personal: { ...current.personal, [field]: value } }));
+  };
+
+  const orderedSections = sections
+    .map((section, index) => ({ ...section, fallbackIndex: index }))
+    .sort((first, second) => {
+      if (first.id === "personal") return -1;
+      if (second.id === "personal") return 1;
+      const firstIndex = sectionOrder.indexOf(first.id);
+      const secondIndex = sectionOrder.indexOf(second.id);
+      if (firstIndex === -1 && secondIndex === -1) return first.fallbackIndex - second.fallbackIndex;
+      if (firstIndex === -1) return 1;
+      if (secondIndex === -1) return -1;
+      return firstIndex - secondIndex;
+    });
+
+  const moveSection = (sectionId: ResumeSection, direction: -1 | 1) => {
+    if (sectionId === "personal") {
+      return;
+    }
+
+    setSectionOrder((current) => {
+      const index = current.indexOf(sectionId);
+      if (index === -1) {
+        return [...current, sectionId];
+      }
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) {
+        return current;
+      }
+      const next = [...current];
+      const [item] = next.splice(index, 1);
+      next.splice(nextIndex, 0, item);
+      return next;
+    });
+  };
+
+  const dropSection = (targetSection: ResumeSection) => {
+    if (!draggedSection || draggedSection === targetSection || draggedSection === "personal" || targetSection === "personal") {
+      setDraggedSection(null);
+      return;
+    }
+
+    setSectionOrder((current) => {
+      const normalized = current.includes(targetSection) ? current : [...current, targetSection];
+      const next = normalized.filter((section) => section !== draggedSection);
+      const targetIndex = next.indexOf(targetSection);
+      next.splice(targetIndex < 0 ? next.length : targetIndex, 0, draggedSection);
+      return next;
+    });
+    setDraggedSection(null);
   };
 
   const downloadPdf = async () => {
@@ -173,15 +224,20 @@ export function BuilderClient() {
         <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block">
           <div className="mb-4 rounded-lg bg-teal-50 p-4">
             <p className="text-sm font-bold text-teal-800">Builder sections</p>
-            <p className="mt-1 text-xs leading-5 text-teal-700">Reorder support arrives with backend persistence.</p>
+            <p className="mt-1 text-xs leading-5 text-teal-700">Drag sections or use arrows to reorder the resume preview.</p>
           </div>
           <nav className="space-y-1">
-            {sections.map((section) => {
+            {orderedSections.map((section) => {
               const Icon = section.icon;
               const isActive = activeSection === section.id;
+              const canMove = section.id !== "personal";
               return (
                 <button
                   key={section.id}
+                  draggable={canMove}
+                  onDragStart={() => canMove && setDraggedSection(section.id)}
+                  onDragOver={(event) => canMove && event.preventDefault()}
+                  onDrop={() => dropSection(section.id)}
                   onClick={() => {
                     setActiveSection(section.id);
                     setMobileTab("edit");
@@ -193,7 +249,14 @@ export function BuilderClient() {
                   <GripVertical size={14} className={isActive ? "text-teal-100" : "text-slate-300"} aria-hidden="true" />
                   <Icon size={17} aria-hidden="true" />
                   <span className="flex-1">{section.label}</span>
-                  <Eye size={15} className={isActive ? "text-teal-100" : "text-slate-400"} aria-hidden="true" />
+                  {canMove ? (
+                    <span className="flex shrink-0 items-center gap-1" onClick={(event) => event.stopPropagation()}>
+                      <span role="button" tabIndex={0} onClick={() => moveSection(section.id, -1)} className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${isActive ? "bg-teal-600 text-white" : "bg-slate-50 text-slate-500"}`} aria-label={`Move ${section.label} up`}><ChevronUp size={14} /></span>
+                      <span role="button" tabIndex={0} onClick={() => moveSection(section.id, 1)} className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${isActive ? "bg-teal-600 text-white" : "bg-slate-50 text-slate-500"}`} aria-label={`Move ${section.label} down`}><ChevronDown size={14} /></span>
+                    </span>
+                  ) : (
+                    <Eye size={15} className={isActive ? "text-teal-100" : "text-slate-400"} aria-hidden="true" />
+                  )}
                 </button>
               );
             })}
@@ -203,9 +266,9 @@ export function BuilderClient() {
         <section className={`${mobileTab === "edit" ? "block" : "hidden"} overflow-y-auto px-3 py-4 lg:block lg:p-6`}>
           <div className="mx-auto max-w-3xl">
             <div className="-mx-3 mb-4 overflow-x-auto border-b border-slate-200 bg-white px-3 pb-3 lg:hidden">
-              <div className="flex w-max gap-2">{sections.filter((section) => section.id !== "customSections").map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
+              <div className="flex w-max gap-2">{orderedSections.map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
             </div>
-            <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} />
+            <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} />
           </div>
         </section>
 
@@ -280,11 +343,15 @@ function EditorPanel({
   data,
   setData,
   setPersonal,
+  sectionOrder,
+  setSectionOrder,
 }: {
   activeSection: ResumeSection;
   data: ResumeData;
   setData: React.Dispatch<React.SetStateAction<ResumeData>>;
   setPersonal: (field: keyof ResumeData["personal"], value: string) => void;
+  sectionOrder: ResumeSection[];
+  setSectionOrder: React.Dispatch<React.SetStateAction<ResumeSection[]>>;
 }) {
   if (activeSection === "personal") {
     return (
@@ -323,7 +390,6 @@ function EditorPanel({
     return (
       <Panel title="Summary" description="Write a focused opening summary for your target role.">
         <TextArea label="Professional summary" value={data.summary} onChange={(value) => setData((current) => ({ ...current, summary: value }))} />
-        <div className="mt-3"><VoiceRecorder /></div>
         <div className="mt-4 [&>button]:w-full sm:[&>button]:w-auto"><AppButton variant="secondary"><WandSparkles size={16} aria-hidden="true" /> Improve with AI</AppButton></div>
       </Panel>
     );
@@ -361,6 +427,10 @@ function EditorPanel({
     return <ReferencesEditor data={data} setData={setData} />;
   }
 
+  if (activeSection === "customSections") {
+    return <CustomSectionsEditor data={data} setData={setData} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} />;
+  }
+
   return (
     <Panel title={sections.find((section) => section.id === activeSection)?.label ?? "Section"} description="This section is ready for the next product pass.">
       <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm leading-6 text-slate-600">
@@ -394,7 +464,6 @@ function ExperienceEditor({ data, setData }: { data: ResumeData; setData: React.
               </label>
             </div>
             <div className="mt-4"><TextArea label="Description" value={item.description} onChange={(value) => update(item.id, { description: value })} /></div>
-            <div className="mt-3"><VoiceRecorder /></div>
             <BulletEditor bullets={item.bullets} onChange={(bullets) => update(item.id, { bullets })} />
           </EditorCard>
         ))}
@@ -444,7 +513,6 @@ function ProjectsEditor({ data, setData }: { data: ResumeData; setData: React.Di
               ))}
             </div>
             <div className="mt-4"><TextArea label="Description" value={item.description} onChange={(value) => update(item.id, { description: value })} /></div>
-            <div className="mt-3"><VoiceRecorder /></div>
             <BulletEditor bullets={item.bullets} onChange={(bullets) => update(item.id, { bullets })} />
           </EditorCard>
         ))}
@@ -521,6 +589,54 @@ function ReferencesEditor({ data, setData }: { data: ResumeData; setData: React.
   );
 }
 
+function CustomSectionsEditor({
+  data,
+  setData,
+  sectionOrder,
+  setSectionOrder,
+}: {
+  data: ResumeData;
+  setData: React.Dispatch<React.SetStateAction<ResumeData>>;
+  sectionOrder: ResumeSection[];
+  setSectionOrder: React.Dispatch<React.SetStateAction<ResumeSection[]>>;
+}) {
+  const update = (id: string, patch: Partial<ResumeData["customSections"][number]>) => {
+    setData((current) => ({ ...current, customSections: current.customSections.map((item) => (item.id === id ? { ...item, ...patch } : item)) }));
+  };
+
+  const ensureVisible = () => {
+    setSectionOrder((current) => current.includes("customSections") ? current : [...current, "customSections"]);
+  };
+
+  return (
+    <Panel title="Custom Sections" description="Add extra resume sections such as volunteer work, publications, interests, or awards.">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="rounded-lg bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-700">
+          {sectionOrder.includes("customSections") ? "Visible in resume preview" : "Hidden from preview until enabled"}
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <AppButton variant="secondary" onClick={ensureVisible}>Show in Preview</AppButton>
+          <AppButton onClick={() => {
+            ensureVisible();
+            setData((current) => ({ ...current, customSections: [...current.customSections, { id: uid("custom"), title: "", description: "", bullets: [""] }] }));
+          }}><Plus size={16} aria-hidden="true" /> Add Custom Section</AppButton>
+        </div>
+      </div>
+      <div className="space-y-4">
+        {data.customSections.map((item) => (
+          <EditorCard key={item.id} title={item.title || "New custom section"} onRemove={() => setData((current) => ({ ...current, customSections: current.customSections.filter((entry) => entry.id !== item.id) }))}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Section Title" value={item.title} onChange={(value) => update(item.id, { title: value })} />
+              <TextArea label="Description" value={item.description} onChange={(value) => update(item.id, { description: value })} />
+            </div>
+            <BulletEditor bullets={item.bullets} onChange={(bullets) => update(item.id, { bullets })} />
+          </EditorCard>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
 function SimpleListEditor<T extends { id: string; name: string; level: string }>({
   title,
   addLabel,
@@ -576,7 +692,7 @@ function Panel({ title, description, children }: { title: string; description: s
 
 function EditorCard({ children, onRemove, title }: { children: React.ReactNode; onRemove: () => void; title: string }) {
   return (
-    <details open className="group rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
+    <details className="group rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
       <summary className="mb-4 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-bold text-slate-900 marker:hidden"><span className="truncate">{title}</span><span className="text-xs text-slate-500 group-open:hidden">Expand</span><span className="text-xs text-slate-500 group-open:inline">Collapse</span></summary>
       <div className="mb-4 flex justify-end">
         <button onClick={onRemove} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm font-bold text-rose-700">
@@ -621,13 +737,7 @@ function PortfolioField({ value, onChange }: { value: string; onChange: (value: 
 function TextArea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
     <label className="block">
-      <span className="mb-2 flex items-center justify-between gap-3 text-sm font-bold text-slate-700">
-        {label}
-        <span className="flex shrink-0 items-center gap-1">
-          <span className="hidden text-xs font-semibold text-slate-400 sm:inline">Quick Dictation</span>
-          <VoiceInputButton compact onTranscript={(text) => onChange(joinText(value, text))} />
-        </span>
-      </span>
+      <span className="mb-2 block text-sm font-bold text-slate-700">{label}</span>
       <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none focus:border-teal-400" />
     </label>
   );
@@ -642,15 +752,13 @@ function BulletEditor({ bullets, onChange }: { bullets: string[]; onChange: (bul
       </div>
       <div className="space-y-2">
         {bullets.map((bullet, index) => (
-          <div key={index} className="grid gap-2 sm:grid-cols-[1fr_auto]">
+          <div key={index} className="grid gap-2">
             <input
               value={bullet}
               onChange={(event) => onChange(bullets.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)))}
               className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400"
               placeholder="Achievement-focused bullet"
             />
-            <VoiceInputButton compact onTranscript={(text) => onChange(bullets.map((item, itemIndex) => (itemIndex === index ? joinText(item, text) : item)))} />
-            <div className="sm:col-span-2"><VoiceRecorder compact /></div>
           </div>
         ))}
       </div>
@@ -664,10 +772,6 @@ function labelize(value: string) {
 
 function uid(prefix: string) {
   return `${prefix.toLowerCase()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function joinText(current: string, next: string) {
-  return [current, next].filter(Boolean).join(current ? " " : "");
 }
 
 function slugify(value: string) {

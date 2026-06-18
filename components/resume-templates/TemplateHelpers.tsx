@@ -54,5 +54,19 @@ export function RenderSection({ id, data, variant }: { id: string; data: ResumeD
 
   if (id === "references" && hasItems(data.references)) return <section className="resume-section">{heading("References")}<div className={`space-y-1.5 text-[9.5px] ${body}`}>{data.references.map((reference) => <p key={reference.id} className="resume-item"><span className="font-bold">{reference.name}</span><br />{[reference.role, reference.company].filter(hasText).join(", ")}</p>)}</div></section>;
 
+  if (id === "customSections" && hasItems(data.customSections)) return (
+    <section className="resume-section">
+      <div className="space-y-3">
+        {data.customSections.filter((section) => hasText(section.title) || hasText(section.description) || section.bullets.some(hasText)).map((section) => (
+          <article key={section.id} className="resume-item">
+            {heading(section.title || "Custom Section")}
+            {hasText(section.description) ? <p className={`text-[9.75px] leading-[1.45] ${body}`}>{section.description}</p> : null}
+            {section.bullets.some(hasText) ? <ul className={`mt-1.5 list-disc space-y-1 pl-4 text-[9.5px] leading-[1.4] ${body}`}>{section.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+
   return null;
 }

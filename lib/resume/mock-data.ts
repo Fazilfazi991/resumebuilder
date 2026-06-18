@@ -106,6 +106,14 @@ export const defaultResumeData: ResumeData = {
       phone: "",
     },
   ],
+  customSections: [
+    {
+      id: "custom-1",
+      title: "Volunteer Work",
+      description: "Community product mentor for early-career founders.",
+      bullets: ["Reviewed product roadmaps and helped teams prepare launch plans."],
+    },
+  ],
 };
 
 export const mockResumes = [

@@ -4,8 +4,6 @@ import { AppButton } from "@/components/app/AppButton";
 import type { ResumeData } from "@/types/resume";
 import { Bot, ChevronLeft, ChevronRight, RotateCcw, Send, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
-import { VoiceInputButton } from "./VoiceInputButton";
-import { VoiceRecorder } from "./VoiceRecorder";
 
 type AssistantMessage = {
   id: string;
@@ -64,7 +62,6 @@ export function ResumeAssistant({
     { id: "hello", role: "assistant", content: "Tell me what you want to improve. I can collect the details here and apply them to your resume draft." },
   ]);
   const [status, setStatus] = useState("");
-  const [audioMessageUrl, setAudioMessageUrl] = useState("");
 
   const currentQuestion = questions[step];
   const progress = useMemo(() => Math.round(((step + 1) / questions.length) * 100), [step]);
@@ -155,14 +152,9 @@ export function ResumeAssistant({
                 <button key={reply} onClick={() => addAnswer(reply)} className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">{reply}</button>
               ))}
             </div>
-            <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
               <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Type an answer" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-teal-400" />
-              <VoiceInputButton compact onTranscript={(text) => setInput((current) => joinText(current, text))} />
               <button onClick={() => addAnswer(input)} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white"><Send size={16} />Send</button>
-            </div>
-            <div className="mt-3">
-              <VoiceRecorder compact onAudioReady={(_, url) => setAudioMessageUrl(url)} />
-              {audioMessageUrl ? <p className="mt-2 text-xs font-semibold text-slate-500">Recorded audio is attached locally for playback.</p> : null}
             </div>
           </div>
         </div>
@@ -173,13 +165,9 @@ export function ResumeAssistant({
             <h3 className="mt-2 text-lg font-bold text-slate-950">{currentQuestion.question}</h3>
           </div>
           <label className="mt-4 block flex-1">
-            <span className="mb-2 flex items-center justify-between gap-3 text-sm font-bold text-slate-700">
-              Your answer
-              <VoiceInputButton compact onTranscript={(text) => setInput((current) => joinText(current, text))} />
-            </span>
+            <span className="mb-2 block text-sm font-bold text-slate-700">Your answer</span>
             <textarea value={input} onChange={(event) => setInput(event.target.value)} rows={8} className="w-full rounded-lg border border-slate-200 px-3 py-3 text-sm leading-6 outline-none focus:border-teal-400" />
           </label>
-          <div className="mt-3"><VoiceRecorder compact /></div>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <button onClick={() => setStep((current) => Math.max(0, current - 1))} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-lg border border-slate-200 text-sm font-bold text-slate-600"><ChevronLeft size={16} />Back</button>
             <button onClick={() => { setInput(""); setStep((current) => Math.min(questions.length - 1, current + 1)); }} className="min-h-11 rounded-lg border border-slate-200 text-sm font-bold text-slate-600">Skip</button>
@@ -200,8 +188,4 @@ export function ResumeAssistant({
 
 function splitList(value = "") {
   return value.split(/,|\n/).map((item) => item.trim()).filter(Boolean);
-}
-
-function joinText(current: string, next: string) {
-  return [current, next].filter(Boolean).join(current ? " " : "");
 }

@@ -71,6 +71,12 @@ export type ResumeData = {
     email: string;
     phone: string;
   }[];
+  customSections: {
+    id: string;
+    title: string;
+    description: string;
+    bullets: string[];
+  }[];
 };
 
 export type ResumeSection =

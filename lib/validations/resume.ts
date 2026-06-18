@@ -71,6 +71,12 @@ export const resumeDataSchema = z.object({
     email: z.string().max(200),
     phone: z.string().max(50),
   })).max(20),
+  customSections: z.array(z.object({
+    id: z.string(),
+    title: z.string().max(160),
+    description: z.string().max(3000),
+    bullets: z.array(z.string().max(1000)).max(30),
+  })).max(20),
 });
 
 export const createResumeSchema = z.object({
