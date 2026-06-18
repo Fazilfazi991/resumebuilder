@@ -3,9 +3,11 @@
 import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
 import { TemplatePreviewModal } from "@/components/app/TemplatePreviewModal";
+import { AtsScorePanel, toneFor } from "@/components/builder/AtsScorePanel";
 import { ResumeAssistant } from "@/components/builder/ResumeAssistant";
 import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
+import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { defaultResumeData, defaultSectionOrder } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import type { ResumeData, ResumeSection } from "@/types/resume";
@@ -34,12 +36,13 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  Target,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
-type Tab = "edit" | "preview" | "templates" | "assistant";
+type Tab = "edit" | "preview" | "templates" | "assistant" | "ats";
 
 const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] = [
   { id: "personal", label: "Personal Details", icon: UserRound },
@@ -71,6 +74,8 @@ export function BuilderClient() {
   const pdfRef = useRef<HTMLDivElement>(null);
   const [sectionOrder, setSectionOrder] = useState<ResumeSection[]>(defaultSectionOrder as ResumeSection[]);
   const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
+  const atsScore = useMemo(() => calculateAtsScore(data), [data]);
+  const atsTone = toneFor(atsScore.percentage);
 
   const setPersonal = (field: keyof ResumeData["personal"], value: string) => {
     setData((current) => ({ ...current, personal: { ...current.personal, [field]: value } }));
@@ -124,6 +129,11 @@ export function BuilderClient() {
       return next;
     });
     setDraggedSection(null);
+  };
+
+  const openEditorSection = (section: ResumeSection) => {
+    setActiveSection(section);
+    setMobileTab("edit");
   };
 
   const downloadPdf = async () => {
@@ -203,6 +213,10 @@ export function BuilderClient() {
             />
           </div>
           <span className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-emerald-50 px-2 text-xs font-bold text-emerald-700 sm:px-3 sm:text-sm"><Save size={15} />Saved</span>
+          <button onClick={() => setMobileTab("ats")} className={`hidden h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-bold sm:inline-flex sm:px-3 sm:text-sm ${atsTone.badge}`} aria-label="Open ATS score">
+            <Target size={15} aria-hidden="true" />
+            ATS Score: {atsScore.percentage}%
+          </button>
           <button className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 lg:hidden" aria-label="More builder actions"><MoreHorizontal size={20} /></button>
           <div className="hidden flex-wrap items-center gap-2 lg:flex">
             <select
@@ -217,17 +231,18 @@ export function BuilderClient() {
             </select>
             <AppButton variant="secondary" onClick={() => setIsTemplatePreviewOpen(true)}><Eye size={16} aria-hidden="true" /> Template Preview</AppButton>
             <AppButton variant="secondary" onClick={() => setIsAssistantOpen(true)}><Bot size={16} aria-hidden="true" /> Assistant</AppButton>
+            <AppButton variant="secondary" onClick={() => setMobileTab("ats")}><Target size={16} aria-hidden="true" /> ATS Score</AppButton>
             <AppButton onClick={downloadPdf} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
           </div>
         </div>
-        <div className="grid grid-cols-4 border-t border-slate-200 bg-white lg:hidden">
-          {(["edit", "preview", "templates", "assistant"] as Tab[]).map((tab) => (
+        <div className="grid grid-cols-5 border-t border-slate-200 bg-white lg:hidden">
+          {(["edit", "preview", "templates", "assistant", "ats"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setMobileTab(tab)}
               className={`relative min-h-12 py-3 text-xs font-bold capitalize sm:text-sm ${mobileTab === tab ? "text-teal-700 after:absolute after:inset-x-5 after:bottom-0 after:h-0.5 after:bg-teal-700" : "text-slate-500"}`}
             >
-              {tab}
+              {tab === "ats" ? "ATS Score" : tab}
             </button>
           ))}
         </div>
@@ -276,7 +291,7 @@ export function BuilderClient() {
           </nav>
         </aside>
 
-        <section className={`${mobileTab === "edit" ? "block" : "hidden"} overflow-y-auto px-3 py-4 lg:block lg:p-6`}>
+        <section className={`${mobileTab === "edit" ? "block" : "hidden"} overflow-y-auto px-3 py-4 ${mobileTab === "ats" ? "lg:hidden" : "lg:block"} lg:p-6`}>
           <div className="mx-auto max-w-3xl">
             <div className="-mx-3 mb-4 overflow-x-auto border-b border-slate-200 bg-white px-3 pb-3 lg:hidden">
               <div className="flex w-max gap-2">{orderedSections.map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
@@ -285,7 +300,13 @@ export function BuilderClient() {
           </div>
         </section>
 
-        <aside className={`${mobileTab === "preview" ? "block" : "hidden"} min-w-0 border-l border-slate-200 bg-slate-200/70 p-3 lg:block lg:p-6`}>
+        <section className={`${mobileTab === "ats" ? "block" : "hidden"} overflow-y-auto px-3 py-4 lg:p-6`}>
+          <div className="mx-auto max-w-3xl">
+            <AtsScorePanel data={data} onFixSection={openEditorSection} />
+          </div>
+        </section>
+
+        <aside className={`${mobileTab === "preview" ? "block" : "hidden"} min-w-0 border-l border-slate-200 bg-slate-200/70 p-3 ${mobileTab === "ats" ? "lg:hidden" : "lg:block"} lg:p-6`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-slate-950">Live resume preview</p>

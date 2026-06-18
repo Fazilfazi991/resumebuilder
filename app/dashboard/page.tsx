@@ -2,11 +2,14 @@ import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
 import { AppHeader } from "@/components/app/AppHeader";
 import { StatCard } from "@/components/app/StatCard";
-import { mockResumes } from "@/lib/resume/mock-data";
+import { calculateAtsScore } from "@/lib/ats/score-resume";
+import { defaultResumeData, mockResumes } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import { Copy, Download, FileText, LayoutTemplate, Pencil, Plus, Trash2, TrendingUp } from "lucide-react";
 
 export default function DashboardPage() {
+  const atsScore = calculateAtsScore(defaultResumeData);
+
   return (
     <>
       <AppHeader />
@@ -46,6 +49,10 @@ export default function DashboardPage() {
                       <h3 className="mt-4 font-bold text-slate-950">{resume.title}</h3>
                       <p className="mt-1 text-sm text-slate-500">{resume.templateName}</p>
                       <p className="mt-1 text-xs font-semibold text-slate-400">Last edited {resume.lastEdited}</p>
+                      <div className="mt-3 flex items-center justify-between rounded-lg bg-teal-50 px-3 py-2">
+                        <span className="text-xs font-bold text-teal-700">ATS Score</span>
+                        <span className="text-sm font-bold text-slate-950">{atsScore.percentage}%</span>
+                      </div>
                       <div className="mt-4 grid grid-cols-2 gap-2">
                         <AppButton href={`/builder/${resume.id}`}><Pencil size={15} aria-hidden="true" /> Edit</AppButton>
                         <AppButton variant="secondary"><Copy size={15} aria-hidden="true" /> Duplicate</AppButton>
