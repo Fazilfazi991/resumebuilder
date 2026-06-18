@@ -21,8 +21,8 @@ export function A4Preview({
   const previewData = data === defaultResumeData && template.supportsPhoto ? { ...data, personal: { ...data.personal, photoUrl: mockPhotoUrl } } : data;
 
   return (
-    <div className={`relative max-w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100 ${scale === "builder" ? "min-h-[510px] p-3 min-[430px]:min-h-[560px] sm:min-h-[780px] sm:p-5" : "h-[330px]"}`}>
-      <div className={`absolute left-1/2 h-[1123px] w-[794px] origin-top -translate-x-1/2 overflow-hidden bg-white shadow-xl ${scale === "builder" ? "top-4" : "top-3"} ${previewScale}`}>
+    <div className={`relative max-w-full overflow-auto rounded-lg border border-slate-200 bg-slate-100 ${scale === "builder" ? "max-h-[820px] min-h-[510px] p-3 min-[430px]:min-h-[560px] sm:min-h-[780px] sm:p-5" : "h-[330px] p-3"}`}>
+      <div className={`mx-auto min-h-[1123px] w-[794px] origin-top bg-white shadow-xl ${previewScale}`}>
         <ResumeRenderer data={previewData} sectionOrder={sectionOrder} templateId={templateId} isWatermarked={false} />
       </div>
     </div>

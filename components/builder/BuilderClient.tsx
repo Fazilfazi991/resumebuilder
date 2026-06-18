@@ -139,12 +139,15 @@ export function BuilderClient() {
         import("html-to-image"),
         import("jspdf"),
       ]);
+      const captureWidth = 794;
+      const pagePixelHeight = 1123;
+      const captureHeight = Math.max(pagePixelHeight, pdfRef.current.scrollHeight);
       const imageData = await toPng(pdfRef.current, {
         backgroundColor: "#ffffff",
         cacheBust: true,
         pixelRatio: 2,
-        width: 794,
-        height: 1123,
+        width: captureWidth,
+        height: captureHeight,
         style: {
           margin: "0",
           transform: "none",
@@ -156,7 +159,17 @@ export function BuilderClient() {
         format: "a4",
         compress: true,
       });
-      pdf.addImage(imageData, "PNG", 0, 0, 595.28, 841.89, undefined, "FAST");
+      const pdfWidth = 595.28;
+      const pdfHeight = 841.89;
+      const imageHeight = (captureHeight * pdfWidth) / captureWidth;
+      const pageCount = Math.ceil(imageHeight / pdfHeight);
+
+      for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+        if (pageIndex > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imageData, "PNG", 0, -pageIndex * pdfHeight, pdfWidth, imageHeight, undefined, "FAST");
+      }
       const pdfBlob = pdf.output("blob");
       const downloadUrl = URL.createObjectURL(pdfBlob);
       const anchor = document.createElement("a");
@@ -287,7 +300,7 @@ export function BuilderClient() {
             <A4Preview data={data} sectionOrder={sectionOrder} templateId={templateId} scale="builder" />
           </div>
           {data.experience.length + data.projects.length + data.education.length > 6 ? (
-            <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">Content may overflow one page. Consider a compact template or shorter bullets.</p>
+            <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm font-semibold text-teal-800">Long resumes export across multiple PDF pages automatically.</p>
           ) : null}
           {downloadError ? (
             <p className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{downloadError}</p>
@@ -307,8 +320,8 @@ export function BuilderClient() {
         <button onClick={() => setMobileTab("templates")} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold ${mobileTab === "templates" ? "text-teal-700" : "text-slate-500"}`}><LayoutTemplate size={19} />Templates</button>
         <button onClick={downloadPdf} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-teal-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
       </nav>
-      <div className="pointer-events-none fixed -left-[10000px] top-0 h-[1123px] w-[794px] overflow-hidden bg-white" aria-hidden="true">
-        <div ref={pdfRef} className="h-[1123px] w-[794px] bg-white">
+      <div className="pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white" aria-hidden="true">
+        <div ref={pdfRef} className="min-h-[1123px] w-[794px] bg-white">
           <ResumeRenderer data={data} sectionOrder={sectionOrder} templateId={templateId} isWatermarked={false} />
         </div>
       </div>
