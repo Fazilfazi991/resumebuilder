@@ -77,6 +77,9 @@ const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] =
   { id: "references", label: "Interests", icon: BookOpen },
 ];
 
+const sampleTextValues = new Set<string>();
+collectSampleText(defaultResumeData, sampleTextValues);
+
 export function BuilderClient({
   resumeId,
   initialTitle = "Product Manager Resume",
@@ -452,7 +455,7 @@ export function BuilderClient({
             <div className="-mx-3 mb-4 overflow-x-auto border-b border-slate-200 bg-white px-3 pb-3 lg:hidden">
               <div className="flex w-max gap-2">{orderedSections.map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
             </div>
-            <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} onAuthRequired={() => setIsAuthModalOpen(true)} />
+            <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} />
           </div>
         </section>
 
@@ -570,7 +573,6 @@ function EditorPanel({
   sectionOrder,
   setSectionOrder,
   isGuest,
-  onAuthRequired,
 }: {
   activeSection: ResumeSection;
   data: ResumeData;
@@ -579,7 +581,6 @@ function EditorPanel({
   sectionOrder: ResumeSection[];
   setSectionOrder: React.Dispatch<React.SetStateAction<ResumeSection[]>>;
   isGuest: boolean;
-  onAuthRequired: () => void;
 }) {
   if (activeSection === "personal") {
     return (
@@ -587,8 +588,7 @@ function EditorPanel({
         <ResumePhotoUpload
           value={data.personal.photoUrl}
           onChange={(value) => setPersonal("photoUrl", value)}
-          disabledReason={isGuest ? "Create a free account to upload and save photos." : undefined}
-          onAuthRequired={onAuthRequired}
+          enableCloudUpload={!isGuest}
         />
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Full Name" value={data.personal.fullName} onChange={(next) => setPersonal("fullName", next)} />
@@ -935,15 +935,24 @@ function EditorCard({ children, onRemove, title }: { children: React.ReactNode; 
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const isSample = isSampleText(value);
   return (
     <label className="block">
       <span className="text-sm font-bold text-slate-700">{label}</span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-blue-600" />
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={(event) => {
+          if (isSample) event.currentTarget.select();
+        }}
+        className={`mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-600 focus:text-slate-950 focus:blur-none ${isSample ? "text-slate-400 blur-[0.6px]" : "text-slate-950"}`}
+      />
     </label>
   );
 }
 
 function PortfolioField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const isSample = isSampleText(value);
   return (
     <label className="block">
       <span className="block text-sm font-bold text-slate-700">
@@ -960,16 +969,32 @@ function PortfolioField({ value, onChange }: { value: string; onChange: (value: 
           <LinkIcon size={13} className="shrink-0" aria-hidden="true" />
         </a>
       </span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-blue-600" />
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={(event) => {
+          if (isSample) event.currentTarget.select();
+        }}
+        className={`mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-600 focus:text-slate-950 focus:blur-none ${isSample ? "text-slate-400 blur-[0.6px]" : "text-slate-950"}`}
+      />
     </label>
   );
 }
 
 function TextArea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const isSample = isSampleText(value);
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-bold text-slate-700">{label}</span>
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none focus:border-blue-600" />
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={(event) => {
+          if (isSample) event.currentTarget.select();
+        }}
+        rows={5}
+        className={`mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none transition focus:border-blue-600 focus:text-slate-950 focus:blur-none ${isSample ? "text-slate-400 blur-[0.6px]" : "text-slate-950"}`}
+      />
     </label>
   );
 }
@@ -987,7 +1012,10 @@ function BulletEditor({ bullets, onChange }: { bullets: string[]; onChange: (bul
             <input
               value={bullet}
               onChange={(event) => onChange(bullets.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)))}
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-blue-600"
+              onFocus={(event) => {
+                if (isSampleText(bullet)) event.currentTarget.select();
+              }}
+              className={`h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-600 focus:text-slate-950 focus:blur-none ${isSampleText(bullet) ? "text-slate-400 blur-[0.6px]" : "text-slate-950"}`}
               placeholder="Achievement-focused bullet"
             />
           </div>
@@ -1003,6 +1031,27 @@ function labelize(value: string) {
 
 function uid(prefix: string) {
   return `${prefix.toLowerCase()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function isSampleText(value: string) {
+  return value.trim().length > 0 && sampleTextValues.has(value.trim());
+}
+
+function collectSampleText(value: unknown, target: Set<string>) {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed) target.add(trimmed);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectSampleText(item, target));
+    return;
+  }
+
+  if (value && typeof value === "object") {
+    Object.values(value).forEach((item) => collectSampleText(item, target));
+  }
 }
 
 function slugify(value: string) {

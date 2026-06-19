@@ -13,9 +13,10 @@ type ResumePhotoUploadProps = {
   onChange: (url: string) => void;
   disabledReason?: string;
   onAuthRequired?: () => void;
+  enableCloudUpload?: boolean;
 };
 
-export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequired }: ResumePhotoUploadProps) {
+export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequired, enableCloudUpload = true }: ResumePhotoUploadProps) {
   const params = useParams<{ resumeId?: string }>();
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
@@ -50,6 +51,12 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
     try {
       const localUrl = await readAsDataUrl(file);
       onChange(localUrl);
+
+      if (!enableCloudUpload) {
+        setStatus("Photo added to preview.");
+        return;
+      }
+
       setStatus("Photo preview added. Uploading to cloud storage...");
 
       const supabase = createClient();

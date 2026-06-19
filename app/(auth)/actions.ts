@@ -14,6 +14,14 @@ function errorRedirect(path: string, message: string): never {
 
 const authUnavailableMessage = "Account access is temporarily unavailable. Please try again later.";
 
+function friendlyAuthError(message: string) {
+  if (/sending confirmation email|email/i.test(message) && /confirmation|confirm|smtp|mail/i.test(message)) {
+    return "Confirmation email could not be sent right now. You can continue as a guest, or try signup again after email delivery is configured.";
+  }
+
+  return message;
+}
+
 export async function login(formData: FormData) {
   if (!isSupabaseConfigured()) {
     errorRedirect("/login", authUnavailableMessage);
@@ -72,7 +80,7 @@ export async function signup(formData: FormData) {
   });
 
   if (error) {
-    errorRedirect("/signup", error.message);
+    errorRedirect("/signup", friendlyAuthError(error.message));
   }
 
   if (data.user) {
@@ -107,7 +115,7 @@ export async function forgotPassword(formData: FormData) {
   });
 
   if (error) {
-    errorRedirect("/forgot-password", error.message);
+    errorRedirect("/forgot-password", friendlyAuthError(error.message));
   }
 
   redirect("/forgot-password?message=Password reset link sent. Check your email.");
@@ -133,7 +141,7 @@ export async function resendConfirmation(formData: FormData) {
   });
 
   if (error) {
-    errorRedirect("/login", error.message);
+    errorRedirect("/login", friendlyAuthError(error.message));
   }
 
   redirect("/login?message=Confirmation email sent. Please check your inbox.");

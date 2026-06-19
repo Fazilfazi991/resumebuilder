@@ -18,6 +18,14 @@ export default async function SignupPage({
       error={params.error ?? (!authReady ? "Account creation is temporarily unavailable. Please try again later." : undefined)}
       footer={<>Already have an account? <Link href="/login" className="font-bold text-blue-700">Sign in</Link></>}
     >
+      {params.error ? (
+        <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-slate-700">
+          <p className="font-bold text-slate-950">No account needed to keep editing.</p>
+          <Link href="/builder/guest" className="mt-2 inline-flex min-h-10 items-center rounded-lg bg-blue-700 px-3 text-sm font-bold text-white">
+            Continue as guest
+          </Link>
+        </div>
+      ) : null}
       <form action={signup} className="space-y-4">
         <input type="hidden" name="next" value={params.next ?? params.redirect ?? "/dashboard"} />
         <AuthField label="Full name" name="fullName" autoComplete="name" />
