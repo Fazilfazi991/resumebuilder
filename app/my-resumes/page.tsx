@@ -1,10 +1,10 @@
-import { EmptyState } from "@/components/app/EmptyState";
 import { PortalShell } from "@/components/app/PortalShell";
 import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
+import { SubmitButton } from "@/components/app/SubmitButton";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { requireUser } from "@/lib/auth/require-user";
-import { deleteResume, duplicateResume, getUserResumes } from "@/lib/resume/server";
+import { createResumeAndRedirect, deleteResume, duplicateResume, getUserResumes } from "@/lib/resume/server";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import { Copy, FileText, Grid2X2, List, Pencil, Search, Trash2 } from "lucide-react";
 
@@ -53,10 +53,10 @@ export default async function MyResumesPage() {
                     <div className="mt-4 grid grid-cols-2 gap-2">
                       <AppButton href={`/builder/${resume.id}`}><Pencil size={15} aria-hidden="true" /> Edit</AppButton>
                       <form action={async () => { "use server"; await duplicateResume(resume.id); }}>
-                        <AppButton type="submit" variant="secondary"><Copy size={15} aria-hidden="true" /> Duplicate</AppButton>
+                        <SubmitButton variant="secondary" pendingText="Duplicating..."><Copy size={15} aria-hidden="true" /> Duplicate</SubmitButton>
                       </form>
                       <form action={async () => { "use server"; await deleteResume(resume.id); }}>
-                        <AppButton type="submit" variant="danger"><Trash2 size={15} aria-hidden="true" /> Delete</AppButton>
+                        <SubmitButton variant="danger" pendingText="Deleting..."><Trash2 size={15} aria-hidden="true" /> Delete</SubmitButton>
                       </form>
                     </div>
                   </article>
@@ -64,7 +64,16 @@ export default async function MyResumesPage() {
               })}
             </div>
           ) : (
-            <EmptyState icon={FileText} title="Create your first resume" description="Start with a polished template and manage all versions here." actionLabel="Create Resume" actionHref="/builder/new" />
+            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+                <FileText size={22} aria-hidden="true" />
+              </div>
+              <h3 className="mt-5 text-lg font-bold text-slate-950">Create your first resume</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">Start with a polished template and manage all versions here.</p>
+              <form action={createResumeAndRedirect} className="mt-5">
+                <SubmitButton pendingText="Creating resume...">Create Resume</SubmitButton>
+              </form>
+            </div>
           )}
         </div>
       </section>

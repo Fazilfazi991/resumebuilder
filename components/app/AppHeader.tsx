@@ -6,7 +6,6 @@ const links = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "My Resumes", href: "/my-resumes" },
   { label: "Templates", href: "/templates" },
-  { label: "Builder", href: "/builder/new" },
   { label: "Billing", href: "/billing" },
   { label: "Settings", href: "/settings" },
   { label: "Account", href: "/account" },

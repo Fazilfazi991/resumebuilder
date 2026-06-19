@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SubmitButton } from "@/components/app/SubmitButton";
 import { AuthCard, AuthField } from "@/components/auth/AuthCard";
 import { login, resendConfirmation } from "../actions";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -27,7 +28,7 @@ export default async function LoginPage({
         <div className="text-right">
           <Link href="/forgot-password" className="text-sm font-bold text-blue-700">Forgot password?</Link>
         </div>
-        <button disabled={!authReady} className="h-11 w-full rounded-lg bg-blue-700 text-sm font-bold text-white shadow-sm transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60">Sign In</button>
+        <SubmitButton disabled={!authReady} className="w-full" pendingText="Signing in...">Sign In</SubmitButton>
         <button type="button" disabled className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 text-sm font-bold text-slate-400">Google login coming soon</button>
       </form>
       {showResend || params.message ? (
@@ -35,7 +36,7 @@ export default async function LoginPage({
           <p className="text-sm font-bold text-slate-950">Need a new confirmation email?</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
             <input name="email" type="email" required placeholder="Email address" className="h-11 rounded-lg border border-blue-200 bg-white px-3 text-sm outline-none focus:border-blue-600" />
-            <button disabled={!authReady} className="min-h-11 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white disabled:opacity-60">Resend</button>
+            <SubmitButton disabled={!authReady} pendingText="Sending...">Resend</SubmitButton>
           </div>
         </form>
       ) : null}

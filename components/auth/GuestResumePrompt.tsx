@@ -54,7 +54,7 @@ export function GuestResumePrompt() {
         <h2 className="text-xl font-bold text-slate-950">You are all set</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">Your account is ready. Create a new resume or open your dashboard.</p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <AppButton href="/builder/new">Create Resume</AppButton>
+          <AppButton href="/dashboard">Create Resume</AppButton>
           <AppButton href="/dashboard" variant="secondary">Go to Dashboard</AppButton>
         </div>
       </section>

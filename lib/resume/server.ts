@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { defaultSectionOrder, emptyResumeData } from "./mock-data";
 import { createResumeSchema, updateResumeSchema } from "@/lib/validations/resume";
@@ -65,6 +66,16 @@ export async function createResume(input?: Partial<ResumeInput>) {
   revalidatePath("/dashboard");
   revalidatePath("/my-resumes");
   return data;
+}
+
+export async function createResumeAndRedirect(formData: FormData) {
+  const templateId = String(formData.get("templateId") ?? "modern-minimal");
+  const resume = await createResume({
+    title: "Untitled Resume",
+    templateId,
+  });
+
+  redirect(`/builder/${resume.id}`);
 }
 
 export async function getUserResumes() {

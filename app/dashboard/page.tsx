@@ -2,9 +2,10 @@ import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
 import { AppHeader } from "@/components/app/AppHeader";
 import { StatCard } from "@/components/app/StatCard";
+import { SubmitButton } from "@/components/app/SubmitButton";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { requireUser } from "@/lib/auth/require-user";
-import { deleteResume, duplicateResume, getUserResumes } from "@/lib/resume/server";
+import { createResumeAndRedirect, deleteResume, duplicateResume, getUserResumes } from "@/lib/resume/server";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import { Copy, Download, FileText, LayoutTemplate, Pencil, Plus, Trash2, TrendingUp } from "lucide-react";
 
@@ -26,7 +27,9 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <AppButton href="/cover-letter"><FileText size={18} aria-hidden="true" /> Create Cover Letter</AppButton>
-              <AppButton href="/builder/new"><Plus size={18} aria-hidden="true" /> Create New Resume</AppButton>
+              <form action={createResumeAndRedirect}>
+                <SubmitButton pendingText="Creating resume..."><Plus size={18} aria-hidden="true" /> Create New Resume</SubmitButton>
+              </form>
             </div>
           </div>
 
@@ -65,11 +68,11 @@ export default async function DashboardPage() {
                         <div className="mt-4 grid grid-cols-2 gap-2">
                           <AppButton href={`/builder/${resume.id}`}><Pencil size={15} aria-hidden="true" /> Edit</AppButton>
                           <form action={async () => { "use server"; await duplicateResume(resume.id); }}>
-                            <AppButton type="submit" variant="secondary"><Copy size={15} aria-hidden="true" /> Duplicate</AppButton>
+                            <SubmitButton variant="secondary" pendingText="Duplicating..."><Copy size={15} aria-hidden="true" /> Duplicate</SubmitButton>
                           </form>
                           <AppButton href={`/builder/${resume.id}`} variant="secondary"><Download size={15} aria-hidden="true" /> Download</AppButton>
                           <form action={async () => { "use server"; await deleteResume(resume.id); }}>
-                            <AppButton type="submit" variant="danger"><Trash2 size={15} aria-hidden="true" /> Delete</AppButton>
+                            <SubmitButton variant="danger" pendingText="Deleting..."><Trash2 size={15} aria-hidden="true" /> Delete</SubmitButton>
                           </form>
                         </div>
                       </article>
@@ -80,7 +83,9 @@ export default async function DashboardPage() {
                 <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
                   <h3 className="text-lg font-bold text-slate-950">Create your first resume</h3>
                   <p className="mt-2 text-sm text-slate-600">Start with a polished template and your drafts will appear here.</p>
-                  <div className="mt-5"><AppButton href="/builder/new">Create New Resume</AppButton></div>
+                  <form action={createResumeAndRedirect} className="mt-5">
+                    <SubmitButton pendingText="Creating resume...">Create New Resume</SubmitButton>
+                  </form>
                 </div>
               )}
             </section>
@@ -96,10 +101,13 @@ export default async function DashboardPage() {
                 <h2 className="font-bold text-slate-950">Recommended templates</h2>
                 <div className="mt-4 space-y-3">
                   {resumeTemplates.slice(0, 3).map((template) => (
-                    <a key={template.id} href={`/builder/new?template=${template.id}`} className="block rounded-lg border border-slate-200 p-3 transition hover:border-blue-200 hover:bg-blue-50">
-                      <p className="font-bold text-slate-900">{template.name}</p>
-                      <p className="mt-1 text-xs text-slate-500">{template.category}</p>
-                    </a>
+                    <form key={template.id} action={createResumeAndRedirect}>
+                      <input type="hidden" name="templateId" value={template.id} />
+                      <button type="submit" className="block w-full rounded-lg border border-slate-200 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50">
+                        <p className="font-bold text-slate-900">{template.name}</p>
+                        <p className="mt-1 text-xs text-slate-500">{template.category}</p>
+                      </button>
+                    </form>
                   ))}
                 </div>
               </section>
