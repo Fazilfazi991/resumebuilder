@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import type { TemplateDefinition } from "@/types/template";
 import { A4Preview } from "./A4Preview";
 import { AppButton } from "./AppButton";
+import { GuestTemplateAction } from "./GuestTemplateAction";
 import { SectionBadge } from "./SectionBadge";
 import { SubmitButton } from "./SubmitButton";
 import { sampleTemplateData, sampleTemplateSectionOrder } from "@/lib/resume/sample-template-data";
@@ -53,9 +54,9 @@ export function TemplatePreviewModal({ template, onClose, createAction }: { temp
                 <SubmitButton className="w-full" pendingText="Creating...">Use Template</SubmitButton>
               </form>
             ) : (
-              <AppButton href={`/builder/guest?template=${template.id}`}>Use Template</AppButton>
+              <GuestTemplateAction templateId={template.id}>Use Template</GuestTemplateAction>
             )}
-            <AppButton href={`/builder/guest?template=${template.id}`} variant="secondary">Open in Builder</AppButton>
+            <GuestTemplateAction templateId={template.id} variant="secondary">Open in Builder</GuestTemplateAction>
           </div>
         </aside>
         <div className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-2 border-t border-slate-200 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
@@ -65,9 +66,9 @@ export function TemplatePreviewModal({ template, onClose, createAction }: { temp
               <SubmitButton className="w-full" pendingText="Creating...">Use Template</SubmitButton>
             </form>
           ) : (
-            <AppButton href={`/builder/guest?template=${template.id}`}>Use Template</AppButton>
+            <GuestTemplateAction templateId={template.id}>Use Template</GuestTemplateAction>
           )}
-          <AppButton href={`/builder/guest?template=${template.id}`} variant="secondary">Open in Builder</AppButton>
+          <GuestTemplateAction templateId={template.id} variant="secondary">Open in Builder</GuestTemplateAction>
         </div>
       </div>
     </div>

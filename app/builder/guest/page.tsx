@@ -1,4 +1,5 @@
 import { BuilderClient } from "@/components/builder/BuilderClient";
+import { BuilderErrorBoundary } from "@/components/builder/BuilderErrorBoundary";
 
 export default async function GuestBuilderPage({
   searchParams,
@@ -6,5 +7,9 @@ export default async function GuestBuilderPage({
   searchParams: Promise<{ template?: string }>;
 }) {
   const params = await searchParams;
-  return <BuilderClient initialTemplateId={params.template ?? "modern-minimal"} isGuest />;
+  return (
+    <BuilderErrorBoundary>
+      <BuilderClient initialTemplateId={params.template ?? "modern-minimal"} isGuest />
+    </BuilderErrorBoundary>
+  );
 }

@@ -1,6 +1,7 @@
 import { Eye, LockKeyhole, WandSparkles } from "lucide-react";
 import { A4Preview } from "./A4Preview";
 import { AppButton } from "./AppButton";
+import { GuestTemplateAction } from "./GuestTemplateAction";
 import { SubmitButton } from "./SubmitButton";
 import { sampleTemplateData, sampleTemplateSectionOrder } from "@/lib/resume/sample-template-data";
 
@@ -54,7 +55,7 @@ export function TemplateGalleryCard({ id, name, category, description, bestFor, 
             <SubmitButton className="w-full" pendingText="Creating...">{isReferralUnlocked ? "Use Unlocked" : "Use Template"}</SubmitButton>
           </form>
         ) : (
-          <AppButton href={`/builder/guest?template=${id}`}>{isReferralUnlocked ? "Use Unlocked" : "Use Template"}</AppButton>
+          <GuestTemplateAction templateId={id}>{isReferralUnlocked ? "Use Unlocked" : "Use Template"}</GuestTemplateAction>
         )}
         <AppButton variant="secondary" onClick={onPreview}><Eye size={16} aria-hidden="true" /> Preview</AppButton>
       </div>

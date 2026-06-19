@@ -10,6 +10,7 @@ import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
+import { createClient } from "@/lib/supabase/client";
 import type { ResumeData, ResumeSection } from "@/types/resume";
 import {
   ArrowLeft,
@@ -54,14 +55,19 @@ type SavePayload = {
   resumeData: ResumeData;
   sectionOrder: string[];
 };
+type LocalDraft = SavePayload & {
+  updatedAt: string;
+};
 type BuilderClientProps = {
   resumeId?: string;
   initialTitle?: string;
   initialTemplateId?: string;
   initialData?: ResumeData;
   initialSectionOrder?: string[];
+  initialUpdatedAt?: string;
   isGuest?: boolean;
   saveResume?: (payload: SavePayload) => Promise<void>;
+  saveTemplateId?: (templateId: string) => Promise<void>;
 };
 
 const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] = [
@@ -86,8 +92,10 @@ export function BuilderClient({
   initialTemplateId,
   initialData = emptyResumeData,
   initialSectionOrder = defaultSectionOrder,
+  initialUpdatedAt,
   isGuest = false,
   saveResume,
+  saveTemplateId,
 }: BuilderClientProps) {
   const searchParams = useSearchParams();
   const initialTemplate = initialTemplateId ?? searchParams.get("template") ?? "modern-minimal";
@@ -106,10 +114,13 @@ export function BuilderClient({
   const [downloadError, setDownloadError] = useState("");
   const [templateToast, setTemplateToast] = useState("");
   const [saveState, setSaveState] = useState<SaveState>(isGuest ? "guest" : "saved");
+  const [connectionMessage, setConnectionMessage] = useState("");
+  const [recoveryDraft, setRecoveryDraft] = useState<LocalDraft | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
   const hasMountedRef = useRef(false);
-  const guestHydratedRef = useRef(!isGuest);
+  const draftReadyRef = useRef(false);
+  const latestPayloadRef = useRef<SavePayload>({ title: initialTitle, templateId: initialTemplate, resumeData: initialData, sectionOrder: initialSectionOrder });
   const [sectionOrder, setSectionOrder] = useState<ResumeSection[]>(initialSectionOrder as ResumeSection[]);
   const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
   const atsScore = useMemo(() => calculateAtsScore(data), [data]);
@@ -119,29 +130,78 @@ export function BuilderClient({
   const zoomOut = () => setZoom((current) => current === 100 ? 75 : "fit");
   const zoomIn = () => setZoom((current) => current === "fit" ? 75 : 100);
 
+  const draftKey = `resumi_builder_draft_${isGuest ? "guest" : resumeId ?? "guest"}`;
+
+  const buildCurrentPayload = (nextTemplateId = templateId): SavePayload => ({
+    title: resumeTitle,
+    templateId: nextTemplateId,
+    resumeData: data,
+    sectionOrder,
+  });
+
+  const saveCurrentDraftImmediately = (nextTemplateId = templateId) => {
+    const payload = buildCurrentPayload(nextTemplateId);
+    latestPayloadRef.current = payload;
+
+    if (!draftReadyRef.current) {
+      return payload;
+    }
+
+    const draft: LocalDraft = { ...payload, updatedAt: new Date().toISOString() };
+    window.localStorage.setItem(draftKey, JSON.stringify(draft));
+    if (isGuest) {
+      window.localStorage.setItem("resumi_guest_resume", JSON.stringify(draft));
+    }
+
+    return payload;
+  };
+
+  const restoreDraft = (draft: LocalDraft) => {
+    latestPayloadRef.current = {
+      title: draft.title,
+      templateId: draft.templateId,
+      resumeData: draft.resumeData,
+      sectionOrder: draft.sectionOrder,
+    };
+    setResumeTitle(draft.title);
+    setTemplateId(draft.templateId);
+    setData(draft.resumeData);
+    setSectionOrder(draft.sectionOrder as ResumeSection[]);
+    setRecoveryDraft(null);
+    setConnectionMessage("Local draft restored.");
+  };
+
   useEffect(() => {
-    if (!isGuest) return;
-    const raw = window.localStorage.getItem("resumi_guest_resume");
+    const raw = window.localStorage.getItem(draftKey) ?? (isGuest ? window.localStorage.getItem("resumi_guest_resume") : null);
     if (raw) {
       try {
-        const guest = JSON.parse(raw) as Partial<SavePayload>;
-        if (guest.title) setResumeTitle(guest.title);
-        if (guest.templateId) setTemplateId(guest.templateId);
-        if (guest.resumeData) setData(guest.resumeData);
-        if (guest.sectionOrder) setSectionOrder(guest.sectionOrder as ResumeSection[]);
+        const draft = normalizeDraft(JSON.parse(raw) as Partial<LocalDraft>);
+        if (draft) {
+          if (isGuest) {
+            restoreDraft(draft);
+          } else if (!initialUpdatedAt || new Date(draft.updatedAt).getTime() > new Date(initialUpdatedAt).getTime()) {
+            setRecoveryDraft(draft);
+          }
+        }
       } catch {
-        window.localStorage.removeItem("resumi_guest_resume");
+        window.localStorage.removeItem(draftKey);
       }
     }
-    guestHydratedRef.current = true;
-  }, [isGuest]);
+    draftReadyRef.current = true;
+  }, [draftKey, initialUpdatedAt, isGuest]);
 
   useEffect(() => {
-    const payload: SavePayload = { title: resumeTitle, templateId, resumeData: data, sectionOrder };
+    const payload = buildCurrentPayload();
+    latestPayloadRef.current = payload;
+
+    if (!draftReadyRef.current) return;
+    const draft: LocalDraft = { ...payload, updatedAt: new Date().toISOString() };
+    window.localStorage.setItem(draftKey, JSON.stringify(draft));
+    if (isGuest) {
+      window.localStorage.setItem("resumi_guest_resume", JSON.stringify(draft));
+    }
 
     if (isGuest) {
-      if (!guestHydratedRef.current) return;
-      window.localStorage.setItem("resumi_guest_resume", JSON.stringify(payload));
       setSaveState("guest");
       return;
     }
@@ -157,14 +217,68 @@ export function BuilderClient({
       try {
         await saveResume(payload);
         setSaveState("saved");
+        setConnectionMessage("");
       } catch (error) {
         console.error(error);
         setSaveState("failed");
+        setConnectionMessage(navigator.onLine ? "Save failed. We'll retry when the builder is active again." : "Offline changes saved on this device.");
       }
     }, 850);
 
     return () => window.clearTimeout(timeout);
-  }, [data, isGuest, resumeTitle, saveResume, sectionOrder, templateId]);
+  }, [data, draftKey, isGuest, resumeTitle, saveResume, sectionOrder, templateId]);
+
+  const retrySave = async () => {
+    if (isGuest || !saveResume) return;
+    setSaveState("saving");
+    try {
+      await saveResume(latestPayloadRef.current);
+      setSaveState("saved");
+      setConnectionMessage("Cloud save restored.");
+    } catch (error) {
+      console.error(error);
+      setSaveState("failed");
+      setConnectionMessage(navigator.onLine ? "Save failed. We'll retry." : "Offline changes saved on this device.");
+    }
+  };
+
+  useEffect(() => {
+    const recoverActiveTab = async () => {
+      if (document.visibilityState === "hidden") return;
+      if (!isGuest) {
+        try {
+          await createClient().auth.getSession();
+        } catch (error) {
+          console.error(error);
+          setConnectionMessage("Connection issue. Your latest edits are saved on this device.");
+        }
+      }
+      if (saveState === "failed") {
+        void retrySave();
+      }
+    };
+    const offline = () => {
+      setConnectionMessage("Offline changes saved on this device.");
+      if (!isGuest) setSaveState("failed");
+    };
+    const online = () => {
+      setConnectionMessage("Back online. Retrying save.");
+      void retrySave();
+    };
+
+    document.addEventListener("visibilitychange", recoverActiveTab);
+    window.addEventListener("focus", recoverActiveTab);
+    window.addEventListener("pageshow", recoverActiveTab);
+    window.addEventListener("online", online);
+    window.addEventListener("offline", offline);
+    return () => {
+      document.removeEventListener("visibilitychange", recoverActiveTab);
+      window.removeEventListener("focus", recoverActiveTab);
+      window.removeEventListener("pageshow", recoverActiveTab);
+      window.removeEventListener("online", online);
+      window.removeEventListener("offline", offline);
+    };
+  }, [isGuest, saveState, saveResume]);
 
   useEffect(() => {
     if (searchParams.get("tab") === "assistant") {
@@ -232,11 +346,34 @@ export function BuilderClient({
     setMobileTab("edit");
   };
 
-  const applyTemplate = (template: typeof resumeTemplates[number]) => {
+  const applyTemplate = async (template: typeof resumeTemplates[number]) => {
+    const beforeResumeData = JSON.stringify(data);
+    saveCurrentDraftImmediately(template.id);
     setTemplateId(template.id);
     setIsTemplateSelectorOpen(false);
     setTemplateToast(`Template changed to ${template.name}.`);
     window.setTimeout(() => setTemplateToast(""), 2600);
+
+    if (!isGuest && saveTemplateId) {
+      setSaveState("saving");
+      try {
+        await saveTemplateId(template.id);
+        setSaveState("saved");
+        setConnectionMessage("");
+      } catch (error) {
+        console.error(error);
+        setSaveState("failed");
+        setConnectionMessage("Template changed locally. Cloud save will retry when possible.");
+      }
+    }
+
+    if (process.env.NODE_ENV === "development") {
+      window.setTimeout(() => {
+        if (beforeResumeData !== JSON.stringify(latestPayloadRef.current.resumeData)) {
+          console.warn("Template switch changed resume data unexpectedly");
+        }
+      }, 0);
+    }
   };
 
   const downloadPdf = async () => {
@@ -405,6 +542,29 @@ export function BuilderClient({
           ))}
         </div>
       </header>
+
+      {recoveryDraft ? (
+        <div className="border-b border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-950 lg:px-6">
+          <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-semibold">We found newer unsaved changes on this device.</p>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => restoreDraft(recoveryDraft)} className="min-h-10 rounded-lg bg-amber-600 px-3 text-sm font-bold text-white">Restore draft</button>
+              <button onClick={() => setRecoveryDraft(null)} className="min-h-10 rounded-lg border border-amber-200 bg-white px-3 text-sm font-bold text-amber-800">Keep cloud version</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {connectionMessage ? (
+        <div className="border-b border-blue-100 bg-blue-50 px-3 py-3 text-sm text-blue-950 lg:px-6">
+          <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-semibold">{connectionMessage}</p>
+            {!isGuest && saveState === "failed" ? (
+              <button onClick={retrySave} className="min-h-10 rounded-lg bg-blue-700 px-3 text-sm font-bold text-white">Retry save</button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="grid min-h-[calc(100vh-76px)] lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(520px,1fr)_340px]">
         <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block">
@@ -1054,6 +1214,20 @@ function labelize(value: string) {
 
 function isTab(value: string | null): value is Tab {
   return value === "edit" || value === "preview" || value === "templates" || value === "assistant" || value === "ats";
+}
+
+function normalizeDraft(value: Partial<LocalDraft>): LocalDraft | null {
+  if (!value.resumeData || !value.templateId || !value.sectionOrder) {
+    return null;
+  }
+
+  return {
+    title: value.title || "Untitled Resume",
+    templateId: value.templateId,
+    resumeData: value.resumeData,
+    sectionOrder: Array.isArray(value.sectionOrder) ? value.sectionOrder : defaultSectionOrder,
+    updatedAt: value.updatedAt || new Date().toISOString(),
+  };
 }
 
 function uid(prefix: string) {
