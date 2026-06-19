@@ -1,10 +1,15 @@
 export type PaymentCurrency = "aed" | "inr";
 
-export const currencyStorageKey = "resumecraft_currency";
+export const currencyStorageKey = "resumi_currency";
 
 export const currencyLabels: Record<PaymentCurrency, string> = {
   aed: "AED",
   inr: "INR",
+};
+
+const currencySymbols: Record<PaymentCurrency, string> = {
+  aed: "د.إ",
+  inr: "₹",
 };
 
 export function getPaymentCurrency(value: string | null | undefined): PaymentCurrency {
@@ -13,5 +18,6 @@ export function getPaymentCurrency(value: string | null | undefined): PaymentCur
 
 export function formatPlanPrice(amount: number, currency: PaymentCurrency) {
   const majorAmount = amount / 100;
-  return `${currencyLabels[currency]} ${majorAmount.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  const formattedAmount = majorAmount.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return currency === "inr" ? `${currencySymbols[currency]}${formattedAmount}` : `${currencySymbols[currency]} ${formattedAmount}`;
 }

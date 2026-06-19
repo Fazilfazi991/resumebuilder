@@ -26,8 +26,8 @@ export function CheckoutButton({ planId, children = "Upgrade", variant = "primar
       setCurrency(nextCurrency);
     };
 
-    window.addEventListener("resumecraft:currency-change", syncCurrency);
-    return () => window.removeEventListener("resumecraft:currency-change", syncCurrency);
+    window.addEventListener("resumi:currency-change", syncCurrency);
+    return () => window.removeEventListener("resumi:currency-change", syncCurrency);
   }, []);
 
   const startCheckout = async () => {

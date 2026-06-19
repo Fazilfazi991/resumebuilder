@@ -18,7 +18,7 @@ export default async function LoginPage({
       description="Sign in to manage resumes, templates, and downloads."
       error={params.error ?? (!authReady ? "Account access is temporarily unavailable. Please try again later." : undefined)}
       message={params.message}
-      footer={<>New to ResumeCraft? <Link href="/signup" className="font-bold text-blue-700">Create an account</Link></>}
+      footer={<>New to Resumi? <Link href="/signup" className="font-bold text-blue-700">Create an account</Link></>}
     >
       <form action={login} className="space-y-4">
         <input type="hidden" name="next" value={params.next ?? params.redirect ?? "/dashboard"} />

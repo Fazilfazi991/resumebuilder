@@ -4,8 +4,8 @@ import { AppButton } from "@/components/app/AppButton";
 import { Gift, Link2, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-const referralCountKey = "resumecraft_referral_count";
-const unlockedTemplateKey = "resumecraft_unlocked_template";
+const referralCountKey = "resumi_referral_count";
+const unlockedTemplateKey = "resumi_unlocked_template";
 const unlockedTemplateId = "creative-portfolio";
 
 export function ReferralUnlockCard() {
@@ -19,7 +19,7 @@ export function ReferralUnlockCard() {
   }, []);
 
   const referralCode = "SOPHIA92";
-  const referralLink = useMemo(() => `${origin || "https://resumecraft.app"}?ref=${referralCode}`, [origin]);
+  const referralLink = useMemo(() => `${origin || "https://resumi.live"}?ref=${referralCode}`, [origin]);
   const isUnlocked = referrals >= 1;
 
   const copyLink = async () => {

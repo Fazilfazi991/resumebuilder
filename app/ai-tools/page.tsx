@@ -23,7 +23,7 @@ export default function AIToolsPage() {
       <PublicPageHeader
         eyebrow="AI Tools"
         title="Write better resumes with AI-powered guidance"
-        description="ResumeCraft's AI layer will help you write sharper summaries, stronger bullets, and more targeted applications."
+        description="Resumi's AI layer will help you write sharper summaries, stronger bullets, and more targeted applications."
         actions={<AppButton href="/builder/guest">Try in Builder</AppButton>}
       />
       <main className="bg-slate-50">

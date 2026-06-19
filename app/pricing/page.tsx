@@ -9,9 +9,9 @@ import { PlanPrice } from "@/components/payments/PlanPrice";
 import { Check } from "lucide-react";
 
 const plans = [
-  { name: "Free", price: "$0", features: ["Create resumes", "Basic templates", "Preview resume", "Watermarked downloads"], href: "/builder/guest" },
-  { name: "Premium", price: "AED 19 / INR 399", features: ["Premium templates", "No watermark", "PDF download", "AI writing tools", "Cover letters"], featured: true, planId: "premium" as const },
-  { name: "Lifetime", price: "AED 49 / INR 999", features: ["Unlimited resumes", "All templates", "Lifetime access", "Priority templates"], planId: "lifetime" as const },
+  { name: "Free", price: "0", features: ["Create resumes", "Basic templates", "Preview resume", "Watermarked downloads"], href: "/builder/guest" },
+  { name: "Premium", price: "د.إ 19 / ₹399", features: ["Premium templates", "No watermark", "PDF download", "AI writing tools", "Cover letters"], featured: true, planId: "premium" as const },
+  { name: "Lifetime", price: "د.إ 49 / ₹999", features: ["Unlimited resumes", "All templates", "Lifetime access", "Priority templates"], planId: "lifetime" as const },
   { name: "Career Pro", price: "Coming soon", features: ["Job tracker", "AI matching", "Interview prep", "LinkedIn tools"], disabled: true },
 ];
 

@@ -5,7 +5,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { LockKeyhole, ScanSearch, ShieldCheck, UsersRound } from "lucide-react";
 
 const sections = [
-  ["Why we built ResumeCraft", "ResumeCraft exists to make professional resume creation less confusing for students, freshers, UAE job seekers, and experienced professionals."],
+  ["Why we built Resumi", "Resumi exists to make professional resume creation less confusing for students, freshers, UAE job seekers, and experienced professionals."],
   ["Built for job seekers, students, and professionals", "The product is designed for real application workflows: multiple resumes, reusable profile data, and templates for different roles."],
   ["ATS-friendly by design", "Templates are built as clean HTML/CSS components so text stays readable, selectable, and ready for future PDF export."],
   ["Privacy-first promise", "Resume data should stay under the user's control. Backend storage will be added carefully with clear account and data controls."],
@@ -18,7 +18,7 @@ export default function AboutPage() {
       <Navbar />
       <PublicPageHeader
         eyebrow="About"
-        title="ResumeCraft helps people apply with confidence"
+        title="Resumi helps people apply with confidence"
         description="We are building a practical resume platform where one profile can generate polished, professional resumes for many opportunities."
         actions={<AppButton href="/builder/guest">Try the Builder</AppButton>}
       />

@@ -12,7 +12,7 @@ export default async function ResetPasswordPage({
   return (
     <AuthCard
       title="Choose a new password"
-      description="Set a fresh password for your ResumeCraft account."
+      description="Set a fresh password for your Resumi account."
       error={params.error}
       message={params.message}
       footer={<>Remembered it? <Link href="/login" className="font-bold text-blue-700">Sign in</Link></>}

@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": currency,
     "line_items[0][price_data][unit_amount]": String(plan.amounts[currency]),
-    "line_items[0][price_data][product_data][name]": `ResumeCraft ${plan.name}`,
+    "line_items[0][price_data][product_data][name]": `Resumi ${plan.name}`,
     "line_items[0][price_data][product_data][description]": plan.description,
     "metadata[plan_id]": plan.id,
     "metadata[currency]": currency,

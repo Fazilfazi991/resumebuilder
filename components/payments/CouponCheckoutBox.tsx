@@ -43,8 +43,8 @@ export function CouponCheckoutBox({ planId, variant = "primary", children = "Cho
       setMessage("");
     };
 
-    window.addEventListener("resumecraft:currency-change", syncCurrency);
-    return () => window.removeEventListener("resumecraft:currency-change", syncCurrency);
+    window.addEventListener("resumi:currency-change", syncCurrency);
+    return () => window.removeEventListener("resumi:currency-change", syncCurrency);
   }, []);
 
   const breakdown = useMemo(() => ({

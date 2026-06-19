@@ -139,7 +139,7 @@ function scoreCertificationsLanguages(data: ResumeData): AtsCategoryScore {
 
 function scoreFormatting(): AtsCategoryScore {
   const items: AtsIssue[] = [
-    success("format-structured", "Structured resume fields", "ResumeCraft keeps your resume content in structured fields.", "Keep using clear sections."),
+    success("format-structured", "Structured resume fields", "Resumi keeps your resume content in structured fields.", "Keep using clear sections."),
     success("format-contact", "Text-based contact details", "Contact details are rendered as selectable text in templates.", "Avoid putting key details only inside images."),
     suggestion("format-template", "Choose ATS-friendly templates for job portals", "Visual templates are useful, but corporate ATS portals often prefer simpler layouts.", "Use Classic ATS or Simple One Page for ATS-heavy applications."),
   ];

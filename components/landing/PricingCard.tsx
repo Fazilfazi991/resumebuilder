@@ -28,8 +28,8 @@ export function PricingCard({ name, price, planId, features, featured = false }:
       setCurrency(event instanceof CustomEvent && event.detail === "inr" ? "inr" : "aed");
     };
 
-    window.addEventListener("resumecraft:currency-change", syncCurrency);
-    return () => window.removeEventListener("resumecraft:currency-change", syncCurrency);
+    window.addEventListener("resumi:currency-change", syncCurrency);
+    return () => window.removeEventListener("resumi:currency-change", syncCurrency);
   }, []);
 
   return (

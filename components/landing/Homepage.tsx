@@ -39,7 +39,7 @@ const featuredTemplates = resumeTemplates.slice(0, 6).map((template) => ({
 const pricing = [
   {
     name: "Free",
-    price: "$0",
+    price: "0",
     features: ["Create resume", "Basic templates", "Preview resume", "Watermarked download"],
   },
   {
@@ -220,7 +220,7 @@ export function Homepage() {
 
       <section className="bg-white py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading title="Built for every career stage" subtitle="Whether you are starting out or leveling up, ResumeCraft keeps the path clear." />
+          <SectionHeading title="Built for every career stage" subtitle="Whether you are starting out or leveling up, Resumi keeps the path clear." />
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {audienceCards.map(([Icon, title, description]) => (
               <FeatureCard key={title} icon={Icon} title={title} description={description} />

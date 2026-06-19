@@ -15,8 +15,8 @@ export function PlanPrice({ planId, className = "" }: { planId: PaidPlanId; clas
       setCurrency(event instanceof CustomEvent && event.detail === "inr" ? "inr" : "aed");
     };
 
-    window.addEventListener("resumecraft:currency-change", syncCurrency);
-    return () => window.removeEventListener("resumecraft:currency-change", syncCurrency);
+    window.addEventListener("resumi:currency-change", syncCurrency);
+    return () => window.removeEventListener("resumi:currency-change", syncCurrency);
   }, []);
 
   return <span className={className}>{formatPlanPrice(paidPlans[planId].amounts[currency], currency)}</span>;

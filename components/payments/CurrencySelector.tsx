@@ -20,7 +20,7 @@ export function CurrencySelector({ compact = false }: CurrencySelectorProps) {
   const selectCurrency = (nextCurrency: PaymentCurrency) => {
     setCurrency(nextCurrency);
     localStorage.setItem(currencyStorageKey, nextCurrency);
-    window.dispatchEvent(new CustomEvent("resumecraft:currency-change", { detail: nextCurrency }));
+    window.dispatchEvent(new CustomEvent("resumi:currency-change", { detail: nextCurrency }));
   };
 
   return (

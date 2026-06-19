@@ -16,7 +16,7 @@ export function TemplatesClient() {
   const [unlockedTemplateId, setUnlockedTemplateId] = useState("");
 
   useEffect(() => {
-    setUnlockedTemplateId(localStorage.getItem("resumecraft_unlocked_template") ?? "");
+    setUnlockedTemplateId(localStorage.getItem("resumi_unlocked_template") ?? "");
   }, []);
 
   const filtered = useMemo(() => {

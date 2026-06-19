@@ -6,8 +6,7 @@ import { useState } from "react";
 
 const links = [
   ["Home", "/"], ["Templates", "/templates"], ["Pricing", "/pricing"],
-  ["AI Tools", "/ai-tools"], ["Resume Examples", "/resume-examples"],
-  ["Help", "/help"], ["Login", "/login"],
+  ["AI Tools", "/ai-tools"], ["Login", "/login"],
 ] as const;
 
 export function MobileNavbar() {

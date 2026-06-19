@@ -20,17 +20,17 @@ export function GuestResumePrompt() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const raw = window.localStorage.getItem("resumecraft_guest_resume");
+    const raw = window.localStorage.getItem("resumi_guest_resume");
     if (!raw) return;
     try {
       setGuestResume(JSON.parse(raw) as GuestPayload);
     } catch {
-      window.localStorage.removeItem("resumecraft_guest_resume");
+      window.localStorage.removeItem("resumi_guest_resume");
     }
   }, []);
 
   const discard = () => {
-    window.localStorage.removeItem("resumecraft_guest_resume");
+    window.localStorage.removeItem("resumi_guest_resume");
     setGuestResume(null);
   };
 
@@ -40,7 +40,7 @@ export function GuestResumePrompt() {
     setError("");
     try {
       const resumeId = await saveGuestResume(guestResume);
-      window.localStorage.removeItem("resumecraft_guest_resume");
+      window.localStorage.removeItem("resumi_guest_resume");
       router.push(`/builder/${resumeId}`);
     } catch {
       setError("We could not save the guest resume. Please try again.");

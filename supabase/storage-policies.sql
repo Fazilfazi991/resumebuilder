@@ -1,4 +1,4 @@
--- ResumeCraft resume photo storage setup.
+-- Resumi resume photo storage setup.
 -- Create a Supabase Storage bucket named "resume-photos".
 -- Recommended bucket setting: public read, with uploads restricted by these policies.
 --

@@ -1,4 +1,4 @@
-# ResumeCraft Supabase Auth Setup
+# Resumi Supabase Auth Setup
 
 This app now supports the Supabase `token_hash` confirmation flow at `/auth/confirm`.
 
@@ -56,14 +56,14 @@ Use this confirmation link format:
 Subject:
 
 ```txt
-Confirm your ResumeCraft account
+Confirm your Resumi account
 ```
 
 HTML:
 
 ```html
-<h2>Confirm your ResumeCraft account</h2>
-<p>Welcome to ResumeCraft. Click below to confirm your email and start building your resume.</p>
+<h2>Confirm your Resumi account</h2>
+<p>Welcome to Resumi. Click below to confirm your email and start building your resume.</p>
 <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard">Confirm my account</a>
 <p>If you did not create this account, you can ignore this email.</p>
 ```
@@ -91,14 +91,14 @@ Google Workspace SMTP
 Set:
 
 ```txt
-From name: ResumeCraft
+From name: Resumi
 From email: noreply@yourdomain.com
 ```
 
 Example:
 
 ```txt
-ResumeCraft <noreply@resumecraft.com>
+Resumi <noreply@resumi.live>
 ```
 
 ## 5. Testing

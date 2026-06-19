@@ -16,7 +16,7 @@ export default function ContactPage() {
   return (
     <>
       <Navbar />
-      <PublicPageHeader eyebrow="Contact" title="Talk to ResumeCraft" description="Send a message about support, partnerships, colleges, or business inquiries." />
+      <PublicPageHeader eyebrow="Contact" title="Talk to Resumi" description="Send a message about support, partnerships, colleges, or business inquiries." />
       <main className="bg-slate-50">
         <section className="mx-auto grid max-w-7xl gap-6 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_0.8fr] lg:px-8">
           <form className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -42,7 +42,7 @@ export default function ContactPage() {
           </div>
         </section>
         <section className="mx-auto max-w-4xl px-4 pb-16 sm:px-6 lg:px-8">
-          <FAQAccordion items={[{ question: "How fast do you reply?", answer: "This is a frontend placeholder now. A real support workflow will be added with backend integration." }, { question: "Can colleges partner with ResumeCraft?", answer: "Yes. The product direction includes student and institute workflows." }]} />
+          <FAQAccordion items={[{ question: "How fast do you reply?", answer: "This is a frontend placeholder now. A real support workflow will be added with backend integration." }, { question: "Can colleges partner with Resumi?", answer: "Yes. The product direction includes student and institute workflows." }]} />
         </section>
       </main>
       <Footer />

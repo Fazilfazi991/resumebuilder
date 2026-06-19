@@ -115,7 +115,7 @@ export function BuilderClient({
 
   useEffect(() => {
     if (!isGuest) return;
-    const raw = window.localStorage.getItem("resumecraft_guest_resume");
+    const raw = window.localStorage.getItem("resumi_guest_resume");
     if (raw) {
       try {
         const guest = JSON.parse(raw) as Partial<SavePayload>;
@@ -124,7 +124,7 @@ export function BuilderClient({
         if (guest.resumeData) setData(guest.resumeData);
         if (guest.sectionOrder) setSectionOrder(guest.sectionOrder as ResumeSection[]);
       } catch {
-        window.localStorage.removeItem("resumecraft_guest_resume");
+        window.localStorage.removeItem("resumi_guest_resume");
       }
     }
     guestHydratedRef.current = true;
@@ -135,7 +135,7 @@ export function BuilderClient({
 
     if (isGuest) {
       if (!guestHydratedRef.current) return;
-      window.localStorage.setItem("resumecraft_guest_resume", JSON.stringify(payload));
+      window.localStorage.setItem("resumi_guest_resume", JSON.stringify(payload));
       setSaveState("guest");
       return;
     }

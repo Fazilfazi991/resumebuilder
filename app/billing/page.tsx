@@ -8,7 +8,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { Check, CreditCard, Receipt } from "lucide-react";
 
 const plans = [
-  { name: "Free", price: "$0" },
+  { name: "Free", price: "0" },
   { name: "Premium", planId: "premium" as const },
   { name: "Lifetime", planId: "lifetime" as const },
 ];
