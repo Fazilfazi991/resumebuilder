@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AuthCard, AuthField } from "@/components/auth/AuthCard";
 import { signup } from "../actions";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export default async function SignupPage({
   searchParams,
@@ -8,12 +9,13 @@ export default async function SignupPage({
   searchParams: Promise<{ error?: string; next?: string; redirect?: string }>;
 }) {
   const params = await searchParams;
+  const authReady = isSupabaseConfigured();
 
   return (
     <AuthCard
       title="Create your account"
       description="Save resumes, switch templates, and keep every application organized."
-      error={params.error}
+      error={params.error ?? (!authReady ? "Account creation is temporarily unavailable. Please try again later." : undefined)}
       footer={<>Already have an account? <Link href="/login" className="font-bold text-blue-700">Sign in</Link></>}
     >
       <form action={signup} className="space-y-4">
@@ -27,7 +29,7 @@ export default async function SignupPage({
           <span>No credit card required</span>
           <span>Save resumes anytime</span>
         </div>
-        <button className="h-11 w-full rounded-lg bg-blue-700 text-sm font-bold text-white shadow-sm transition hover:bg-blue-900">Create Account</button>
+        <button disabled={!authReady} className="h-11 w-full rounded-lg bg-blue-700 text-sm font-bold text-white shadow-sm transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60">Create Account</button>
       </form>
     </AuthCard>
   );

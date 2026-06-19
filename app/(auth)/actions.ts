@@ -11,9 +11,11 @@ function errorRedirect(path: string, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
 }
 
+const authUnavailableMessage = "Account access is temporarily unavailable. Please try again later.";
+
 export async function login(formData: FormData) {
   if (!isSupabaseConfigured()) {
-    errorRedirect("/login", "Supabase keys are not configured yet.");
+    errorRedirect("/login", authUnavailableMessage);
   }
 
   const result = loginSchema.safeParse({
@@ -41,7 +43,7 @@ export async function login(formData: FormData) {
 
 export async function signup(formData: FormData) {
   if (!isSupabaseConfigured()) {
-    errorRedirect("/signup", "Supabase keys are not configured yet.");
+    errorRedirect("/signup", authUnavailableMessage);
   }
 
   const result = signupSchema.safeParse({
@@ -89,7 +91,7 @@ export async function signup(formData: FormData) {
 
 export async function forgotPassword(formData: FormData) {
   if (!isSupabaseConfigured()) {
-    errorRedirect("/forgot-password", "Supabase keys are not configured yet.");
+    errorRedirect("/forgot-password", authUnavailableMessage);
   }
 
   const result = forgotPasswordSchema.safeParse({ email: formData.get("email") });

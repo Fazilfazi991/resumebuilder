@@ -25,6 +25,13 @@ export function CouponCheckoutBox({ planId, variant = "primary", children = "Cho
   const originalAmount = plan.amounts[currency];
   const finalAmount = isApplied ? 0 : originalAmount;
 
+  const updateCoupon = (value: string) => {
+    setCoupon(value.toUpperCase());
+    setIsApplied(false);
+    setIsActivated(false);
+    setMessage("");
+  };
+
   useEffect(() => {
     const savedCurrency = localStorage.getItem(currencyStorageKey);
     setCurrency(savedCurrency === "inr" ? "inr" : "aed");
@@ -67,21 +74,21 @@ export function CouponCheckoutBox({ planId, variant = "primary", children = "Cho
     <div className="space-y-3">
       <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-3">
         <label className="block text-xs font-bold text-slate-700">Enter coupon code</label>
-        <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+        <div className="mt-2 grid gap-2">
           <input
             value={coupon}
-            onChange={(event) => setCoupon(event.target.value)}
+            onChange={(event) => updateCoupon(event.target.value)}
             placeholder="THAMEEMAR"
-            className="h-10 rounded-lg border border-blue-200 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:border-blue-600"
+            className="h-10 min-w-0 rounded-lg border border-blue-200 bg-white px-3 text-sm font-semibold uppercase tracking-wide text-slate-900 outline-none focus:border-blue-600"
           />
           <button
             type="button"
             onClick={applyCoupon}
             disabled={isPending || !coupon.trim()}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-sm font-bold text-white disabled:opacity-60"
+            className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-sm font-bold text-white disabled:opacity-60"
           >
             <Tag size={15} aria-hidden="true" />
-            Apply
+            Apply Coupon
           </button>
         </div>
         {message ? <p className={`mt-2 text-xs font-bold ${isApplied || isActivated ? "text-green-700" : "text-red-700"}`}>{message}</p> : null}
