@@ -187,19 +187,41 @@ export function AtsInsightsCompact({
 }) {
   const score = useMemo(() => calculateAtsScore(data), [data]);
   const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const scoreTone = toneFor(score.percentage);
   const rows = score.categories.slice(0, 6);
-  const recommendations = score.categories.flatMap((category) => category.items.filter((item) => item.severity !== "success"));
+  const recommendations = score.categories.flatMap((category) =>
+    category.items
+      .filter((item) => item.severity !== "success")
+      .map((item) => ({ categoryId: category.id, message: item.action || item.description || item.title })),
+  );
+  const topRecommendations = recommendations.slice(0, 3);
 
   return (
-    <aside className="hidden min-w-0 border-l border-slate-200 bg-slate-50/80 p-4 xl:block">
-      <div className="sticky top-24 rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+    <aside className="hidden min-w-0 border-l border-slate-200 bg-slate-50/80 p-5 xl:block">
+      <div className="sticky top-24 space-y-5">
+      <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4">
           <div>
             <h2 className="font-bold text-slate-950">ATS Insights</h2>
-            <p className="mt-0.5 text-xs font-semibold text-slate-500">Optimization companion</p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">Optimize your resume for Applicant Tracking Systems.</p>
           </div>
-          <Target className="text-teal-700" size={18} aria-hidden="true" />
+          <div className="relative">
+            <button
+              onClick={() => setIsInfoOpen((current) => !current)}
+              onMouseEnter={() => setIsInfoOpen(true)}
+              onMouseLeave={() => setIsInfoOpen(false)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-teal-700 hover:bg-teal-50"
+              aria-label="How ATS score works"
+            >
+              <Info size={16} aria-hidden="true" />
+            </button>
+            {isInfoOpen ? (
+              <div className="absolute right-0 top-9 z-30 w-64 rounded-lg border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-600 shadow-xl">
+                ATS scoring checks contact details, summary quality, skills, work achievements, education, formatting, and keyword coverage.
+              </div>
+            ) : null}
+          </div>
         </div>
         <div className="p-4 text-center">
           <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-slate-100" style={{ background: `conic-gradient(${scoreTone.hex} ${score.percentage * 3.6}deg, #e2e8f0 0deg)` }}>
@@ -209,6 +231,9 @@ export function AtsInsightsCompact({
           </div>
           <p className={`mt-3 text-sm font-bold ${scoreTone.text}`}>{score.label === "Strong" ? "Strong Match" : score.label}</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">Your resume is well-optimized for ATS systems.</p>
+        </div>
+        <div className="border-t border-slate-100 px-4 py-3">
+          <p className="text-xs font-bold text-slate-950">Score Breakdown</p>
         </div>
         <div className="divide-y divide-slate-100">
           {rows.map((category) => (
@@ -225,12 +250,37 @@ export function AtsInsightsCompact({
         </div>
         <div className="p-4">
           <button onClick={() => {
-            onViewRecommendations();
             setIsRecommendationsOpen(true);
           }} className="min-h-11 w-full rounded-lg border border-teal-200 bg-white px-3 text-sm font-bold text-teal-700 hover:bg-teal-50">
             View Recommendations
           </button>
         </div>
+      </div>
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="font-bold text-slate-950">Top Recommendations</h3>
+          <Lightbulb size={17} className="text-teal-700" aria-hidden="true" />
+        </div>
+        <ul className="space-y-3 text-xs leading-5 text-slate-600">
+          {(topRecommendations.length ? topRecommendations : [
+            { message: "Add more quantifiable achievements in your experience.", categoryId: "experience" },
+            { message: "Include 2-3 more relevant skills for your target role.", categoryId: "skills" },
+            { message: "Improve summary keywords for the job you want.", categoryId: "summary" },
+          ]).map((item) => (
+            <li key={`${item.categoryId}-${item.message}`} className="flex gap-2">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-700" />
+              <span>{item.message}</span>
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => {
+          onViewRecommendations();
+          setIsRecommendationsOpen(true);
+        }} className="mt-4 inline-flex min-h-9 items-center gap-2 text-sm font-bold text-teal-700">
+          View all recommendations
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
       </div>
       <RecommendationsDrawer
         isOpen={isRecommendationsOpen}

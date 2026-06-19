@@ -30,10 +30,10 @@ import {
   Trash2,
   UserRound,
   WandSparkles,
-  MoreHorizontal,
   LayoutTemplate,
   Bot,
   X,
+  Minus,
   ChevronDown,
   ChevronUp,
   Target,
@@ -70,10 +70,9 @@ const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] =
   { id: "skills", label: "Skills", icon: Sparkles },
   { id: "languages", label: "Languages", icon: Languages },
   { id: "projects", label: "Projects", icon: LinkIcon },
-  { id: "certificates", label: "Certificates", icon: FileBadge },
+  { id: "certificates", label: "Certifications", icon: FileBadge },
   { id: "achievements", label: "Achievements", icon: Award },
-  { id: "references", label: "References", icon: BookOpen },
-  { id: "customSections", label: "Additional", icon: Plus },
+  { id: "references", label: "Interests", icon: BookOpen },
 ];
 
 export function BuilderClient({
@@ -93,6 +92,7 @@ export function BuilderClient({
   const [mobileTab, setMobileTab] = useState<Tab>("edit");
   const [zoom, setZoom] = useState<"fit" | 75 | 100>("fit");
   const [isTemplatePreviewOpen, setIsTemplatePreviewOpen] = useState(false);
+  const [isResumePreviewOpen, setIsResumePreviewOpen] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
@@ -105,6 +105,10 @@ export function BuilderClient({
   const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
   const atsScore = useMemo(() => calculateAtsScore(data), [data]);
   const atsTone = toneFor(atsScore.percentage);
+  const selectedTemplate = useMemo(() => resumeTemplates.find((template) => template.id === templateId), [templateId]);
+  const zoomLabel = zoom === "fit" ? "Fit" : `${zoom}%`;
+  const zoomOut = () => setZoom((current) => current === 100 ? 75 : "fit");
+  const zoomIn = () => setZoom((current) => current === "fit" ? 75 : 100);
 
   useEffect(() => {
     if (!isGuest) return;
@@ -308,7 +312,7 @@ export function BuilderClient({
             <Target size={15} aria-hidden="true" />
             ATS Score: {atsScore.percentage}%
           </button>
-          <button className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 lg:hidden" aria-label="More builder actions"><MoreHorizontal size={20} /></button>
+          <button onClick={() => setIsResumePreviewOpen(true)} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 lg:hidden" aria-label="Preview resume"><Eye size={20} /></button>
           <div className="hidden flex-wrap items-center gap-2 lg:flex">
             <select
               value={templateId}
@@ -327,13 +331,13 @@ export function BuilderClient({
                 <option key={template.id} value={template.id}>{template.name} - {template.category} - {template.isPremium ? "Premium" : "Free"}</option>
               ))}
             </select>
-            <AppButton variant="secondary" onClick={() => setIsTemplatePreviewOpen(true)}><Eye size={16} aria-hidden="true" /> Template Preview</AppButton>
+            <AppButton variant="secondary" onClick={() => setIsResumePreviewOpen(true)}><Eye size={16} aria-hidden="true" /> Preview Resume</AppButton>
             <AppButton variant="secondary" onClick={() => setIsAssistantOpen(true)}><Bot size={16} aria-hidden="true" /> Assistant</AppButton>
             <AppButton onClick={downloadPdf} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
           </div>
         </div>
-        <div className="grid grid-cols-5 border-t border-slate-200 bg-white lg:hidden">
-          {(["edit", "preview", "templates", "assistant", "ats"] as Tab[]).map((tab) => (
+        <div className="grid grid-cols-4 border-t border-slate-200 bg-white lg:hidden">
+          {(["edit", "ats", "assistant", "templates"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setMobileTab(tab)}
@@ -345,7 +349,7 @@ export function BuilderClient({
         </div>
       </header>
 
-      <div className="grid min-h-[calc(100vh-76px)] lg:grid-cols-[260px_minmax(420px,1fr)_minmax(420px,0.95fr)] xl:grid-cols-[260px_minmax(460px,1fr)_280px_minmax(420px,0.82fr)]">
+      <div className="grid min-h-[calc(100vh-76px)] lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(520px,1fr)_340px]">
         <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block">
           <div className="mb-4 rounded-lg bg-teal-50 p-4">
             <p className="text-sm font-bold text-teal-800">Build your resume</p>
@@ -415,36 +419,16 @@ export function BuilderClient({
 
         <AtsInsightsCompact data={data} onViewRecommendations={() => setMobileTab("ats")} onFixSection={openEditorSection} />
 
-        <aside className={`${mobileTab === "preview" ? "block" : "hidden"} min-w-0 border-l border-slate-200 bg-slate-200/70 p-3 lg:block lg:p-5`}>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold text-slate-950">Live Preview</p>
-              <p className="text-xs text-slate-500">See how your resume looks</p>
-            </div>
-            <div className="flex items-center gap-1.5">
-              {(["fit", 75, 100] as const).map((value) => <button key={value} onClick={() => setZoom(value)} className={`min-h-10 rounded-lg border px-3 text-xs font-bold ${zoom === value ? "border-teal-700 bg-teal-700 text-white" : "border-slate-300 bg-white text-slate-600"}`}>{value === "fit" ? "Fit" : `${value}%`}</button>)}
-            </div>
-          </div>
-          <p className="mb-3 rounded-lg bg-white/80 p-3 text-xs leading-5 text-slate-600 lg:hidden">Preview is scaled for mobile. PDF will export in full A4 quality.</p>
-          <A4Preview data={data} sectionOrder={sectionOrder} templateId={templateId} scale="builder" zoom={zoom} />
-          {data.experience.length + data.projects.length + data.education.length > 6 ? (
-            <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm font-semibold text-teal-800">Long resumes export across multiple PDF pages automatically.</p>
-          ) : null}
-          {downloadError ? (
-            <p className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{downloadError}</p>
-          ) : null}
-        </aside>
-
         <section className={`${mobileTab === "templates" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
           <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 p-4"><p className="text-xs font-bold uppercase tracking-[0.12em] text-teal-700">Selected template</p><p className="mt-1 font-bold text-slate-950">{resumeTemplates.find((template) => template.id === templateId)?.name}</p></div>
-          <div className="space-y-3">{resumeTemplates.map((template) => <article key={template.id} className={`grid grid-cols-[92px_1fr] gap-3 rounded-lg border bg-white p-3 ${template.id === templateId ? "border-teal-600 ring-2 ring-teal-100" : "border-slate-200"}`}><div className="h-28 overflow-hidden rounded-md bg-slate-100"><A4Preview templateId={template.id} /></div><div className="min-w-0"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-slate-950">{template.name}</h3><p className="mt-0.5 text-xs font-semibold text-slate-500">{template.category}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${template.isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span></div><button onClick={() => { if (isGuest && template.isPremium) { setIsAuthModalOpen(true); return; } setTemplateId(template.id); setMobileTab("preview"); }} className="mt-4 min-h-11 w-full rounded-lg bg-teal-700 text-sm font-bold text-white">{template.id === templateId ? "Selected" : "Select Template"}</button></div></article>)}</div>
+          <div className="space-y-3">{resumeTemplates.map((template) => <article key={template.id} className={`grid grid-cols-[92px_1fr] gap-3 rounded-lg border bg-white p-3 ${template.id === templateId ? "border-teal-600 ring-2 ring-teal-100" : "border-slate-200"}`}><div className="h-28 overflow-hidden rounded-md bg-slate-100"><A4Preview templateId={template.id} /></div><div className="min-w-0"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-slate-950">{template.name}</h3><p className="mt-0.5 text-xs font-semibold text-slate-500">{template.category}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${template.isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span></div><button onClick={() => { if (isGuest && template.isPremium) { setIsAuthModalOpen(true); return; } setTemplateId(template.id); setIsResumePreviewOpen(true); }} className="mt-4 min-h-11 w-full rounded-lg bg-teal-700 text-sm font-bold text-white">{template.id === templateId ? "Selected" : "Select Template"}</button></div></article>)}</div>
         </section>
         <section className={`${mobileTab === "assistant" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
           <ResumeAssistant data={data} setData={setData} onPreview={() => setMobileTab("preview")} />
         </section>
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-        <button onClick={() => setMobileTab("preview")} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold ${mobileTab === "preview" ? "text-teal-700" : "text-slate-500"}`}><Eye size={19} />Preview</button>
+        <button onClick={() => setIsResumePreviewOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500"><Eye size={19} />Preview</button>
         <button onClick={() => setMobileTab("templates")} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold ${mobileTab === "templates" ? "text-teal-700" : "text-slate-500"}`}><LayoutTemplate size={19} />Templates</button>
         <button onClick={downloadPdf} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-teal-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
       </nav>
@@ -471,6 +455,44 @@ export function BuilderClient({
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
               <ResumeAssistant data={data} setData={setData} onPreview={() => setIsAssistantOpen(false)} />
+            </div>
+          </aside>
+        </div>
+      ) : null}
+      {isResumePreviewOpen ? (
+        <div className="fixed inset-0 z-[75] bg-slate-950/10">
+          <aside className="ml-auto flex h-full w-full flex-col border-l border-slate-200 bg-slate-50 shadow-2xl lg:min-w-[520px] lg:w-[45vw] lg:max-w-[760px]">
+            <div className="flex min-h-[76px] items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
+              <div className="min-w-0">
+                <h2 className="truncate text-lg font-bold text-slate-950">Resume Preview</h2>
+                <p className="mt-0.5 truncate text-sm text-slate-500">Template: <span className="font-bold text-teal-700">{selectedTemplate?.name ?? templateId}</span></p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <button onClick={zoomOut} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" aria-label="Zoom out">
+                  <Minus size={16} aria-hidden="true" />
+                </button>
+                <span className="w-12 text-center text-sm font-bold text-slate-700">{zoomLabel}</span>
+                <button onClick={zoomIn} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" aria-label="Zoom in">
+                  <Plus size={16} aria-hidden="true" />
+                </button>
+                <button onClick={() => setIsResumePreviewOpen(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" aria-label="Close preview">
+                  <X size={17} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-6">
+              <div className="mx-auto w-max max-w-full">
+                <A4Preview data={data} sectionOrder={sectionOrder} templateId={templateId} scale="builder" zoom={zoom} />
+              </div>
+              {data.experience.length + data.projects.length + data.education.length > 6 ? (
+                <p className="mx-auto mt-4 max-w-xl rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm font-semibold text-teal-800">Long resumes export across multiple PDF pages automatically.</p>
+              ) : null}
+              {downloadError ? (
+                <p className="mx-auto mt-4 max-w-xl rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{downloadError}</p>
+              ) : null}
+            </div>
+            <div className="border-t border-slate-200 bg-white p-4 sm:hidden">
+              <AppButton onClick={downloadPdf} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
             </div>
           </aside>
         </div>
@@ -524,22 +546,19 @@ function EditorPanel({
           onAuthRequired={onAuthRequired}
         />
         <div className="grid gap-4 md:grid-cols-2">
-          {Object.entries(data.personal).filter(([field]) => field !== "photoUrl").map(([field, value]) => (
-            field === "portfolio" ? (
-              <PortfolioField
-                key={field}
-                value={value}
-                onChange={(next) => setPersonal("portfolio", next)}
-              />
-            ) : (
-              <Field
-                key={field}
-                label={labelize(field)}
-                value={value}
-                onChange={(next) => setPersonal(field as keyof ResumeData["personal"], next)}
-              />
-            )
-          ))}
+          <Field label="Full Name" value={data.personal.fullName} onChange={(next) => setPersonal("fullName", next)} />
+          <Field label="Job Title" value={data.personal.jobTitle} onChange={(next) => setPersonal("jobTitle", next)} />
+          <Field label="Email" value={data.personal.email} onChange={(next) => setPersonal("email", next)} />
+          <Field label="Phone" value={data.personal.phone} onChange={(next) => setPersonal("phone", next)} />
+          <Field label="Location" value={data.personal.location} onChange={(next) => setPersonal("location", next)} />
+          <Field label="LinkedIn" value={data.personal.linkedin} onChange={(next) => setPersonal("linkedin", next)} />
+          <PortfolioField value={data.personal.portfolio || data.personal.website} onChange={(next) => {
+            setData((current) => ({ ...current, personal: { ...current.personal, portfolio: next, website: next } }));
+          }} />
+          <TextArea label="Professional Headline" value={data.summary} onChange={(next) => setData((current) => ({ ...current, summary: next }))} />
+        </div>
+        <div className="mt-5 rounded-lg border border-teal-100 bg-teal-50 p-3 text-sm leading-6 text-teal-800">
+          Keep your contact info updated and easy to find for recruiters.
         </div>
         <details className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <summary className="cursor-pointer text-sm font-bold text-teal-700">Show more fields</summary>
@@ -882,13 +901,15 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 function PortfolioField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
     <label className="block">
-      <span className="grid gap-1 text-sm font-bold text-slate-700 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-3">
+      <span className="block text-sm font-bold text-slate-700">
         Portfolio
+      </span>
+      <span className="mt-1 block">
         <a
           href="https://portfoliobuilder-rose.vercel.app/"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex min-h-7 min-w-0 items-center gap-1.5 rounded-md text-xs font-bold leading-5 text-teal-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-teal-300"
+          className="inline-flex min-h-6 min-w-0 items-center gap-1 rounded-md text-xs font-semibold leading-5 text-teal-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-teal-300"
         >
           <span className="min-w-0 whitespace-normal">Don't have a portfolio? Create your portfolio</span>
           <LinkIcon size={13} className="shrink-0" aria-hidden="true" />
