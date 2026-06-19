@@ -89,7 +89,7 @@ export function Homepage() {
               <Sparkles size={15} aria-hidden="true" />
               ATS-friendly resumes, ready in minutes
             </p>
-            <h1 className="max-w-2xl text-5xl font-bold leading-[1.03] tracking-normal text-slate-950 sm:text-6xl">
+            <h1 className="max-w-2xl font-sans text-4xl font-extrabold leading-[1.08] tracking-normal text-slate-950 sm:text-5xl xl:text-[3.55rem]">
               Create a Professional Resume. <span className="text-blue-600">Fast.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
@@ -132,14 +132,16 @@ export function Homepage() {
             ["2", PenLine, "Pick a template", "Choose from clean, modern, ATS-friendly, executive, or creative templates."],
             ["3", CloudDownload, "Download PDF", "Export a perfectly formatted resume ready for job applications."],
           ].map(([index, Icon, title, description]) => (
-            <div key={String(title)} className="flex gap-4">
+            <div key={String(title)} className="grid grid-cols-[52px_1fr] items-start gap-4">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700">
                 <Icon size={22} aria-hidden="true" />
               </span>
-              <div>
-                <p className="text-xs font-bold text-slate-500">{String(index)}</p>
-                <h3 className="mt-1 font-bold text-slate-950">{String(title)}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{String(description)}</p>
+              <div className="min-w-0">
+                <div className="flex min-h-12 items-center gap-3">
+                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">{String(index)}</span>
+                  <h3 className="font-sans text-base font-extrabold leading-tight text-slate-950">{String(title)}</h3>
+                </div>
+                <p className="mt-1 text-sm leading-6 text-slate-600">{String(description)}</p>
               </div>
             </div>
           ))}
