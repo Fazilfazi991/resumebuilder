@@ -102,7 +102,7 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
               type="button"
               onClick={chooseFile}
               disabled={isUploading}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white disabled:opacity-70"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-sm font-bold text-white disabled:opacity-70"
             >
               {isUploading ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <ImagePlus size={16} aria-hidden="true" />}
               {value ? "Replace Photo" : "Upload Photo"}
@@ -124,7 +124,7 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
             ) : null}
           </div>
           <p className="mt-3 text-sm leading-5 text-slate-600">JPG, PNG, or WEBP. Maximum 5MB.</p>
-          {disabledReason ? <p className="mt-2 text-sm font-semibold text-teal-700">{disabledReason}</p> : null}
+          {disabledReason ? <p className="mt-2 text-sm font-semibold text-blue-700">{disabledReason}</p> : null}
           {status ? <p className="mt-2 text-sm font-semibold text-emerald-700">{status}</p> : null}
           {note ? <p className="mt-2 max-w-md text-sm font-semibold leading-5 text-amber-700">{note}</p> : null}
           {error ? <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p> : null}

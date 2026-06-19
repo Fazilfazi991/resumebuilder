@@ -11,7 +11,7 @@ export default async function SettingsPage() {
   return (
     <PortalShell>
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <p className="text-sm font-bold text-teal-700">Settings</p>
+        <p className="text-sm font-bold text-blue-700">Settings</p>
         <h1 className="mt-2 text-3xl font-bold text-slate-950">Account settings</h1>
         <div className="mt-8 space-y-5">
           <Panel title="Profile settings">
@@ -47,5 +47,5 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 }
 
 function Field({ label, value, name, readOnly = false }: { label: string; value: string; name?: string; readOnly?: boolean }) {
-  return <label className="block"><span className="text-sm font-bold text-slate-700">{label}</span><input name={name} defaultValue={value} readOnly={readOnly} className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 outline-none focus:border-teal-400 read-only:bg-slate-50 read-only:text-slate-500" /></label>;
+  return <label className="block"><span className="text-sm font-bold text-slate-700">{label}</span><input name={name} defaultValue={value} readOnly={readOnly} className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 outline-none focus:border-blue-600 read-only:bg-slate-50 read-only:text-slate-500" /></label>;
 }

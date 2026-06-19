@@ -30,7 +30,7 @@ export default function AIToolsPage() {
         <section className="mx-auto grid max-w-7xl gap-5 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           {tools.map(([Icon, title, description, status]) => (
             <article key={title} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><Icon size={21} aria-hidden="true" /></div>
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><Icon size={21} aria-hidden="true" /></div>
               <SectionBadge tone={status === "In Builder" ? "emerald" : "slate"}>{status}</SectionBadge>
               <h2 className="mt-4 font-bold text-slate-950">{title}</h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>

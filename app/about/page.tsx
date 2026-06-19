@@ -29,7 +29,7 @@ export default function AboutPage() {
             const Icon = icons[index];
             return (
               <article key={title} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><Icon size={21} aria-hidden="true" /></div>
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><Icon size={21} aria-hidden="true" /></div>
                 <h2 className="text-xl font-bold text-slate-950">{title}</h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p>
               </article>

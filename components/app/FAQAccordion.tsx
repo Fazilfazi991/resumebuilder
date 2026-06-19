@@ -11,7 +11,7 @@ export function FAQAccordion({ items }: { items: FAQItem[] }) {
           <summary className="cursor-pointer list-none text-base font-bold text-slate-950 marker:hidden">
             <span className="flex items-center justify-between gap-4">
               {item.question}
-              <span className="text-xl text-teal-700 group-open:rotate-45">+</span>
+              <span className="text-xl text-blue-700 group-open:rotate-45">+</span>
             </span>
           </summary>
           <p className="mt-3 text-sm leading-6 text-slate-600">{item.answer}</p>

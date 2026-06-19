@@ -1,6 +1,6 @@
 import { AppButton } from "@/components/app/AppButton";
 import { AppHeader } from "@/components/app/AppHeader";
-import { CheckoutButton } from "@/components/payments/CheckoutButton";
+import { CouponCheckoutBox } from "@/components/payments/CouponCheckoutBox";
 import { CurrencySelector } from "@/components/payments/CurrencySelector";
 import { ReferralUnlockCard } from "@/components/account/ReferralUnlockCard";
 import { CreditCard, Download, Settings, ShieldCheck, UserRound } from "lucide-react";
@@ -24,7 +24,7 @@ export default async function AccountPage({
       <main className="min-h-screen bg-slate-50">
         <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-bold text-teal-700">Account</p>
+            <p className="text-sm font-bold text-blue-700">Account</p>
             <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-slate-950">Profile, plan, and rewards</h1>
@@ -43,7 +43,7 @@ export default async function AccountPage({
               <form action={updateProfile} className="grid gap-4">
                 <label className="block">
                   <span className="text-sm font-bold text-slate-700">Full name</span>
-                  <input name="fullName" defaultValue={fullName} className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-teal-400" />
+                  <input name="fullName" defaultValue={fullName} className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-blue-600" />
                 </label>
                 <label className="block">
                   <span className="text-sm font-bold text-slate-700">Email</span>
@@ -61,7 +61,7 @@ export default async function AccountPage({
               <p className="mt-2 text-sm leading-6 text-slate-600">Upgrade for premium templates, AI tools, and watermark-free PDF exports.</p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CurrencySelector compact />
-                <CheckoutButton planId="premium">Upgrade to Premium</CheckoutButton>
+                <CouponCheckoutBox planId="premium">Upgrade to Premium</CouponCheckoutBox>
               </div>
             </AccountPanel>
           </div>
@@ -87,7 +87,7 @@ export default async function AccountPage({
 function AccountPanel({ icon: Icon, title, children }: { icon: typeof UserRound; title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+      <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
         <Icon size={21} aria-hidden="true" />
       </div>
       <h2 className="mb-4 text-xl font-bold text-slate-950">{title}</h2>

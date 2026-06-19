@@ -15,10 +15,10 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <a href="/" className="flex items-center gap-2 text-lg font-bold text-slate-950">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-600 text-white shadow-sm">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
             <FileText size={20} aria-hidden="true" />
           </span>
-          <span>Resume<span className="text-teal-500">Craft</span></span>
+          <span>Resume<span className="text-blue-500">Craft</span></span>
         </a>
 
         <div className="hidden items-center gap-7 lg:flex">
@@ -36,7 +36,7 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <a
             href="/builder/guest"
-            className="hidden rounded-lg bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-700/20 transition hover:bg-teal-800 sm:inline-flex"
+            className="hidden rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 sm:inline-flex"
           >
             Create Resume
           </a>

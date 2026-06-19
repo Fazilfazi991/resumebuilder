@@ -10,7 +10,7 @@ type StatCardProps = {
 export function StatCard({ icon: Icon, label, value, helper }: StatCardProps) {
   return (
     <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
         <Icon size={20} aria-hidden="true" />
       </div>
       <p className="text-sm font-semibold text-slate-500">{label}</p>

@@ -5,8 +5,13 @@
   --foreground: #0f172a;
   --muted: #64748b;
   --border: #e2e8f0;
-  --primary: #0f8f7f;
-  --primary-dark: #0f766e;
+  --primary: #2563eb;
+  --primary-dark: #1e3a8a;
+  --brand-primary: #2563eb;
+  --brand-primary-dark: #1e3a8a;
+  --brand-soft: #eff6ff;
+  --brand-border: #bfdbfe;
+  --brand-text: #0f172a;
 }
 
 * {
@@ -15,6 +20,11 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+@page {
+  size: A4;
+  margin: 0;
 }
 
 body {
@@ -165,6 +175,11 @@ a {
 .avoid-break {
   break-inside: avoid;
   page-break-inside: avoid;
+}
+
+.allow-break {
+  break-inside: auto;
+  page-break-inside: auto;
 }
 
 @media print {

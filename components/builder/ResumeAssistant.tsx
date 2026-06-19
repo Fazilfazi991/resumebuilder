@@ -119,7 +119,7 @@ export function ResumeAssistant({
       <div className="border-b border-slate-200 p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><Bot size={20} aria-hidden="true" /></span>
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><Bot size={20} aria-hidden="true" /></span>
             <div>
               <h2 className="font-bold text-slate-950">Resume Assistant</h2>
               <p className="text-xs font-semibold text-slate-500">Draft helper, no AI API yet</p>
@@ -127,12 +127,12 @@ export function ResumeAssistant({
           </div>
           <div className="grid grid-cols-2 rounded-lg bg-slate-100 p-1 text-xs font-bold">
             {(["chat", "guided"] as const).map((option) => (
-              <button key={option} onClick={() => setMode(option)} className={`rounded-md px-3 py-2 capitalize ${mode === option ? "bg-white text-teal-700 shadow-sm" : "text-slate-500"}`}>{option}</button>
+              <button key={option} onClick={() => setMode(option)} className={`rounded-md px-3 py-2 capitalize ${mode === option ? "bg-white text-blue-700 shadow-sm" : "text-slate-500"}`}>{option}</button>
             ))}
           </div>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-          <div className="h-full rounded-full bg-teal-600 transition-all" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
@@ -140,7 +140,7 @@ export function ResumeAssistant({
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
             {messages.map((message) => (
-              <div key={message.id} className={`max-w-[86%] rounded-lg px-3 py-2 text-sm leading-6 ${message.role === "assistant" ? "bg-slate-100 text-slate-700" : "ml-auto bg-teal-700 text-white"}`}>
+              <div key={message.id} className={`max-w-[86%] rounded-lg px-3 py-2 text-sm leading-6 ${message.role === "assistant" ? "bg-slate-100 text-slate-700" : "ml-auto bg-blue-700 text-white"}`}>
                 {message.content}
               </div>
             ))}
@@ -153,32 +153,32 @@ export function ResumeAssistant({
               ))}
             </div>
             <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-              <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Type an answer" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-teal-400" />
-              <button onClick={() => addAnswer(input)} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white"><Send size={16} />Send</button>
+              <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Type an answer" className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-blue-600" />
+              <button onClick={() => addAnswer(input)} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-sm font-bold text-white"><Send size={16} />Send</button>
             </div>
           </div>
         </div>
       ) : (
         <div className="flex flex-1 flex-col p-4">
           <div className="rounded-lg bg-slate-50 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-teal-700">Question {step + 1} of {questions.length}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700">Question {step + 1} of {questions.length}</p>
             <h3 className="mt-2 text-lg font-bold text-slate-950">{currentQuestion.question}</h3>
           </div>
           <label className="mt-4 block flex-1">
             <span className="mb-2 block text-sm font-bold text-slate-700">Your answer</span>
-            <textarea value={input} onChange={(event) => setInput(event.target.value)} rows={8} className="w-full rounded-lg border border-slate-200 px-3 py-3 text-sm leading-6 outline-none focus:border-teal-400" />
+            <textarea value={input} onChange={(event) => setInput(event.target.value)} rows={8} className="w-full rounded-lg border border-slate-200 px-3 py-3 text-sm leading-6 outline-none focus:border-blue-600" />
           </label>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <button onClick={() => setStep((current) => Math.max(0, current - 1))} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-lg border border-slate-200 text-sm font-bold text-slate-600"><ChevronLeft size={16} />Back</button>
             <button onClick={() => { setInput(""); setStep((current) => Math.min(questions.length - 1, current + 1)); }} className="min-h-11 rounded-lg border border-slate-200 text-sm font-bold text-slate-600">Skip</button>
-            <button onClick={() => addAnswer(input)} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-lg border border-teal-200 bg-teal-50 text-sm font-bold text-teal-700">Next<ChevronRight size={16} /></button>
-            <button onClick={applyAnswers} className="min-h-11 rounded-lg bg-teal-700 text-sm font-bold text-white">Apply</button>
+            <button onClick={() => addAnswer(input)} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-lg border border-blue-200 bg-blue-50 text-sm font-bold text-blue-700">Next<ChevronRight size={16} /></button>
+            <button onClick={applyAnswers} className="min-h-11 rounded-lg bg-blue-700 text-sm font-bold text-white">Apply</button>
           </div>
         </div>
       )}
 
       <div className="grid gap-2 border-t border-slate-200 p-4 sm:grid-cols-[1fr_auto_auto]">
-        <p className="flex min-h-10 items-center gap-2 text-sm font-semibold text-slate-600"><Sparkles size={16} className="text-teal-700" />{status || `${Object.keys(answers).length} answers collected`}</p>
+        <p className="flex min-h-10 items-center gap-2 text-sm font-semibold text-slate-600"><Sparkles size={16} className="text-blue-700" />{status || `${Object.keys(answers).length} answers collected`}</p>
         <AppButton variant="secondary" onClick={restart}><RotateCcw size={16} />Restart</AppButton>
         <AppButton onClick={applyAnswers}>Apply to Resume</AppButton>
       </div>

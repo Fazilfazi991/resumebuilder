@@ -21,7 +21,7 @@ export function AppButton({ children, href, variant = "primary", type = "button"
 }
 
 const styles = {
-  primary: "bg-teal-700 text-white shadow-sm shadow-teal-700/20 hover:bg-teal-800",
+  primary: "bg-blue-600 text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700",
   secondary: "border border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
   ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
   danger: "border border-rose-100 bg-rose-50 text-rose-700 hover:bg-rose-100",

@@ -10,7 +10,7 @@ type ButtonLinkProps = {
 export function ButtonLink({ children, href, variant = "primary" }: ButtonLinkProps) {
   const classes =
     variant === "primary"
-      ? "bg-teal-700 text-white shadow-lg shadow-teal-700/20 hover:bg-teal-800"
+      ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"
       : "border border-slate-200 bg-white text-slate-800 shadow-sm hover:border-slate-300 hover:bg-slate-50";
 
   return (

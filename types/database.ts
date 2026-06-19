@@ -138,12 +138,94 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      coupons: {
+        Row: {
+          id: string;
+          code: string;
+          discount_type: string;
+          discount_value: number;
+          is_active: boolean;
+          max_uses: number | null;
+          used_count: number;
+          expires_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          discount_type?: string;
+          discount_value?: number;
+          is_active?: boolean;
+          max_uses?: number | null;
+          used_count?: number;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["coupons"]["Insert"]>;
+        Relationships: [];
+      };
+      coupon_redemptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          coupon_code: string;
+          discount_amount: number;
+          original_amount: number;
+          final_amount: number;
+          redeemed_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          coupon_code: string;
+          discount_amount?: number;
+          original_amount?: number;
+          final_amount?: number;
+          redeemed_at?: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
+      cover_letters: {
+        Row: {
+          id: string;
+          user_id: string;
+          resume_id: string | null;
+          title: string;
+          company_name: string | null;
+          target_job_title: string | null;
+          hiring_manager_name: string | null;
+          tone: string | null;
+          content: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          resume_id?: string | null;
+          title?: string;
+          company_name?: string | null;
+          target_job_title?: string | null;
+          hiring_manager_name?: string | null;
+          tone?: string | null;
+          content: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["cover_letters"]["Insert"], "user_id">>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
       is_admin: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
+      };
+      increment_coupon_usage: {
+        Args: { coupon_code_input: string };
+        Returns: void;
       };
     };
     Enums: Record<string, never>;

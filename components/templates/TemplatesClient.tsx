@@ -32,14 +32,14 @@ export function TemplatesClient() {
       <div className="mt-6 grid gap-3 md:grid-cols-[1fr_auto]">
         <label className="relative block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} aria-hidden="true" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search templates" className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold outline-none focus:border-teal-400" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search templates" className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold outline-none focus:border-blue-600" />
         </label>
         <div className="flex gap-2 overflow-x-auto pb-2">
           {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold ${activeFilter === filter ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}
+              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold ${activeFilter === filter ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}
             >
               {filter}
             </button>

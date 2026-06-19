@@ -20,7 +20,7 @@ export function MobileNavbar() {
       <div className={`absolute inset-x-0 top-16 origin-top border-b border-slate-200 bg-white px-4 shadow-xl transition duration-200 ${open ? "visible scale-y-100 opacity-100" : "invisible scale-y-95 opacity-0"}`}>
         <nav className="mx-auto max-w-7xl py-4">
           {links.map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-11 items-center border-b border-slate-100 px-2 text-sm font-bold text-slate-700 last:border-0">{label}</Link>)}
-          <Link href="/builder/guest" onClick={() => setOpen(false)} className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white"><FileText size={17} />Create Resume</Link>
+          <Link href="/builder/guest" onClick={() => setOpen(false)} className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-sm font-bold text-white"><FileText size={17} />Create Resume</Link>
         </nav>
       </div>
     </div>

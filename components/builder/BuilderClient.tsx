@@ -19,6 +19,7 @@ import {
   Download,
   Eye,
   FileBadge,
+  FileText,
   GripVertical,
   Languages,
   LayoutList,
@@ -54,6 +55,7 @@ type SavePayload = {
   sectionOrder: string[];
 };
 type BuilderClientProps = {
+  resumeId?: string;
   initialTitle?: string;
   initialTemplateId?: string;
   initialData?: ResumeData;
@@ -76,6 +78,7 @@ const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] =
 ];
 
 export function BuilderClient({
+  resumeId,
   initialTitle = "Product Manager Resume",
   initialTemplateId,
   initialData = defaultResumeData,
@@ -248,6 +251,8 @@ export function BuilderClient({
           transform: "none",
         },
       });
+      const sourceImage = await loadImage(imageData);
+      const pageChunks = Math.ceil(captureHeight / pagePixelHeight);
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "pt",
@@ -256,14 +261,33 @@ export function BuilderClient({
       });
       const pdfWidth = 595.28;
       const pdfHeight = 841.89;
-      const imageHeight = (captureHeight * pdfWidth) / captureWidth;
-      const pageCount = Math.ceil(imageHeight / pdfHeight);
 
-      for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+      for (let pageIndex = 0; pageIndex < pageChunks; pageIndex += 1) {
         if (pageIndex > 0) {
           pdf.addPage();
         }
-        pdf.addImage(imageData, "PNG", 0, -pageIndex * pdfHeight, pdfWidth, imageHeight, undefined, "FAST");
+        const chunkHeight = Math.min(pagePixelHeight, captureHeight - pageIndex * pagePixelHeight);
+        const canvas = document.createElement("canvas");
+        canvas.width = sourceImage.width;
+        canvas.height = Math.round((chunkHeight / captureHeight) * sourceImage.height);
+        const context = canvas.getContext("2d");
+        if (!context) {
+          throw new Error("PDF canvas could not be created.");
+        }
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(
+          sourceImage,
+          0,
+          Math.round((pageIndex * pagePixelHeight / captureHeight) * sourceImage.height),
+          sourceImage.width,
+          canvas.height,
+          0,
+          0,
+          sourceImage.width,
+          canvas.height,
+        );
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, (chunkHeight * pdfWidth) / captureWidth, undefined, "FAST");
       }
       const pdfBlob = pdf.output("blob");
       const downloadUrl = URL.createObjectURL(pdfBlob);
@@ -284,36 +308,58 @@ export function BuilderClient({
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-slate-100 pb-20 lg:pb-0">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm shadow-slate-200/60 backdrop-blur-xl">
-        <div className="flex min-h-[76px] items-center justify-between gap-3 px-3 py-3 lg:px-5">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link href="/dashboard" className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm" aria-label="Back to dashboard">
-              <ArrowLeft size={18} aria-hidden="true" />
-            </Link>
-            <input
-              value={resumeTitle}
-              onChange={(event) => setResumeTitle(event.target.value)}
-              className="min-w-0 flex-1 truncate rounded-lg border border-transparent bg-white px-2 py-2 text-sm font-bold text-slate-950 outline-none focus:border-teal-300 focus:bg-slate-50 sm:text-lg"
-              aria-label="Resume title"
-            />
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-slate-50/95 px-2 py-2 shadow-sm shadow-slate-200/60 backdrop-blur-xl lg:px-4">
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-md shadow-slate-200/70 lg:px-4">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <Link href="/dashboard" className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-blue-700 shadow-sm transition hover:bg-blue-50" aria-label="Back to dashboard">
+                <ArrowLeft size={20} aria-hidden="true" />
+              </Link>
+              <div className="min-w-0 flex-1">
+                <input
+                  value={resumeTitle}
+                  onChange={(event) => setResumeTitle(event.target.value)}
+                  className="min-w-0 w-full truncate rounded-lg border border-transparent bg-white px-1 py-1 text-lg font-bold text-slate-950 outline-none focus:border-blue-300 focus:bg-slate-50 sm:text-xl"
+                  aria-label="Resume title"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isGuest) setIsAuthModalOpen(true);
+                }}
+                className="hidden h-11 shrink-0 items-center gap-2 border-l border-slate-200 pl-4 text-sm font-semibold text-slate-600 md:inline-flex"
+              >
+                <Save size={17} className={saveState === "failed" ? "text-rose-600" : "text-blue-700"} />
+                <span>{saveState === "guest" ? "Guest draft" : saveState === "saving" ? "Saving..." : saveState === "failed" ? "Save failed" : "Saved just now"}</span>
+                {saveState === "guest" ? <span className="border-b border-dashed border-blue-600 font-bold text-blue-700">Create account to save</span> : null}
+              </button>
+              <button onClick={() => setMobileTab("ats")} className="hidden h-11 shrink-0 items-center gap-2 rounded-lg bg-blue-50 px-4 text-sm font-bold text-blue-900 ring-1 ring-blue-100 sm:inline-flex" aria-label="Open ATS score">
+                <Target size={17} aria-hidden="true" />
+                ATS Score: {atsScore.percentage}%
+              </button>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <button
+                onClick={() => setIsResumePreviewOpen(true)}
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700 sm:flex-none sm:px-6 lg:min-h-[52px] lg:text-base"
+              >
+                <Eye size={19} aria-hidden="true" />
+                Preview Resume
+              </button>
+              <button
+                onClick={downloadPdf}
+                disabled={isDownloading}
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-blue-900 bg-white px-4 text-sm font-bold text-blue-900 shadow-sm transition hover:bg-blue-50 disabled:opacity-70 sm:flex-none sm:px-5 lg:min-h-[52px] lg:text-base"
+              >
+                <Download size={18} aria-hidden="true" />
+                {isDownloading ? "Preparing PDF" : "Download PDF"}
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (isGuest) setIsAuthModalOpen(true);
-            }}
-            className="hidden h-11 shrink-0 items-center gap-2 border-l border-slate-200 pl-4 text-xs font-semibold text-slate-500 md:inline-flex"
-          >
-            <Save size={16} className={saveState === "failed" ? "text-rose-600" : "text-emerald-600"} />
-            {saveState === "guest" ? "Guest draft" : saveState === "saving" ? "Saving..." : saveState === "failed" ? "Save failed" : "All changes saved"}
-            <span className="font-medium text-slate-400">{saveState === "guest" ? "Create account to save" : "Just now"}</span>
-          </button>
-          <button onClick={() => setMobileTab("ats")} className={`hidden h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-bold sm:inline-flex sm:px-3 sm:text-sm ${atsTone.badge}`} aria-label="Open ATS score">
-            <Target size={15} aria-hidden="true" />
-            ATS Score: {atsScore.percentage}%
-          </button>
-          <button onClick={() => setIsResumePreviewOpen(true)} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 lg:hidden" aria-label="Preview resume"><Eye size={20} /></button>
-          <div className="hidden flex-wrap items-center gap-2 lg:flex">
+
+          <div className="mt-3 hidden items-center justify-center lg:flex">
             <select
               value={templateId}
               onChange={(event) => {
@@ -324,24 +370,23 @@ export function BuilderClient({
                 }
                 setTemplateId(event.target.value);
               }}
-              className="h-12 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-teal-400"
+              className="h-12 w-full max-w-xl rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-blue-600"
               aria-label="Template selector"
             >
               {resumeTemplates.map((template) => (
                 <option key={template.id} value={template.id}>{template.name} - {template.category} - {template.isPremium ? "Premium" : "Free"}</option>
               ))}
             </select>
-            <AppButton variant="secondary" onClick={() => setIsResumePreviewOpen(true)}><Eye size={16} aria-hidden="true" /> Preview Resume</AppButton>
-            <AppButton variant="secondary" onClick={() => setIsAssistantOpen(true)}><Bot size={16} aria-hidden="true" /> Assistant</AppButton>
-            <AppButton onClick={downloadPdf} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
+            <Link href={resumeId ? `/cover-letter?resumeId=${resumeId}` : "/cover-letter"} className="ml-3 inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"><FileText size={16} aria-hidden="true" /> Cover Letter</Link>
+            <button onClick={() => setIsAssistantOpen(true)} className="ml-3 inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"><Bot size={16} aria-hidden="true" /> Assistant</button>
           </div>
         </div>
-        <div className="grid grid-cols-4 border-t border-slate-200 bg-white lg:hidden">
+        <div className="mt-3 grid grid-cols-4 rounded-lg border border-slate-200 bg-white lg:hidden">
           {(["edit", "ats", "assistant", "templates"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setMobileTab(tab)}
-              className={`relative min-h-12 py-3 text-xs font-bold capitalize sm:text-sm ${mobileTab === tab ? "text-teal-700 after:absolute after:inset-x-5 after:bottom-0 after:h-0.5 after:bg-teal-700" : "text-slate-500"}`}
+              className={`relative min-h-12 py-3 text-xs font-bold capitalize sm:text-sm ${mobileTab === tab ? "text-blue-700 after:absolute after:inset-x-5 after:bottom-0 after:h-0.5 after:bg-blue-700" : "text-slate-500"}`}
             >
               {tab === "ats" ? "ATS Score" : tab}
             </button>
@@ -351,9 +396,9 @@ export function BuilderClient({
 
       <div className="grid min-h-[calc(100vh-76px)] lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(520px,1fr)_340px]">
         <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block">
-          <div className="mb-4 rounded-lg bg-teal-50 p-4">
-            <p className="text-sm font-bold text-teal-800">Build your resume</p>
-            <p className="mt-1 text-xs leading-5 text-teal-700">Add and organize sections for a professional resume.</p>
+          <div className="mb-4 rounded-lg bg-blue-50 p-4">
+            <p className="text-sm font-bold text-blue-900">Build your resume</p>
+            <p className="mt-1 text-xs leading-5 text-blue-700">Add and organize sections for a professional resume.</p>
           </div>
           <nav className="space-y-1">
             {orderedSections.map((section) => {
@@ -373,30 +418,30 @@ export function BuilderClient({
                     setMobileTab("edit");
                   }}
                   className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-bold transition ${
-                    isActive ? "bg-teal-700 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    isActive ? "bg-blue-700 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                   }`}
                 >
-                  <GripVertical size={14} className={isActive ? "text-teal-100" : "text-slate-300"} aria-hidden="true" />
+                  <GripVertical size={14} className={isActive ? "text-blue-100" : "text-slate-300"} aria-hidden="true" />
                   <Icon size={17} aria-hidden="true" />
                   <span className="flex-1">{section.label}</span>
                   {category ? (
-                    category.issues > 0 ? <AlertTriangle size={15} className={isActive ? "text-amber-100" : "text-amber-500"} aria-hidden="true" /> : <CheckCircle2 size={15} className={isActive ? "text-teal-100" : "text-teal-700"} aria-hidden="true" />
+                    category.issues > 0 ? <AlertTriangle size={15} className={isActive ? "text-amber-100" : "text-amber-500"} aria-hidden="true" /> : <CheckCircle2 size={15} className={isActive ? "text-blue-100" : "text-blue-700"} aria-hidden="true" />
                   ) : (
-                    <Circle size={13} className={isActive ? "text-teal-100" : "text-slate-300"} aria-hidden="true" />
+                    <Circle size={13} className={isActive ? "text-blue-100" : "text-slate-300"} aria-hidden="true" />
                   )}
                   {canMove ? (
                     <span className="flex shrink-0 items-center gap-1" onClick={(event) => event.stopPropagation()}>
-                      <span role="button" tabIndex={0} onClick={() => moveSection(section.id, -1)} className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${isActive ? "bg-teal-600 text-white" : "bg-slate-50 text-slate-500"}`} aria-label={`Move ${section.label} up`}><ChevronUp size={14} /></span>
-                      <span role="button" tabIndex={0} onClick={() => moveSection(section.id, 1)} className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${isActive ? "bg-teal-600 text-white" : "bg-slate-50 text-slate-500"}`} aria-label={`Move ${section.label} down`}><ChevronDown size={14} /></span>
+                      <span role="button" tabIndex={0} onClick={() => moveSection(section.id, -1)} className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${isActive ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-500"}`} aria-label={`Move ${section.label} up`}><ChevronUp size={14} /></span>
+                      <span role="button" tabIndex={0} onClick={() => moveSection(section.id, 1)} className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${isActive ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-500"}`} aria-label={`Move ${section.label} down`}><ChevronDown size={14} /></span>
                     </span>
                   ) : (
-                    <Eye size={15} className={isActive ? "text-teal-100" : "text-slate-400"} aria-hidden="true" />
+                    <Eye size={15} className={isActive ? "text-blue-100" : "text-slate-400"} aria-hidden="true" />
                   )}
                 </button>
               );
             })}
           </nav>
-          <button onClick={() => openEditorSection("customSections")} className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white text-sm font-bold text-teal-700 transition hover:bg-teal-50">
+          <button onClick={() => openEditorSection("customSections")} className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white text-sm font-bold text-blue-700 transition hover:bg-blue-50">
             <Plus size={16} aria-hidden="true" />
             Add Section
           </button>
@@ -405,7 +450,7 @@ export function BuilderClient({
         <section className={`${mobileTab === "edit" ? "block" : "hidden"} overflow-y-auto px-3 py-4 lg:block lg:p-6`}>
           <div className="mx-auto max-w-3xl">
             <div className="-mx-3 mb-4 overflow-x-auto border-b border-slate-200 bg-white px-3 pb-3 lg:hidden">
-              <div className="flex w-max gap-2">{orderedSections.map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
+              <div className="flex w-max gap-2">{orderedSections.map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
             </div>
             <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} onAuthRequired={() => setIsAuthModalOpen(true)} />
           </div>
@@ -420,8 +465,8 @@ export function BuilderClient({
         <AtsInsightsCompact data={data} onViewRecommendations={() => setMobileTab("ats")} onFixSection={openEditorSection} />
 
         <section className={`${mobileTab === "templates" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
-          <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 p-4"><p className="text-xs font-bold uppercase tracking-[0.12em] text-teal-700">Selected template</p><p className="mt-1 font-bold text-slate-950">{resumeTemplates.find((template) => template.id === templateId)?.name}</p></div>
-          <div className="space-y-3">{resumeTemplates.map((template) => <article key={template.id} className={`grid grid-cols-[92px_1fr] gap-3 rounded-lg border bg-white p-3 ${template.id === templateId ? "border-teal-600 ring-2 ring-teal-100" : "border-slate-200"}`}><div className="h-28 overflow-hidden rounded-md bg-slate-100"><A4Preview templateId={template.id} /></div><div className="min-w-0"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-slate-950">{template.name}</h3><p className="mt-0.5 text-xs font-semibold text-slate-500">{template.category}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${template.isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span></div><button onClick={() => { if (isGuest && template.isPremium) { setIsAuthModalOpen(true); return; } setTemplateId(template.id); setIsResumePreviewOpen(true); }} className="mt-4 min-h-11 w-full rounded-lg bg-teal-700 text-sm font-bold text-white">{template.id === templateId ? "Selected" : "Select Template"}</button></div></article>)}</div>
+          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4"><p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700">Selected template</p><p className="mt-1 font-bold text-slate-950">{resumeTemplates.find((template) => template.id === templateId)?.name}</p></div>
+          <div className="space-y-3">{resumeTemplates.map((template) => <article key={template.id} className={`grid grid-cols-[92px_1fr] gap-3 rounded-lg border bg-white p-3 ${template.id === templateId ? "border-blue-600 ring-2 ring-blue-100" : "border-slate-200"}`}><div className="h-28 overflow-hidden rounded-md bg-slate-100"><A4Preview templateId={template.id} /></div><div className="min-w-0"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-slate-950">{template.name}</h3><p className="mt-0.5 text-xs font-semibold text-slate-500">{template.category}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${template.isPremium ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span></div><button onClick={() => { if (isGuest && template.isPremium) { setIsAuthModalOpen(true); return; } setTemplateId(template.id); setIsResumePreviewOpen(true); }} className="mt-4 min-h-11 w-full rounded-lg bg-blue-700 text-sm font-bold text-white">{template.id === templateId ? "Selected" : "Select Template"}</button></div></article>)}</div>
         </section>
         <section className={`${mobileTab === "assistant" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
           <ResumeAssistant data={data} setData={setData} onPreview={() => setMobileTab("preview")} />
@@ -429,8 +474,8 @@ export function BuilderClient({
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <button onClick={() => setIsResumePreviewOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500"><Eye size={19} />Preview</button>
-        <button onClick={() => setMobileTab("templates")} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold ${mobileTab === "templates" ? "text-teal-700" : "text-slate-500"}`}><LayoutTemplate size={19} />Templates</button>
-        <button onClick={downloadPdf} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-teal-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
+        <button onClick={() => setMobileTab("templates")} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold ${mobileTab === "templates" ? "text-blue-700" : "text-slate-500"}`}><LayoutTemplate size={19} />Templates</button>
+        <button onClick={downloadPdf} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
       </nav>
       <div className="pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white" aria-hidden="true">
         <div ref={pdfRef} className="min-h-[1123px] w-[794px] bg-white">
@@ -465,7 +510,7 @@ export function BuilderClient({
             <div className="flex min-h-[76px] items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
               <div className="min-w-0">
                 <h2 className="truncate text-lg font-bold text-slate-950">Resume Preview</h2>
-                <p className="mt-0.5 truncate text-sm text-slate-500">Template: <span className="font-bold text-teal-700">{selectedTemplate?.name ?? templateId}</span></p>
+                <p className="mt-0.5 truncate text-sm text-slate-500">Template: <span className="font-bold text-blue-700">{selectedTemplate?.name ?? templateId}</span></p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <button onClick={zoomOut} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" aria-label="Zoom out">
@@ -485,7 +530,7 @@ export function BuilderClient({
                 <A4Preview data={data} sectionOrder={sectionOrder} templateId={templateId} scale="builder" zoom={zoom} />
               </div>
               {data.experience.length + data.projects.length + data.education.length > 6 ? (
-                <p className="mx-auto mt-4 max-w-xl rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm font-semibold text-teal-800">Long resumes export across multiple PDF pages automatically.</p>
+                <p className="mx-auto mt-4 max-w-xl rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm font-semibold text-blue-900">Long resumes export across multiple PDF pages automatically.</p>
               ) : null}
               {downloadError ? (
                 <p className="mx-auto mt-4 max-w-xl rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{downloadError}</p>
@@ -557,11 +602,11 @@ function EditorPanel({
           }} />
           <TextArea label="Professional Headline" value={data.summary} onChange={(next) => setData((current) => ({ ...current, summary: next }))} />
         </div>
-        <div className="mt-5 rounded-lg border border-teal-100 bg-teal-50 p-3 text-sm leading-6 text-teal-800">
+        <div className="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm leading-6 text-blue-900">
           Keep your contact info updated and easy to find for recruiters.
         </div>
         <details className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <summary className="cursor-pointer text-sm font-bold text-teal-700">Show more fields</summary>
+          <summary className="cursor-pointer text-sm font-bold text-blue-700">Show more fields</summary>
           <div className="mt-3">
             <Field label="Manual Photo URL" value={data.personal.photoUrl} onChange={(next) => setPersonal("photoUrl", next)} />
           </div>
@@ -795,7 +840,7 @@ function CustomSectionsEditor({
   return (
     <Panel title="Custom Sections" description="Add extra resume sections such as volunteer work, publications, interests, or awards.">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="rounded-lg bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-700">
+        <div className="rounded-lg bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">
           {sectionOrder.includes("customSections") ? "Visible in resume preview" : "Hidden from preview until enabled"}
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -849,7 +894,7 @@ function SimpleListEditor<T extends { id: string; name: string; level: string }>
               {withLevel ? (
                 <label className="block">
                   <span className="text-sm font-bold text-slate-700">Level</span>
-                  <select value={item.level} onChange={(event) => setItems(items.map((entry) => (entry.id === item.id ? { ...entry, level: event.target.value } : entry)))} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400">
+                  <select value={item.level} onChange={(event) => setItems(items.map((entry) => (entry.id === item.id ? { ...entry, level: event.target.value } : entry)))} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-blue-600">
                     {["Beginner", "Intermediate", "Advanced", "Expert", "Fluent", "Native"].map((level) => <option key={level}>{level}</option>)}
                   </select>
                 </label>
@@ -893,7 +938,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
   return (
     <label className="block">
       <span className="text-sm font-bold text-slate-700">{label}</span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400" />
+      <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-blue-600" />
     </label>
   );
 }
@@ -909,13 +954,13 @@ function PortfolioField({ value, onChange }: { value: string; onChange: (value: 
           href="https://portfoliobuilder-rose.vercel.app/"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex min-h-6 min-w-0 items-center gap-1 rounded-md text-xs font-semibold leading-5 text-teal-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-teal-300"
+          className="inline-flex min-h-6 min-w-0 items-center gap-1 rounded-md text-xs font-semibold leading-5 text-blue-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           <span className="min-w-0 whitespace-normal">Don't have a portfolio? Create your portfolio</span>
           <LinkIcon size={13} className="shrink-0" aria-hidden="true" />
         </a>
       </span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400" />
+      <input value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-blue-600" />
     </label>
   );
 }
@@ -924,7 +969,7 @@ function TextArea({ label, value, onChange }: { label: string; value: string; on
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-bold text-slate-700">{label}</span>
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none focus:border-teal-400" />
+      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm leading-6 outline-none focus:border-blue-600" />
     </label>
   );
 }
@@ -934,7 +979,7 @@ function BulletEditor({ bullets, onChange }: { bullets: string[]; onChange: (bul
     <div className="mt-4">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-bold text-slate-700">Bullet points</span>
-        <button onClick={() => onChange([...bullets, ""])} className="min-h-11 rounded-lg px-3 text-sm font-bold text-teal-700">Add bullet</button>
+        <button onClick={() => onChange([...bullets, ""])} className="min-h-11 rounded-lg px-3 text-sm font-bold text-blue-700">Add bullet</button>
       </div>
       <div className="space-y-2">
         {bullets.map((bullet, index) => (
@@ -942,7 +987,7 @@ function BulletEditor({ bullets, onChange }: { bullets: string[]; onChange: (bul
             <input
               value={bullet}
               onChange={(event) => onChange(bullets.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)))}
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-400"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-blue-600"
               placeholder="Achievement-focused bullet"
             />
           </div>
@@ -965,6 +1010,15 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "") || "resume";
+}
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Resume preview image could not be loaded."));
+    image.src = src;
+  });
 }
 
 function atsCategoryId(sectionId: ResumeSection) {

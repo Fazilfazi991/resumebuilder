@@ -62,8 +62,8 @@ export function GuestResumePrompt() {
   }
 
   return (
-    <section className="rounded-lg border border-teal-200 bg-white p-6 shadow-sm">
-      <p className="text-sm font-bold text-teal-700">Guest draft found</p>
+    <section className="rounded-lg border border-blue-200 bg-white p-6 shadow-sm">
+      <p className="text-sm font-bold text-blue-700">Guest draft found</p>
       <h2 className="mt-2 text-2xl font-bold text-slate-950">Save your current resume to your account?</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600">We found “{guestResume.title || "Untitled Resume"}” from your guest session.</p>
       {error ? <p className="mt-4 rounded-lg bg-rose-50 p-3 text-sm font-semibold text-rose-700">{error}</p> : null}

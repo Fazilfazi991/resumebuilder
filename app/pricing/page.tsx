@@ -3,7 +3,7 @@ import { FAQAccordion } from "@/components/app/FAQAccordion";
 import { PublicPageHeader } from "@/components/app/PublicPageHeader";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
-import { CheckoutButton } from "@/components/payments/CheckoutButton";
+import { CouponCheckoutBox } from "@/components/payments/CouponCheckoutBox";
 import { CurrencySelector } from "@/components/payments/CurrencySelector";
 import { PlanPrice } from "@/components/payments/PlanPrice";
 import { Check } from "lucide-react";
@@ -44,20 +44,20 @@ export default function PricingPage() {
         </section>
         <section className="mx-auto grid max-w-7xl gap-5 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           {plans.map((plan) => (
-            <article key={plan.name} className={`rounded-lg border bg-white p-6 shadow-sm ${plan.featured ? "border-teal-600 ring-4 ring-teal-100" : "border-slate-200"}`}>
+            <article key={plan.name} className={`rounded-lg border bg-white p-6 shadow-sm ${plan.featured ? "border-blue-600 ring-4 ring-blue-100" : "border-slate-200"}`}>
               <h2 className="text-xl font-bold text-slate-950">{plan.name}</h2>
               <p className="mt-4 text-2xl font-bold text-slate-950">{plan.planId ? <PlanPrice planId={plan.planId} /> : plan.price}</p>
               <ul className="mt-6 space-y-3">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex gap-2 text-sm text-slate-600">
-                    <Check size={16} className="mt-0.5 shrink-0 text-teal-700" aria-hidden="true" />
+                    <Check size={16} className="mt-0.5 shrink-0 text-green-700" aria-hidden="true" />
                     {feature}
                   </li>
                 ))}
               </ul>
               <div className="mt-6">
                 {plan.planId ? (
-                  <CheckoutButton planId={plan.planId} variant={plan.featured ? "primary" : "secondary"}>Choose Plan</CheckoutButton>
+                  <CouponCheckoutBox planId={plan.planId} variant={plan.featured ? "primary" : "secondary"}>Choose Plan</CouponCheckoutBox>
                 ) : plan.href ? (
                   <AppButton href={plan.href} variant="secondary">Choose Plan</AppButton>
                 ) : (
@@ -91,9 +91,9 @@ export default function PricingPage() {
           <div><h2 className="text-3xl font-bold text-slate-950">Pricing FAQ</h2><p className="mt-3 text-slate-600">Quick answers before payments are connected.</p></div>
           <FAQAccordion items={faqs} />
         </section>
-        <section className="bg-teal-800 px-4 py-12 text-center text-white">
+        <section className="bg-blue-900 px-4 py-12 text-center text-white">
           <h2 className="text-3xl font-bold">Build your better resume today</h2>
-          <p className="mt-3 text-teal-50">Start free and upgrade only when you need more power.</p>
+          <p className="mt-3 text-blue-50">Start free and upgrade only when you need more power.</p>
           <div className="mt-6"><AppButton href="/builder/guest" variant="secondary">Create Resume Now</AppButton></div>
         </section>
       </main>

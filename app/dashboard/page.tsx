@@ -20,11 +20,14 @@ export default async function DashboardPage() {
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-bold text-teal-700">Dashboard</p>
+              <p className="text-sm font-bold text-blue-700">Dashboard</p>
               <h1 className="mt-2 text-3xl font-bold text-slate-950">Welcome back, {firstName}</h1>
               <p className="mt-2 text-slate-600">Manage resumes, switch templates, and keep applications moving.</p>
             </div>
-            <AppButton href="/builder/new"><Plus size={18} aria-hidden="true" /> Create New Resume</AppButton>
+            <div className="flex flex-wrap gap-3">
+              <AppButton href="/cover-letter"><FileText size={18} aria-hidden="true" /> Create Cover Letter</AppButton>
+              <AppButton href="/builder/new"><Plus size={18} aria-hidden="true" /> Create New Resume</AppButton>
+            </div>
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -55,8 +58,8 @@ export default async function DashboardPage() {
                         <h3 className="mt-4 font-bold text-slate-950">{resume.title}</h3>
                         <p className="mt-1 text-sm text-slate-500">{templateName}</p>
                         <p className="mt-1 text-xs font-semibold text-slate-400">Last edited {formatDate(resume.updated_at)}</p>
-                        <div className="mt-3 flex items-center justify-between rounded-lg bg-teal-50 px-3 py-2">
-                          <span className="text-xs font-bold text-teal-700">ATS Score</span>
+                        <div className="mt-3 flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2">
+                          <span className="text-xs font-bold text-blue-700">ATS Score</span>
                           <span className="text-sm font-bold text-slate-950">{atsScore.percentage}%</span>
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-2">
@@ -83,8 +86,8 @@ export default async function DashboardPage() {
             </section>
 
             <aside className="space-y-5">
-              <section className="rounded-lg border border-teal-100 bg-white p-5 shadow-sm">
-                <p className="text-sm font-bold text-teal-700">Current plan</p>
+              <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
+                <p className="text-sm font-bold text-blue-700">Current plan</p>
                 <h2 className="mt-2 text-2xl font-bold text-slate-950">{profile?.plan ?? "Free"}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">Use free templates and preview premium designs before upgrading.</p>
                 <div className="mt-5"><AppButton href="/account">Manage Account</AppButton></div>
@@ -93,7 +96,7 @@ export default async function DashboardPage() {
                 <h2 className="font-bold text-slate-950">Recommended templates</h2>
                 <div className="mt-4 space-y-3">
                   {resumeTemplates.slice(0, 3).map((template) => (
-                    <a key={template.id} href={`/builder/new?template=${template.id}`} className="block rounded-lg border border-slate-200 p-3 transition hover:border-teal-200 hover:bg-teal-50">
+                    <a key={template.id} href={`/builder/new?template=${template.id}`} className="block rounded-lg border border-slate-200 p-3 transition hover:border-blue-200 hover:bg-blue-50">
                       <p className="font-bold text-slate-900">{template.name}</p>
                       <p className="mt-1 text-xs text-slate-500">{template.category}</p>
                     </a>

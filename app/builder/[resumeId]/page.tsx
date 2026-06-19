@@ -42,6 +42,7 @@ export default async function BuilderPage({
 
   return (
     <BuilderClient
+      resumeId={resume.id}
       initialTitle={resume.title}
       initialTemplateId={resume.template_id}
       initialData={resume.resume_data}

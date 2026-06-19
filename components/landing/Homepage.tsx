@@ -85,12 +85,12 @@ export function Homepage() {
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8 lg:py-20">
           <div>
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
               <Sparkles size={15} aria-hidden="true" />
               ATS-friendly resumes, ready in minutes
             </p>
             <h1 className="max-w-2xl text-5xl font-bold leading-[1.03] tracking-normal text-slate-950 sm:text-6xl">
-              Create a Professional Resume. <span className="text-teal-600">Fast.</span>
+              Create a Professional Resume. <span className="text-blue-600">Fast.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
               Fill your details once, choose from professional templates, and download a polished PDF resume instantly.
@@ -104,7 +104,7 @@ export function Homepage() {
             <div className="mt-9 grid gap-4 text-sm font-medium text-slate-600 sm:grid-cols-3">
               {["No credit card required", "ATS-friendly", "PDF ready"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
-                  <CheckCircle2 size={17} className="text-teal-700" aria-hidden="true" />
+                  <CheckCircle2 size={17} className="text-blue-700" aria-hidden="true" />
                   {item}
                 </div>
               ))}
@@ -133,7 +133,7 @@ export function Homepage() {
             ["3", CloudDownload, "Download PDF", "Export a perfectly formatted resume ready for job applications."],
           ].map(([index, Icon, title, description]) => (
             <div key={String(title)} className="flex gap-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-700">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700">
                 <Icon size={22} aria-hidden="true" />
               </span>
               <div>
@@ -163,11 +163,11 @@ export function Homepage() {
         </div>
       </section>
 
-      <section className="border-y border-slate-200 bg-teal-50/40 py-10">
+      <section className="border-y border-slate-200 bg-blue-50/40 py-10">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-5 lg:px-8">
           {trustFeatures.map(([Icon, title, copy]) => (
             <div key={title} className="flex items-start gap-3 border-slate-200 lg:border-l lg:pl-5 first:lg:border-l-0 first:lg:pl-0">
-              <Icon className="mt-1 shrink-0 text-teal-700" size={23} aria-hidden="true" />
+              <Icon className="mt-1 shrink-0 text-blue-700" size={23} aria-hidden="true" />
               <div>
                 <h3 className="font-bold text-slate-950">{title}</h3>
                 <p className="mt-1 text-sm leading-5 text-slate-600">{copy}</p>
@@ -181,7 +181,7 @@ export function Homepage() {
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.18fr_0.82fr] lg:px-8">
           <BuilderMockup />
           <div className="scroll-reveal scroll-reveal-delay">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-sm font-bold text-teal-700">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-bold text-blue-700">
               <Sparkles size={15} aria-hidden="true" />
               Live builder workspace
             </p>
@@ -192,7 +192,7 @@ export function Homepage() {
             <ul className="mt-7 space-y-4">
               {["Photo-ready resume preview", "Drag-and-drop sections", "Add unlimited experience and education items", "Switch templates anytime", "Auto-save resumes"].map((feature) => (
                 <li key={feature} className="builder-feature-item flex items-center gap-3 text-sm font-semibold text-slate-700">
-                  <CheckCircle2 size={18} className="text-teal-700" aria-hidden="true" />
+                  <CheckCircle2 size={18} className="text-blue-700" aria-hidden="true" />
                   {feature}
                 </li>
               ))}
@@ -241,17 +241,17 @@ export function Homepage() {
         </div>
       </section>
 
-      <section className="bg-teal-800 py-10 text-white">
+      <section className="bg-blue-900 py-10 text-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <div>
             <h2 className="text-3xl font-bold">Your next opportunity needs a better resume</h2>
-            <p className="mt-3 max-w-2xl text-teal-50">
+            <p className="mt-3 max-w-2xl text-blue-50">
               Start with one profile and generate resumes for multiple job applications.
             </p>
           </div>
           <a
             href="/builder/guest"
-            className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-3 text-sm font-bold text-teal-800 shadow-lg transition hover:bg-teal-50"
+            className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-3 text-sm font-bold text-blue-900 shadow-lg transition hover:bg-blue-50"
           >
             Create Resume Now
           </a>

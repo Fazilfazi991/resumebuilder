@@ -21,8 +21,8 @@ export function AuthCard({
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/60">
         <Link href="/" className="mb-7 flex items-center justify-center gap-2 text-lg font-bold text-slate-950">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white"><FileText size={19} /></span>
-          <span>Resume<span className="text-teal-500">Craft</span></span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-white"><FileText size={19} /></span>
+          <span>Resume<span className="text-blue-500">Craft</span></span>
         </Link>
         <h1 className="text-center text-3xl font-bold text-slate-950">{title}</h1>
         <p className="mt-2 text-center text-sm leading-6 text-slate-600">{description}</p>
@@ -39,7 +39,7 @@ export function AuthField({ label, name, type = "text", autoComplete }: { label:
   return (
     <label className="block">
       <span className="text-sm font-bold text-slate-700">{label}</span>
-      <input name={name} type={type} autoComplete={autoComplete} required className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-teal-400" />
+      <input name={name} type={type} autoComplete={autoComplete} required className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-blue-600" />
     </label>
   );
 }

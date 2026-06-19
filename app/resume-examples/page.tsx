@@ -27,7 +27,7 @@ export default function ResumeExamplesPage() {
       <main className="bg-slate-50">
         <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <div className="flex gap-2 overflow-x-auto pb-3">
-            {filters.map((filter, index) => <button key={filter} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold ${index === 0 ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{filter}</button>)}
+            {filters.map((filter, index) => <button key={filter} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold ${index === 0 ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{filter}</button>)}
           </div>
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {examples.map(([title, category, description], index) => (
@@ -44,9 +44,9 @@ export default function ResumeExamplesPage() {
             ))}
           </div>
         </section>
-        <section className="bg-teal-800 px-4 py-12 text-center text-white">
+        <section className="bg-blue-900 px-4 py-12 text-center text-white">
           <h2 className="text-3xl font-bold">Turn an example into your resume</h2>
-          <p className="mt-3 text-teal-50">Start with proven structure, then personalize every section.</p>
+          <p className="mt-3 text-blue-50">Start with proven structure, then personalize every section.</p>
         </section>
       </main>
       <Footer />

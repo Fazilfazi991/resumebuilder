@@ -36,13 +36,13 @@ export function ReferralUnlockCard() {
   };
 
   return (
-    <section className="rounded-lg border border-teal-100 bg-white p-6 shadow-sm">
+    <section className="rounded-lg border border-blue-100 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
             <Gift size={21} aria-hidden="true" />
           </div>
-          <p className="text-sm font-bold text-teal-700">Referral rewards</p>
+          <p className="text-sm font-bold text-blue-700">Referral rewards</p>
           <h2 className="mt-2 text-2xl font-bold text-slate-950">Refer 1 friend. Unlock 1 premium template.</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
             Share your referral link. Once one friend joins, the Creative Portfolio premium template unlocks for your account.

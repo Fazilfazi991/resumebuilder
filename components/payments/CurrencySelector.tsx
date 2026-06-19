@@ -31,7 +31,7 @@ export function CurrencySelector({ compact = false }: CurrencySelectorProps) {
           type="button"
           onClick={() => selectCurrency(option)}
           className={`rounded-md px-3 py-2 text-sm font-bold transition ${
-            currency === option ? "bg-teal-700 text-white" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+            currency === option ? "bg-blue-700 text-white" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
           }`}
         >
           {currencyLabels[option]}

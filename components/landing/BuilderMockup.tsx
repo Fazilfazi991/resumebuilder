@@ -3,7 +3,7 @@ import { CheckCircle2, GripVertical, LayoutTemplate, Save, SlidersHorizontal, Sp
 export function BuilderMockup() {
   return (
     <div className="builder-mockup-shell scroll-reveal relative overflow-hidden rounded-lg border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-200/80 sm:p-4">
-      <div className="absolute -right-16 top-20 h-44 w-44 rounded-full bg-teal-100/50 blur-3xl" />
+      <div className="absolute -right-16 top-20 h-44 w-44 rounded-full bg-blue-100/50 blur-3xl" />
       <div className="absolute -bottom-20 left-28 h-52 w-52 rounded-full bg-blue-100/60 blur-3xl" />
       <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
         <div className="flex items-center gap-2">
@@ -43,13 +43,13 @@ export function BuilderMockup() {
         <div className="relative overflow-hidden rounded-lg bg-slate-100 p-4">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-bold text-slate-700">Live preview</p>
-            <span className="flex items-center gap-1 text-xs font-bold text-teal-700">
+            <span className="flex items-center gap-1 text-xs font-bold text-blue-700">
               <CheckCircle2 size={14} aria-hidden="true" />
               A4 ready
             </span>
           </div>
           <div className="relative min-h-[430px] sm:min-h-[520px]">
-            <div className="builder-float-card absolute right-3 top-5 z-20 hidden items-center gap-2 rounded-lg border border-teal-100 bg-white px-3 py-2 text-xs font-bold text-teal-700 shadow-lg shadow-slate-200/80 sm:flex">
+            <div className="builder-float-card absolute right-3 top-5 z-20 hidden items-center gap-2 rounded-lg border border-blue-100 bg-white px-3 py-2 text-xs font-bold text-blue-700 shadow-lg shadow-slate-200/80 sm:flex">
               <Sparkles size={14} aria-hidden="true" />
               AI improved
             </div>

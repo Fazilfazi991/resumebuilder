@@ -27,14 +27,14 @@ export default function ContactPage() {
             <div className="mt-4"><Field label="Subject" /></div>
             <label className="mt-4 block">
               <span className="text-sm font-bold text-slate-700">Message</span>
-              <textarea className="mt-2 h-36 w-full rounded-lg border border-slate-200 px-3 py-3 outline-none focus:border-teal-400" />
+              <textarea className="mt-2 h-36 w-full rounded-lg border border-slate-200 px-3 py-3 outline-none focus:border-blue-600" />
             </label>
             <div className="mt-5"><AppButton>Submit Message</AppButton></div>
           </form>
           <div className="grid gap-4 sm:grid-cols-2">
             {contactCards.map(([Icon, title, copy]) => (
               <article key={title} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><Icon size={21} aria-hidden="true" /></div>
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><Icon size={21} aria-hidden="true" /></div>
                 <h2 className="font-bold text-slate-950">{title}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{copy}</p>
               </article>
@@ -54,7 +54,7 @@ function Field({ label }: { label: string }) {
   return (
     <label className="block">
       <span className="text-sm font-bold text-slate-700">{label}</span>
-      <input className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 outline-none focus:border-teal-400" />
+      <input className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 outline-none focus:border-blue-600" />
     </label>
   );
 }

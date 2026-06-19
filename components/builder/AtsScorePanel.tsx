@@ -98,7 +98,7 @@ export function AtsScorePanel({ data, onFixSection }: AtsScorePanelProps) {
             <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
               <div className="h-full rounded-full transition-all" style={{ width: `${score.percentage}%`, backgroundColor: scoreTone.hex }} />
             </div>
-            <button onClick={() => setIsRecommendationsOpen(true)} className="mt-4 min-h-11 rounded-lg border border-teal-200 bg-white px-4 text-sm font-bold text-teal-700 hover:bg-teal-50">
+            <button onClick={() => setIsRecommendationsOpen(true)} className="mt-4 min-h-11 rounded-lg border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 hover:bg-blue-50">
               View Recommendations
             </button>
           </div>
@@ -111,7 +111,7 @@ export function AtsScorePanel({ data, onFixSection }: AtsScorePanelProps) {
             <h3 className="text-xl font-bold text-slate-950">Optimize</h3>
             <p className="mt-1 text-sm text-slate-500">Open each category for clear fixes.</p>
           </div>
-          <Target className="text-teal-700" size={22} aria-hidden="true" />
+          <Target className="text-blue-700" size={22} aria-hidden="true" />
         </div>
         <div className="space-y-3">
           {score.categories.map((category) => (
@@ -135,20 +135,20 @@ export function AtsScorePanel({ data, onFixSection }: AtsScorePanelProps) {
             <h3 className="text-xl font-bold text-slate-950">Job Match</h3>
             <p className="mt-1 text-sm text-slate-500">Paste a job description to compare keywords locally.</p>
           </div>
-          <SearchCheck className="text-teal-700" size={22} aria-hidden="true" />
+          <SearchCheck className="text-blue-700" size={22} aria-hidden="true" />
         </div>
         <textarea
           value={jobDescription}
           onChange={(event) => setJobDescription(event.target.value)}
           rows={6}
           placeholder="Paste the job description here"
-          className="mt-4 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm leading-6 outline-none focus:border-teal-400"
+          className="mt-4 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm leading-6 outline-none focus:border-blue-600"
         />
-        <button onClick={analyze} className="mt-3 min-h-11 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white">Analyze Match</button>
+        <button onClick={analyze} className="mt-3 min-h-11 rounded-lg bg-blue-700 px-4 text-sm font-bold text-white">Analyze Match</button>
         {jobMatch ? (
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
-            <div className="rounded-lg bg-teal-50 p-4">
-              <p className="text-sm font-bold text-teal-700">Match score</p>
+            <div className="rounded-lg bg-blue-50 p-4">
+              <p className="text-sm font-bold text-blue-700">Match score</p>
               <p className="mt-2 text-3xl font-bold text-slate-950">{jobMatch.percentage}%</p>
             </div>
             <KeywordBox title="Matching keywords" keywords={jobMatch.matchingKeywords} tone="green" />
@@ -211,7 +211,7 @@ export function AtsInsightsCompact({
               onClick={() => setIsInfoOpen((current) => !current)}
               onMouseEnter={() => setIsInfoOpen(true)}
               onMouseLeave={() => setIsInfoOpen(false)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-teal-700 hover:bg-teal-50"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-700 hover:bg-blue-50"
               aria-label="How ATS score works"
             >
               <Info size={16} aria-hidden="true" />
@@ -243,7 +243,7 @@ export function AtsInsightsCompact({
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <span className={`rounded-full px-2 py-1 text-[11px] font-bold ${category.issues ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}`}>{category.score}/{category.maxScore}</span>
-                {category.issues ? <CircleAlert size={14} className="text-amber-500" /> : <CheckCircle2 size={14} className="text-teal-700" />}
+                {category.issues ? <CircleAlert size={14} className="text-amber-500" /> : <CheckCircle2 size={14} className="text-blue-700" />}
               </div>
             </div>
           ))}
@@ -251,7 +251,7 @@ export function AtsInsightsCompact({
         <div className="p-4">
           <button onClick={() => {
             setIsRecommendationsOpen(true);
-          }} className="min-h-11 w-full rounded-lg border border-teal-200 bg-white px-3 text-sm font-bold text-teal-700 hover:bg-teal-50">
+          }} className="min-h-11 w-full rounded-lg border border-blue-200 bg-white px-3 text-sm font-bold text-blue-700 hover:bg-blue-50">
             View Recommendations
           </button>
         </div>
@@ -259,7 +259,7 @@ export function AtsInsightsCompact({
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h3 className="font-bold text-slate-950">Top Recommendations</h3>
-          <Lightbulb size={17} className="text-teal-700" aria-hidden="true" />
+          <Lightbulb size={17} className="text-blue-700" aria-hidden="true" />
         </div>
         <ul className="space-y-3 text-xs leading-5 text-slate-600">
           {(topRecommendations.length ? topRecommendations : [
@@ -268,7 +268,7 @@ export function AtsInsightsCompact({
             { message: "Improve summary keywords for the job you want.", categoryId: "summary" },
           ]).map((item) => (
             <li key={`${item.categoryId}-${item.message}`} className="flex gap-2">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-700" />
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-700" />
               <span>{item.message}</span>
             </li>
           ))}
@@ -276,7 +276,7 @@ export function AtsInsightsCompact({
         <button onClick={() => {
           onViewRecommendations();
           setIsRecommendationsOpen(true);
-        }} className="mt-4 inline-flex min-h-9 items-center gap-2 text-sm font-bold text-teal-700">
+        }} className="mt-4 inline-flex min-h-9 items-center gap-2 text-sm font-bold text-blue-700">
           View all recommendations
           <span aria-hidden="true">→</span>
         </button>
@@ -403,8 +403,8 @@ function RecommendationsDrawer({
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-24 sm:px-5 lg:pb-5">
           <div className="mb-4 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg bg-teal-50 p-3">
-              <p className="text-xs font-bold text-teal-700">Overall score</p>
+            <div className="rounded-lg bg-blue-50 p-3">
+              <p className="text-xs font-bold text-blue-700">Overall score</p>
               <p className="mt-1 text-2xl font-bold text-slate-950">{score.percentage}%</p>
             </div>
             <div className="rounded-lg bg-slate-50 p-3">
@@ -467,7 +467,7 @@ function RecommendationsDrawer({
 
 export function toneFor(percentage: number) {
   if (percentage >= 85) return { hex: "#16a34a", text: "text-emerald-700", badge: "bg-emerald-50 text-emerald-700" };
-  if (percentage >= 70) return { hex: "#0f8f7f", text: "text-teal-700", badge: "bg-teal-50 text-teal-700" };
+  if (percentage >= 70) return { hex: "#2563eb", text: "text-blue-700", badge: "bg-blue-50 text-blue-700" };
   if (percentage >= 40) return { hex: "#d97706", text: "text-amber-700", badge: "bg-amber-50 text-amber-700" };
   return { hex: "#e11d48", text: "text-rose-700", badge: "bg-rose-50 text-rose-700" };
 }
