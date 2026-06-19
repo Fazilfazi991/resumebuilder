@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "admin:ensure-owner": "node scripts/ensure-owner-admin.cjs",
     "start": "next start",
     "lint": "eslint"
   },
