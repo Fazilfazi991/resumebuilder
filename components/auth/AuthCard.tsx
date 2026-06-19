@@ -1,4 +1,4 @@
-import { FileText } from "lucide-react";
+import { BrandLogo } from "@/components/app/BrandLogo";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -20,9 +20,8 @@ export function AuthCard({
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/60">
-        <Link href="/" className="mb-7 flex items-center justify-center gap-2 text-lg font-bold text-slate-950">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-white"><FileText size={19} /></span>
-          <span>Resume<span className="text-blue-500">Craft</span></span>
+        <Link href="/" className="mb-7 flex items-center justify-center" aria-label="Resumi home">
+          <BrandLogo className="h-14 w-auto" priority />
         </Link>
         <h1 className="text-center text-3xl font-bold text-slate-950">{title}</h1>
         <p className="mt-2 text-center text-sm leading-6 text-slate-600">{description}</p>

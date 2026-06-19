@@ -1,5 +1,6 @@
-import { FileText, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "./BrandLogo";
 
 const links = [
   { label: "Dashboard", href: "/dashboard" },
@@ -15,11 +16,8 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold text-slate-950">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-white">
-            <FileText size={19} aria-hidden="true" />
-          </span>
-          <span>Resume<span className="text-blue-500">Craft</span></span>
+        <Link href="/" className="flex items-center" aria-label="Resumi home">
+          <BrandLogo className="h-9 w-auto" priority />
         </Link>
         <nav className="hidden items-center gap-4 text-sm font-semibold text-slate-600 lg:flex">
           {links.map((link) => (

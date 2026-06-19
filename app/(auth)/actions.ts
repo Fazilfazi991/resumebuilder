@@ -6,6 +6,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema, updateProfileSchema } from "@/lib/validations/auth";
 import { safeRedirectPath } from "@/lib/auth/redirects";
 import { requireUser } from "@/lib/auth/require-user";
+import { getSiteUrl } from "@/lib/site-url";
 
 function errorRedirect(path: string, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
@@ -59,14 +60,14 @@ export async function signup(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000";
+  const siteUrl = getSiteUrl();
   const nextPath = safeRedirectPath(formData.get("next"));
   const { data, error } = await supabase.auth.signUp({
     email: result.data.email,
     password: result.data.password,
     options: {
       data: { full_name: result.data.fullName },
-      emailRedirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+      emailRedirectTo: `${siteUrl}/auth/confirm?next=${encodeURIComponent(nextPath)}`,
     },
   });
 
@@ -100,7 +101,7 @@ export async function forgotPassword(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000";
+  const siteUrl = getSiteUrl();
   const { error } = await supabase.auth.resetPasswordForEmail(result.data.email, {
     redirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
   });
@@ -110,6 +111,32 @@ export async function forgotPassword(formData: FormData) {
   }
 
   redirect("/forgot-password?message=Password reset link sent. Check your email.");
+}
+
+export async function resendConfirmation(formData: FormData) {
+  if (!isSupabaseConfigured()) {
+    errorRedirect("/login", authUnavailableMessage);
+  }
+
+  const result = forgotPasswordSchema.safeParse({ email: formData.get("email") });
+  if (!result.success) {
+    errorRedirect("/login", result.error.issues[0]?.message ?? "Enter a valid email address.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: result.data.email,
+    options: {
+      emailRedirectTo: `${getSiteUrl()}/auth/confirm?next=${encodeURIComponent("/dashboard")}`,
+    },
+  });
+
+  if (error) {
+    errorRedirect("/login", error.message);
+  }
+
+  redirect("/login?message=Confirmation email sent. Please check your inbox.");
 }
 
 export async function resetPassword(formData: FormData) {

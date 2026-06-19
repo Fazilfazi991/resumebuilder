@@ -1,4 +1,4 @@
-import { FileText } from "lucide-react";
+import { BrandLogo } from "@/components/app/BrandLogo";
 import { MobileNavbar } from "./MobileNavbar";
 
 const navItems = [
@@ -14,11 +14,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <a href="/" className="flex items-center gap-2 text-lg font-bold text-slate-950">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
-            <FileText size={20} aria-hidden="true" />
-          </span>
-          <span>Resume<span className="text-blue-500">Craft</span></span>
+        <a href="/" className="flex items-center" aria-label="Resumi home">
+          <BrandLogo className="h-9 w-auto" priority />
         </a>
 
         <div className="hidden items-center gap-7 lg:flex">
