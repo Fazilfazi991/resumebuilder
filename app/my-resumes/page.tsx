@@ -1,11 +1,16 @@
 import { EmptyState } from "@/components/app/EmptyState";
 import { PortalShell } from "@/components/app/PortalShell";
-import { ResumeCard } from "@/components/app/ResumeCard";
-import { mockResumes } from "@/lib/resume/mock-data";
-import { FileText, Grid2X2, List, Search } from "lucide-react";
+import { A4Preview } from "@/components/app/A4Preview";
+import { AppButton } from "@/components/app/AppButton";
+import { calculateAtsScore } from "@/lib/ats/score-resume";
+import { requireUser } from "@/lib/auth/require-user";
+import { deleteResume, duplicateResume, getUserResumes } from "@/lib/resume/server";
+import { resumeTemplates } from "@/lib/resume/template-registry";
+import { Copy, FileText, Grid2X2, List, Pencil, Search, Trash2 } from "lucide-react";
 
-export default function MyResumesPage() {
-  const hasResumes = mockResumes.length > 0;
+export default async function MyResumesPage() {
+  await requireUser("/my-resumes");
+  const resumes = await getUserResumes();
 
   return (
     <PortalShell>
@@ -30,15 +35,43 @@ export default function MyResumesPage() {
           <select className="h-11 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-600"><option>Recent</option><option>Oldest</option><option>A-Z</option></select>
         </div>
         <div className="mt-6">
-          {hasResumes ? (
+          {resumes.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {mockResumes.map((resume) => <ResumeCard key={resume.id} resume={resume} />)}
+              {resumes.map((resume) => {
+                const score = calculateAtsScore(resume.resume_data);
+                const templateName = resumeTemplates.find((template) => template.id === resume.template_id)?.name ?? resume.template_id;
+                return (
+                  <article key={resume.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                    <A4Preview data={resume.resume_data} sectionOrder={resume.section_order} templateId={resume.template_id} />
+                    <h3 className="mt-4 font-bold text-slate-950">{resume.title}</h3>
+                    <p className="mt-1 text-sm text-slate-500">{templateName}</p>
+                    <p className="mt-1 text-xs font-semibold text-slate-400">Last edited {formatDate(resume.updated_at)}</p>
+                    <div className="mt-3 flex items-center justify-between rounded-lg bg-teal-50 px-3 py-2">
+                      <span className="text-xs font-bold text-teal-700">ATS Score</span>
+                      <span className="text-sm font-bold text-slate-950">{score.percentage}%</span>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <AppButton href={`/builder/${resume.id}`}><Pencil size={15} aria-hidden="true" /> Edit</AppButton>
+                      <form action={async () => { "use server"; await duplicateResume(resume.id); }}>
+                        <AppButton type="submit" variant="secondary"><Copy size={15} aria-hidden="true" /> Duplicate</AppButton>
+                      </form>
+                      <form action={async () => { "use server"; await deleteResume(resume.id); }}>
+                        <AppButton type="submit" variant="danger"><Trash2 size={15} aria-hidden="true" /> Delete</AppButton>
+                      </form>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           ) : (
-            <EmptyState icon={FileText} title="No resumes yet" description="Create your first resume and manage all versions here." actionLabel="Create Resume" actionHref="/builder/new" />
+            <EmptyState icon={FileText} title="Create your first resume" description="Start with a polished template and manage all versions here." actionLabel="Create Resume" actionHref="/builder/new" />
           )}
         </div>
       </section>
     </PortalShell>
   );
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(value));
 }

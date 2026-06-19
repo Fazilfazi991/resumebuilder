@@ -5,7 +5,7 @@ import { login } from "../actions";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; message?: string; next?: string }>;
+  searchParams: Promise<{ error?: string; message?: string; next?: string; redirect?: string }>;
 }) {
   const params = await searchParams;
 
@@ -18,10 +18,14 @@ export default async function LoginPage({
       footer={<>New to ResumeCraft? <Link href="/signup" className="font-bold text-teal-700">Create an account</Link></>}
     >
       <form action={login} className="space-y-4">
-        <input type="hidden" name="next" value={params.next ?? "/dashboard"} />
+        <input type="hidden" name="next" value={params.next ?? params.redirect ?? "/dashboard"} />
         <AuthField label="Email" name="email" type="email" autoComplete="email" />
         <AuthField label="Password" name="password" type="password" autoComplete="current-password" />
+        <div className="text-right">
+          <Link href="/forgot-password" className="text-sm font-bold text-teal-700">Forgot password?</Link>
+        </div>
         <button className="h-11 w-full rounded-lg bg-teal-700 text-sm font-bold text-white shadow-sm transition hover:bg-teal-800">Sign In</button>
+        <button type="button" disabled className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 text-sm font-bold text-slate-400">Google login coming soon</button>
       </form>
     </AuthCard>
   );

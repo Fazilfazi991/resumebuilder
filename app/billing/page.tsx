@@ -4,6 +4,7 @@ import { PortalShell } from "@/components/app/PortalShell";
 import { CheckoutButton } from "@/components/payments/CheckoutButton";
 import { CurrencySelector } from "@/components/payments/CurrencySelector";
 import { PlanPrice } from "@/components/payments/PlanPrice";
+import { requireUser } from "@/lib/auth/require-user";
 import { Check, CreditCard, Receipt } from "lucide-react";
 
 const plans = [
@@ -12,7 +13,9 @@ const plans = [
   { name: "Lifetime", planId: "lifetime" as const },
 ];
 
-export default function BillingPage() {
+export default async function BillingPage() {
+  await requireUser("/billing");
+
   return (
     <PortalShell>
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -40,7 +43,7 @@ export default function BillingPage() {
                   {["Templates", "Builder access", "Future PDF export"].map((item) => <li key={item} className="flex gap-2"><Check size={15} className="text-teal-700" />{item}</li>)}
                 </ul>
                 <div className="mt-5">
-                  {plan.planId ? <CheckoutButton planId={plan.planId} variant="secondary">Upgrade</CheckoutButton> : <AppButton href="/builder/sample-resume" variant="secondary">Start Free</AppButton>}
+                  {plan.planId ? <CheckoutButton planId={plan.planId} variant="secondary">Upgrade</CheckoutButton> : <AppButton href="/builder/guest" variant="secondary">Start Free</AppButton>}
                 </div>
               </article>
             ))}

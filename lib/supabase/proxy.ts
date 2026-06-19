@@ -29,12 +29,13 @@ export async function updateSession(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  const isProtected = protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path));
+  const isGuestBuilder = request.nextUrl.pathname.startsWith("/builder/guest");
+  const isProtected = !isGuestBuilder && protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path));
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", request.nextUrl.pathname);
+    url.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 

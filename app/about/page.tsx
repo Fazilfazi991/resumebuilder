@@ -20,7 +20,7 @@ export default function AboutPage() {
         eyebrow="About"
         title="ResumeCraft helps people apply with confidence"
         description="We are building a practical resume platform where one profile can generate polished, professional resumes for many opportunities."
-        actions={<AppButton href="/builder/sample-resume">Try the Builder</AppButton>}
+        actions={<AppButton href="/builder/guest">Try the Builder</AppButton>}
       />
       <main className="bg-slate-50">
         <section className="mx-auto grid max-w-7xl gap-5 px-4 py-14 sm:px-6 md:grid-cols-2 lg:px-8">

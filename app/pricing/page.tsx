@@ -9,7 +9,7 @@ import { PlanPrice } from "@/components/payments/PlanPrice";
 import { Check } from "lucide-react";
 
 const plans = [
-  { name: "Free", price: "$0", features: ["Create resumes", "Basic templates", "Preview resume", "Watermarked downloads"], href: "/builder/sample-resume" },
+  { name: "Free", price: "$0", features: ["Create resumes", "Basic templates", "Preview resume", "Watermarked downloads"], href: "/builder/guest" },
   { name: "Premium", price: "AED 19 / INR 399", features: ["Premium templates", "No watermark", "PDF download", "AI writing tools", "Cover letters"], featured: true, planId: "premium" as const },
   { name: "Lifetime", price: "AED 49 / INR 999", features: ["Unlimited resumes", "All templates", "Lifetime access", "Priority templates"], planId: "lifetime" as const },
   { name: "Career Pro", price: "Coming soon", features: ["Job tracker", "AI matching", "Interview prep", "LinkedIn tools"], disabled: true },
@@ -30,7 +30,7 @@ export default function PricingPage() {
         eyebrow="Pricing"
         title="Simple pricing for better resumes"
         description="Start free, upgrade when you need premium templates, watermark-free downloads, and future AI tools."
-        actions={<AppButton href="/builder/sample-resume">Start Building</AppButton>}
+        actions={<AppButton href="/builder/guest">Start Building</AppButton>}
       />
       <main className="bg-slate-50">
         <section className="border-b border-slate-200 bg-white">
@@ -94,7 +94,7 @@ export default function PricingPage() {
         <section className="bg-teal-800 px-4 py-12 text-center text-white">
           <h2 className="text-3xl font-bold">Build your better resume today</h2>
           <p className="mt-3 text-teal-50">Start free and upgrade only when you need more power.</p>
-          <div className="mt-6"><AppButton href="/builder/sample-resume" variant="secondary">Create Resume Now</AppButton></div>
+          <div className="mt-6"><AppButton href="/builder/guest" variant="secondary">Create Resume Now</AppButton></div>
         </section>
       </main>
       <Footer />

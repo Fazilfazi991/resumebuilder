@@ -44,13 +44,13 @@ export function TemplatePreviewModal({ template, onClose }: { template: Template
             <li>Live builder compatible</li>
           </ul>
           <div className="mt-7 hidden gap-3 lg:grid">
-            <AppButton href={`/builder/sample-resume?template=${template.id}`}>Use Template</AppButton>
-            <AppButton href={`/builder/sample-resume?template=${template.id}`} variant="secondary">Open in Builder</AppButton>
+            <AppButton href={`/builder/guest?template=${template.id}`}>Use Template</AppButton>
+            <AppButton href={`/builder/guest?template=${template.id}`} variant="secondary">Open in Builder</AppButton>
           </div>
         </aside>
         <div className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-2 border-t border-slate-200 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
-          <AppButton href={`/builder/sample-resume?template=${template.id}`}>Use Template</AppButton>
-          <AppButton href={`/builder/sample-resume?template=${template.id}`} variant="secondary">Open in Builder</AppButton>
+          <AppButton href={`/builder/guest?template=${template.id}`}>Use Template</AppButton>
+          <AppButton href={`/builder/guest?template=${template.id}`} variant="secondary">Open in Builder</AppButton>
         </div>
       </div>
     </div>

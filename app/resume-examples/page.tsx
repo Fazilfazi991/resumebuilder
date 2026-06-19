@@ -38,7 +38,7 @@ export default function ResumeExamplesPage() {
                 <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <AppButton href="/resume-examples" variant="secondary">View Example</AppButton>
-                  <AppButton href="/builder/sample-resume">Use Template</AppButton>
+                  <AppButton href="/builder/guest">Use Template</AppButton>
                 </div>
               </article>
             ))}

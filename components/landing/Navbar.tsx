@@ -35,7 +35,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-3">
           <a
-            href="/builder/sample-resume"
+            href="/builder/guest"
             className="hidden rounded-lg bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-700/20 transition hover:bg-teal-800 sm:inline-flex"
           >
             Create Resume

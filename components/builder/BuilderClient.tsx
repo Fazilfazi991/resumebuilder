@@ -43,9 +43,24 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Tab = "edit" | "preview" | "templates" | "assistant" | "ats";
+type SaveState = "saved" | "saving" | "failed" | "guest";
+type SavePayload = {
+  title: string;
+  templateId: string;
+  resumeData: ResumeData;
+  sectionOrder: string[];
+};
+type BuilderClientProps = {
+  initialTitle?: string;
+  initialTemplateId?: string;
+  initialData?: ResumeData;
+  initialSectionOrder?: string[];
+  isGuest?: boolean;
+  saveResume?: (payload: SavePayload) => Promise<void>;
+};
 
 const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] = [
   { id: "personal", label: "Personal Details", icon: UserRound },
@@ -61,12 +76,19 @@ const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] =
   { id: "customSections", label: "Additional", icon: Plus },
 ];
 
-export function BuilderClient() {
+export function BuilderClient({
+  initialTitle = "Product Manager Resume",
+  initialTemplateId,
+  initialData = defaultResumeData,
+  initialSectionOrder = defaultSectionOrder,
+  isGuest = false,
+  saveResume,
+}: BuilderClientProps) {
   const searchParams = useSearchParams();
-  const initialTemplate = searchParams.get("template") ?? "modern-minimal";
-  const [resumeTitle, setResumeTitle] = useState("Product Manager Resume");
+  const initialTemplate = initialTemplateId ?? searchParams.get("template") ?? "modern-minimal";
+  const [resumeTitle, setResumeTitle] = useState(initialTitle);
   const [templateId, setTemplateId] = useState(initialTemplate);
-  const [data, setData] = useState<ResumeData>(defaultResumeData);
+  const [data, setData] = useState<ResumeData>(initialData);
   const [activeSection, setActiveSection] = useState<ResumeSection>("personal");
   const [mobileTab, setMobileTab] = useState<Tab>("edit");
   const [zoom, setZoom] = useState<"fit" | 75 | 100>("fit");
@@ -74,11 +96,62 @@ export function BuilderClient() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
+  const [saveState, setSaveState] = useState<SaveState>(isGuest ? "guest" : "saved");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
-  const [sectionOrder, setSectionOrder] = useState<ResumeSection[]>(defaultSectionOrder as ResumeSection[]);
+  const hasMountedRef = useRef(false);
+  const guestHydratedRef = useRef(!isGuest);
+  const [sectionOrder, setSectionOrder] = useState<ResumeSection[]>(initialSectionOrder as ResumeSection[]);
   const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
   const atsScore = useMemo(() => calculateAtsScore(data), [data]);
   const atsTone = toneFor(atsScore.percentage);
+
+  useEffect(() => {
+    if (!isGuest) return;
+    const raw = window.localStorage.getItem("resumecraft_guest_resume");
+    if (raw) {
+      try {
+        const guest = JSON.parse(raw) as Partial<SavePayload>;
+        if (guest.title) setResumeTitle(guest.title);
+        if (guest.templateId) setTemplateId(guest.templateId);
+        if (guest.resumeData) setData(guest.resumeData);
+        if (guest.sectionOrder) setSectionOrder(guest.sectionOrder as ResumeSection[]);
+      } catch {
+        window.localStorage.removeItem("resumecraft_guest_resume");
+      }
+    }
+    guestHydratedRef.current = true;
+  }, [isGuest]);
+
+  useEffect(() => {
+    const payload: SavePayload = { title: resumeTitle, templateId, resumeData: data, sectionOrder };
+
+    if (isGuest) {
+      if (!guestHydratedRef.current) return;
+      window.localStorage.setItem("resumecraft_guest_resume", JSON.stringify(payload));
+      setSaveState("guest");
+      return;
+    }
+
+    if (!saveResume) return;
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
+    setSaveState("saving");
+    const timeout = window.setTimeout(async () => {
+      try {
+        await saveResume(payload);
+        setSaveState("saved");
+      } catch (error) {
+        console.error(error);
+        setSaveState("failed");
+      }
+    }, 850);
+
+    return () => window.clearTimeout(timeout);
+  }, [data, isGuest, resumeTitle, saveResume, sectionOrder, templateId]);
 
   const setPersonal = (field: keyof ResumeData["personal"], value: string) => {
     setData((current) => ({ ...current, personal: { ...current.personal, [field]: value } }));
@@ -140,6 +213,11 @@ export function BuilderClient() {
   };
 
   const downloadPdf = async () => {
+    if (isGuest) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
     if (!pdfRef.current || isDownloading) {
       return;
     }
@@ -215,7 +293,17 @@ export function BuilderClient() {
               aria-label="Resume title"
             />
           </div>
-          <span className="hidden h-11 shrink-0 items-center gap-2 border-l border-slate-200 pl-4 text-xs font-semibold text-slate-500 md:inline-flex"><Save size={16} className="text-emerald-600" />All changes saved <span className="font-medium text-slate-400">Just now</span></span>
+          <button
+            type="button"
+            onClick={() => {
+              if (isGuest) setIsAuthModalOpen(true);
+            }}
+            className="hidden h-11 shrink-0 items-center gap-2 border-l border-slate-200 pl-4 text-xs font-semibold text-slate-500 md:inline-flex"
+          >
+            <Save size={16} className={saveState === "failed" ? "text-rose-600" : "text-emerald-600"} />
+            {saveState === "guest" ? "Guest draft" : saveState === "saving" ? "Saving..." : saveState === "failed" ? "Save failed" : "All changes saved"}
+            <span className="font-medium text-slate-400">{saveState === "guest" ? "Create account to save" : "Just now"}</span>
+          </button>
           <button onClick={() => setMobileTab("ats")} className={`hidden h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-bold sm:inline-flex sm:px-3 sm:text-sm ${atsTone.badge}`} aria-label="Open ATS score">
             <Target size={15} aria-hidden="true" />
             ATS Score: {atsScore.percentage}%
@@ -224,7 +312,14 @@ export function BuilderClient() {
           <div className="hidden flex-wrap items-center gap-2 lg:flex">
             <select
               value={templateId}
-              onChange={(event) => setTemplateId(event.target.value)}
+              onChange={(event) => {
+                const nextTemplate = resumeTemplates.find((template) => template.id === event.target.value);
+                if (isGuest && nextTemplate?.isPremium) {
+                  setIsAuthModalOpen(true);
+                  return;
+                }
+                setTemplateId(event.target.value);
+              }}
               className="h-12 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-teal-400"
               aria-label="Template selector"
             >
@@ -234,7 +329,6 @@ export function BuilderClient() {
             </select>
             <AppButton variant="secondary" onClick={() => setIsTemplatePreviewOpen(true)}><Eye size={16} aria-hidden="true" /> Template Preview</AppButton>
             <AppButton variant="secondary" onClick={() => setIsAssistantOpen(true)}><Bot size={16} aria-hidden="true" /> Assistant</AppButton>
-            <AppButton variant="secondary" onClick={() => setMobileTab("ats")}><Target size={16} aria-hidden="true" /> ATS Score</AppButton>
             <AppButton onClick={downloadPdf} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
           </div>
         </div>
@@ -309,7 +403,7 @@ export function BuilderClient() {
             <div className="-mx-3 mb-4 overflow-x-auto border-b border-slate-200 bg-white px-3 pb-3 lg:hidden">
               <div className="flex w-max gap-2">{orderedSections.map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
             </div>
-            <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} />
+            <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} onAuthRequired={() => setIsAuthModalOpen(true)} />
           </div>
         </section>
 
@@ -319,7 +413,7 @@ export function BuilderClient() {
           </div>
         </section>
 
-        <AtsInsightsCompact data={data} onViewRecommendations={() => setMobileTab("ats")} />
+        <AtsInsightsCompact data={data} onViewRecommendations={() => setMobileTab("ats")} onFixSection={openEditorSection} />
 
         <aside className={`${mobileTab === "preview" ? "block" : "hidden"} min-w-0 border-l border-slate-200 bg-slate-200/70 p-3 lg:block lg:p-5`}>
           <div className="mb-4 flex items-center justify-between gap-3">
@@ -332,9 +426,7 @@ export function BuilderClient() {
             </div>
           </div>
           <p className="mb-3 rounded-lg bg-white/80 p-3 text-xs leading-5 text-slate-600 lg:hidden">Preview is scaled for mobile. PDF will export in full A4 quality.</p>
-          <div className="min-w-0" style={{ transform: zoom === "fit" ? undefined : `scale(${zoom / 100})`, transformOrigin: "top center" }}>
-            <A4Preview data={data} sectionOrder={sectionOrder} templateId={templateId} scale="builder" />
-          </div>
+          <A4Preview data={data} sectionOrder={sectionOrder} templateId={templateId} scale="builder" zoom={zoom} />
           {data.experience.length + data.projects.length + data.education.length > 6 ? (
             <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm font-semibold text-teal-800">Long resumes export across multiple PDF pages automatically.</p>
           ) : null}
@@ -345,7 +437,7 @@ export function BuilderClient() {
 
         <section className={`${mobileTab === "templates" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
           <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 p-4"><p className="text-xs font-bold uppercase tracking-[0.12em] text-teal-700">Selected template</p><p className="mt-1 font-bold text-slate-950">{resumeTemplates.find((template) => template.id === templateId)?.name}</p></div>
-          <div className="space-y-3">{resumeTemplates.map((template) => <article key={template.id} className={`grid grid-cols-[92px_1fr] gap-3 rounded-lg border bg-white p-3 ${template.id === templateId ? "border-teal-600 ring-2 ring-teal-100" : "border-slate-200"}`}><div className="h-28 overflow-hidden rounded-md bg-slate-100"><A4Preview templateId={template.id} /></div><div className="min-w-0"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-slate-950">{template.name}</h3><p className="mt-0.5 text-xs font-semibold text-slate-500">{template.category}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${template.isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span></div><button onClick={() => { setTemplateId(template.id); setMobileTab("preview"); }} className="mt-4 min-h-11 w-full rounded-lg bg-teal-700 text-sm font-bold text-white">{template.id === templateId ? "Selected" : "Select Template"}</button></div></article>)}</div>
+          <div className="space-y-3">{resumeTemplates.map((template) => <article key={template.id} className={`grid grid-cols-[92px_1fr] gap-3 rounded-lg border bg-white p-3 ${template.id === templateId ? "border-teal-600 ring-2 ring-teal-100" : "border-slate-200"}`}><div className="h-28 overflow-hidden rounded-md bg-slate-100"><A4Preview templateId={template.id} /></div><div className="min-w-0"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-slate-950">{template.name}</h3><p className="mt-0.5 text-xs font-semibold text-slate-500">{template.category}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${template.isPremium ? "bg-teal-50 text-teal-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span></div><button onClick={() => { if (isGuest && template.isPremium) { setIsAuthModalOpen(true); return; } setTemplateId(template.id); setMobileTab("preview"); }} className="mt-4 min-h-11 w-full rounded-lg bg-teal-700 text-sm font-bold text-white">{template.id === templateId ? "Selected" : "Select Template"}</button></div></article>)}</div>
         </section>
         <section className={`${mobileTab === "assistant" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
           <ResumeAssistant data={data} setData={setData} onPreview={() => setMobileTab("preview")} />
@@ -383,6 +475,22 @@ export function BuilderClient() {
           </aside>
         </div>
       ) : null}
+      {isAuthModalOpen ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm">
+          <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-2xl">
+            <button onClick={() => setIsAuthModalOpen(false)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500" aria-label="Close">
+              <X size={17} aria-hidden="true" />
+            </button>
+            <h2 className="mt-3 text-2xl font-bold text-slate-950">Create a free account to continue</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Save your resume, upload photos, and download PDFs anytime.</p>
+            <div className="mt-6 grid gap-3">
+              <AppButton href="/signup?next=/onboarding">Create free account</AppButton>
+              <AppButton href="/login?next=/onboarding" variant="secondary">Login</AppButton>
+              <button onClick={() => setIsAuthModalOpen(false)} className="min-h-11 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50">Continue editing as guest</button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -394,6 +502,8 @@ function EditorPanel({
   setPersonal,
   sectionOrder,
   setSectionOrder,
+  isGuest,
+  onAuthRequired,
 }: {
   activeSection: ResumeSection;
   data: ResumeData;
@@ -401,11 +511,18 @@ function EditorPanel({
   setPersonal: (field: keyof ResumeData["personal"], value: string) => void;
   sectionOrder: ResumeSection[];
   setSectionOrder: React.Dispatch<React.SetStateAction<ResumeSection[]>>;
+  isGuest: boolean;
+  onAuthRequired: () => void;
 }) {
   if (activeSection === "personal") {
     return (
       <Panel title="Personal Details" description="This information appears in the resume header.">
-        <ResumePhotoUpload value={data.personal.photoUrl} onChange={(value) => setPersonal("photoUrl", value)} />
+        <ResumePhotoUpload
+          value={data.personal.photoUrl}
+          onChange={(value) => setPersonal("photoUrl", value)}
+          disabledReason={isGuest ? "Create a free account to upload and save photos." : undefined}
+          onAuthRequired={onAuthRequired}
+        />
         <div className="grid gap-4 md:grid-cols-2">
           {Object.entries(data.personal).filter(([field]) => field !== "photoUrl").map(([field, value]) => (
             field === "portfolio" ? (

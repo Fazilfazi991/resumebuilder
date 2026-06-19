@@ -1,17 +1,17 @@
 "use client";
 
 import { analyzeJobMatch, type JobMatchResult } from "@/lib/ats/job-match";
-import { calculateAtsScore, type AtsCategoryScore, type AtsIssueSeverity } from "@/lib/ats/score-resume";
+import { calculateAtsScore, type AtsCategoryScore, type AtsIssueSeverity, type AtsScoreResult } from "@/lib/ats/score-resume";
 import type { ResumeData, ResumeSection } from "@/types/resume";
-import { CheckCircle2, ChevronDown, CircleAlert, Lightbulb, SearchCheck, Target } from "lucide-react";
-import { useMemo, useState } from "react";
+import { CheckCircle2, ChevronDown, CircleAlert, Info, Lightbulb, SearchCheck, Target, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type AtsScorePanelProps = {
   data: ResumeData;
   onFixSection?: (section: ResumeSection) => void;
 };
 
-const categorySectionMap: Record<string, ResumeSection> = {
+const categorySectionMap: Partial<Record<string, ResumeSection>> = {
   personal: "personal",
   summary: "summary",
   skills: "skills",
@@ -19,16 +19,43 @@ const categorySectionMap: Record<string, ResumeSection> = {
   projects: "projects",
   education: "education",
   "certifications-languages": "certificates",
-  "ats-formatting": "templates" as ResumeSection,
 };
 
 export function AtsScorePanel({ data, onFixSection }: AtsScorePanelProps) {
   const score = useMemo(() => calculateAtsScore(data), [data]);
   const [openCategory, setOpenCategory] = useState(score.categories[0]?.id ?? "");
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [jobMatch, setJobMatch] = useState<JobMatchResult | null>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
   const issueCount = score.categories.reduce((sum, category) => sum + category.issues, 0);
   const scoreTone = toneFor(score.percentage);
+  const recommendations = score.categories.flatMap((category) => category.items.filter((item) => item.severity !== "success"));
+
+  useEffect(() => {
+    if (!isInfoOpen) {
+      return;
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!infoRef.current?.contains(event.target as Node)) {
+        setIsInfoOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsInfoOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isInfoOpen]);
 
   const analyze = () => {
     setJobMatch(analyzeJobMatch(data, jobDescription));
@@ -49,12 +76,31 @@ export function AtsScorePanel({ data, onFixSection }: AtsScorePanelProps) {
               <span className={`rounded-full px-3 py-1 text-xs font-bold ${scoreTone.badge}`}>{score.label}</span>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{score.totalScore}/{score.maxScore} points</span>
             </div>
-            <h2 className="mt-4 text-2xl font-bold text-slate-950">Resume Score: {score.percentage}%</h2>
+            <div className="relative mt-4 flex flex-wrap items-center gap-2" ref={infoRef}>
+              <h2 className="text-2xl font-bold text-slate-950">Resume Score: {score.percentage}%</h2>
+              <button
+                onClick={() => setIsInfoOpen((current) => !current)}
+                onMouseEnter={() => setIsInfoOpen(true)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                aria-label="How ATS score works"
+                aria-expanded={isInfoOpen}
+              >
+                <Info size={16} aria-hidden="true" />
+              </button>
+              {isInfoOpen ? (
+                <div className="absolute left-0 top-11 z-20 max-w-sm rounded-lg border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600 shadow-xl">
+                  Your ATS score is calculated from section completeness, keyword usage, work experience quality, skills, education, formatting, and measurable achievements.
+                </div>
+              ) : null}
+            </div>
             <p className="mt-2 text-sm leading-6 text-slate-600">Aim for at least 70% before applying. {score.summary}</p>
             <p className="mt-2 text-sm font-bold text-slate-700">Fix {issueCount} issues to improve your resume.</p>
             <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
               <div className="h-full rounded-full transition-all" style={{ width: `${score.percentage}%`, backgroundColor: scoreTone.hex }} />
             </div>
+            <button onClick={() => setIsRecommendationsOpen(true)} className="mt-4 min-h-11 rounded-lg border border-teal-200 bg-white px-4 text-sm font-bold text-teal-700 hover:bg-teal-50">
+              View Recommendations
+            </button>
           </div>
         </div>
       </div>
@@ -76,7 +122,7 @@ export function AtsScorePanel({ data, onFixSection }: AtsScorePanelProps) {
               onToggle={() => setOpenCategory((current) => current === category.id ? "" : category.id)}
               onFix={() => {
                 const section = categorySectionMap[category.id];
-                if (section && section !== ("templates" as ResumeSection)) onFixSection?.(section);
+                if (section) onFixSection?.(section);
               }}
             />
           ))}
@@ -113,14 +159,37 @@ export function AtsScorePanel({ data, onFixSection }: AtsScorePanelProps) {
           </div>
         ) : null}
       </div>
+      <RecommendationsDrawer
+        isOpen={isRecommendationsOpen}
+        score={score}
+        recommendationsCount={recommendations.length}
+        onClose={() => setIsRecommendationsOpen(false)}
+        onFixSection={(categoryId) => {
+          const section = categorySectionMap[categoryId];
+          if (section) {
+            setIsRecommendationsOpen(false);
+            onFixSection?.(section);
+          }
+        }}
+      />
     </section>
   );
 }
 
-export function AtsInsightsCompact({ data, onViewRecommendations }: { data: ResumeData; onViewRecommendations: () => void }) {
+export function AtsInsightsCompact({
+  data,
+  onViewRecommendations,
+  onFixSection,
+}: {
+  data: ResumeData;
+  onViewRecommendations: () => void;
+  onFixSection?: (section: ResumeSection) => void;
+}) {
   const score = useMemo(() => calculateAtsScore(data), [data]);
+  const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
   const scoreTone = toneFor(score.percentage);
   const rows = score.categories.slice(0, 6);
+  const recommendations = score.categories.flatMap((category) => category.items.filter((item) => item.severity !== "success"));
 
   return (
     <aside className="hidden min-w-0 border-l border-slate-200 bg-slate-50/80 p-4 xl:block">
@@ -155,11 +224,27 @@ export function AtsInsightsCompact({ data, onViewRecommendations }: { data: Resu
           ))}
         </div>
         <div className="p-4">
-          <button onClick={onViewRecommendations} className="min-h-11 w-full rounded-lg border border-teal-200 bg-white px-3 text-sm font-bold text-teal-700 hover:bg-teal-50">
+          <button onClick={() => {
+            onViewRecommendations();
+            setIsRecommendationsOpen(true);
+          }} className="min-h-11 w-full rounded-lg border border-teal-200 bg-white px-3 text-sm font-bold text-teal-700 hover:bg-teal-50">
             View Recommendations
           </button>
         </div>
       </div>
+      <RecommendationsDrawer
+        isOpen={isRecommendationsOpen}
+        score={score}
+        recommendationsCount={recommendations.length}
+        onClose={() => setIsRecommendationsOpen(false)}
+        onFixSection={(categoryId) => {
+          const section = categorySectionMap[categoryId];
+          if (section) {
+            setIsRecommendationsOpen(false);
+            onFixSection?.(section);
+          }
+        }}
+      />
     </aside>
   );
 }
@@ -181,16 +266,21 @@ function CategoryRow({ category, isOpen, onToggle, onFix }: { category: AtsCateg
       </button>
       {isOpen ? (
         <div className="space-y-3 border-t border-slate-200 p-4">
+          {category.issues === 0 ? (
+            <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-sm font-bold text-emerald-700">
+              This section looks good.
+            </div>
+          ) : null}
           {category.items.map((item) => (
             <div key={item.id} className="rounded-lg bg-white p-4">
               <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${severityBadge(item.severity)}`}>
                 {item.severity === "success" ? <CheckCircle2 size={13} /> : item.severity === "suggestion" ? <Lightbulb size={13} /> : <CircleAlert size={13} />}
-                {item.severity}
+                {severityLabel(item.severity)}
               </span>
               <p className="mt-3 font-bold text-slate-950">{item.title}</p>
               <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
               <p className="mt-2 text-sm font-semibold text-slate-700">Action: {item.action}</p>
-              {item.severity !== "success" ? <button onClick={onFix} className="mt-3 min-h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Fix in editor</button> : null}
+              {item.severity !== "success" ? <button onClick={onFix} className="mt-3 min-h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Fix this</button> : null}
             </div>
           ))}
         </div>
@@ -216,6 +306,115 @@ function KeywordBox({ title, keywords, tone }: { title: string; keywords: string
   );
 }
 
+function RecommendationsDrawer({
+  isOpen,
+  score,
+  recommendationsCount,
+  onClose,
+  onFixSection,
+}: {
+  isOpen: boolean;
+  score: AtsScoreResult;
+  recommendationsCount: number;
+  onClose: () => void;
+  onFixSection: (categoryId: string) => void;
+}) {
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[70] bg-slate-950/35">
+      <button className="absolute inset-0 h-full w-full cursor-default" aria-label="Close recommendations" onClick={onClose} />
+      <aside className="absolute inset-x-0 bottom-0 ml-auto flex max-h-[92vh] min-h-[70vh] w-full flex-col rounded-t-lg bg-white shadow-2xl lg:inset-x-auto lg:inset-y-0 lg:right-0 lg:max-h-none lg:min-h-0 lg:max-w-xl lg:rounded-none">
+        <div className="flex min-h-16 items-center justify-between gap-3 border-b border-slate-200 px-4 sm:px-5">
+          <div>
+            <p className="text-sm font-bold text-slate-950">ATS Recommendations</p>
+            <p className="mt-0.5 text-xs font-semibold text-slate-500">{score.percentage}% · {score.label} · {recommendationsCount} items</p>
+          </div>
+          <button onClick={onClose} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Close recommendations">
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-24 sm:px-5 lg:pb-5">
+          <div className="mb-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg bg-teal-50 p-3">
+              <p className="text-xs font-bold text-teal-700">Overall score</p>
+              <p className="mt-1 text-2xl font-bold text-slate-950">{score.percentage}%</p>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-3">
+              <p className="text-xs font-bold text-slate-600">Score label</p>
+              <p className="mt-1 text-lg font-bold text-slate-950">{score.label}</p>
+            </div>
+            <div className="rounded-lg bg-amber-50 p-3">
+              <p className="text-xs font-bold text-amber-700">Total issues</p>
+              <p className="mt-1 text-2xl font-bold text-slate-950">{score.categories.reduce((sum, category) => sum + category.issues, 0)}</p>
+            </div>
+          </div>
+
+          {recommendationsCount === 0 ? (
+            <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4 text-sm font-bold text-emerald-700">
+              Great job! No major recommendations right now.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {score.categories.map((category) => {
+                const items = category.items.filter((item) => item.severity !== "success");
+                if (!items.length) {
+                  return null;
+                }
+
+                const section = categorySectionMap[category.id];
+                const buttonLabel = section ? `Go to ${sectionLabel(section)}` : "Review section";
+
+                return (
+                  <section key={category.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h3 className="font-bold text-slate-950">{category.label}</h3>
+                      <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-slate-600">{category.score}/{category.maxScore}</span>
+                    </div>
+                    <div className="space-y-3">
+                      {items.map((item) => (
+                        <article key={item.id} className="rounded-lg bg-white p-4">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${severityBadge(item.severity)}`}>
+                            {item.severity === "suggestion" ? <Lightbulb size={13} /> : <CircleAlert size={13} />}
+                            {severityLabel(item.severity)}
+                          </span>
+                          <p className="mt-3 font-bold text-slate-950">{item.title}</p>
+                          <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
+                          <p className="mt-2 text-sm font-semibold text-slate-700">{item.action}</p>
+                          <button onClick={() => onFixSection(category.id)} className="mt-3 min-h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 hover:bg-slate-50">
+                            {buttonLabel}
+                          </button>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 export function toneFor(percentage: number) {
   if (percentage >= 85) return { hex: "#16a34a", text: "text-emerald-700", badge: "bg-emerald-50 text-emerald-700" };
   if (percentage >= 70) return { hex: "#0f8f7f", text: "text-teal-700", badge: "bg-teal-50 text-teal-700" };
@@ -228,4 +427,28 @@ function severityBadge(severity: AtsIssueSeverity) {
   if (severity === "suggestion") return "bg-slate-100 text-slate-600";
   if (severity === "warning") return "bg-amber-50 text-amber-700";
   return "bg-rose-50 text-rose-700";
+}
+
+function severityLabel(severity: AtsIssueSeverity) {
+  if (severity === "success") return "Good";
+  if (severity === "error") return "Issue";
+  return severity[0].toUpperCase() + severity.slice(1);
+}
+
+function sectionLabel(section: ResumeSection) {
+  const labels: Record<ResumeSection, string> = {
+    personal: "Personal Details",
+    summary: "Summary",
+    experience: "Work Experience",
+    education: "Education",
+    skills: "Skills",
+    languages: "Languages",
+    projects: "Projects",
+    certificates: "Certificates",
+    achievements: "Achievements",
+    references: "References",
+    customSections: "Additional",
+  };
+
+  return labels[section];
 }

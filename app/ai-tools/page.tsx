@@ -24,7 +24,7 @@ export default function AIToolsPage() {
         eyebrow="AI Tools"
         title="Write better resumes with AI-powered guidance"
         description="ResumeCraft's AI layer will help you write sharper summaries, stronger bullets, and more targeted applications."
-        actions={<AppButton href="/builder/sample-resume">Try in Builder</AppButton>}
+        actions={<AppButton href="/builder/guest">Try in Builder</AppButton>}
       />
       <main className="bg-slate-50">
         <section className="mx-auto grid max-w-7xl gap-5 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
@@ -34,7 +34,7 @@ export default function AIToolsPage() {
               <SectionBadge tone={status === "In Builder" ? "emerald" : "slate"}>{status}</SectionBadge>
               <h2 className="mt-4 font-bold text-slate-950">{title}</h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
-              <div className="mt-5"><AppButton href="/builder/sample-resume" variant="secondary">{status === "In Builder" ? "Try in builder" : "Coming soon"}</AppButton></div>
+              <div className="mt-5"><AppButton href="/builder/guest" variant="secondary">{status === "In Builder" ? "Try in builder" : "Coming soon"}</AppButton></div>
             </article>
           ))}
         </section>

@@ -29,7 +29,7 @@ export function TemplateCard({ id, name, badge, category, bestFor }: TemplateCar
           </span>
         </div>
         <a
-          href={`/builder/sample-resume?template=${id}`}
+          href={`/builder/guest?template=${id}`}
           className="mr-4 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition group-hover:border-teal-200 group-hover:bg-teal-50 group-hover:text-teal-700"
           aria-label={`Use ${name} template`}
           title={`Use ${name}`}

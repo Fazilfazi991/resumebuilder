@@ -11,9 +11,11 @@ const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 type ResumePhotoUploadProps = {
   value: string;
   onChange: (url: string) => void;
+  disabledReason?: string;
+  onAuthRequired?: () => void;
 };
 
-export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
+export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequired }: ResumePhotoUploadProps) {
   const params = useParams<{ resumeId?: string }>();
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
@@ -21,7 +23,13 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
   const [status, setStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
-  const chooseFile = () => inputRef.current?.click();
+  const chooseFile = () => {
+    if (disabledReason) {
+      onAuthRequired?.();
+      return;
+    }
+    inputRef.current?.click();
+  };
 
   const uploadFile = async (file: File) => {
     setError("");
@@ -116,6 +124,7 @@ export function ResumePhotoUpload({ value, onChange }: ResumePhotoUploadProps) {
             ) : null}
           </div>
           <p className="mt-3 text-sm leading-5 text-slate-600">JPG, PNG, or WEBP. Maximum 5MB.</p>
+          {disabledReason ? <p className="mt-2 text-sm font-semibold text-teal-700">{disabledReason}</p> : null}
           {status ? <p className="mt-2 text-sm font-semibold text-emerald-700">{status}</p> : null}
           {note ? <p className="mt-2 max-w-md text-sm font-semibold leading-5 text-amber-700">{note}</p> : null}
           {error ? <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p> : null}
