@@ -78,7 +78,7 @@ export function CouponCheckoutBox({ planId, variant = "primary", children = "Cho
           <input
             value={coupon}
             onChange={(event) => updateCoupon(event.target.value)}
-            placeholder="THAMEEMAR"
+            placeholder="Enter coupon code"
             className="h-10 min-w-0 rounded-lg border border-blue-200 bg-white px-3 text-sm font-semibold uppercase tracking-wide text-slate-900 outline-none focus:border-blue-600"
           />
           <button
