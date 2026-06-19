@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/app/AppHeader";
 import { StatCard } from "@/components/app/StatCard";
+import { isAdminEmail } from "@/lib/auth/admin-access";
 import { requireUser } from "@/lib/auth/require-user";
 import type { Database } from "@/types/database";
 import type { ResumeData } from "@/types/resume";
@@ -12,10 +13,15 @@ type DownloadRow = Database["public"]["Tables"]["downloads"]["Row"];
 type Payment = Database["public"]["Tables"]["payments"]["Row"];
 
 export default async function AdminDashboardPage() {
-  const { supabase, profile } = await requireUser("/admin");
+  const { supabase, user, profile } = await requireUser("/admin");
+  const allowedByEmail = isAdminEmail(user.email ?? profile?.email);
 
-  if (profile?.plan !== "admin") {
+  if (profile?.plan !== "admin" && !allowedByEmail) {
     redirect("/dashboard");
+  }
+
+  if (profile?.plan !== "admin" && allowedByEmail) {
+    await supabase.from("profiles").update({ plan: "admin" }).eq("user_id", user.id);
   }
 
   const [profilesResult, resumesResult, downloadsResult, paymentsResult] = await Promise.all([
@@ -51,7 +57,7 @@ export default async function AdminDashboardPage() {
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Monitor users, resumes, downloads, payments, and the contact details users add inside their resumes.</p>
             </div>
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900">
-              Admin access: {profile.email || profile.full_name || "current user"}
+              Admin access: {profile?.email || profile?.full_name || user.email || "current user"}
             </div>
           </div>
 
