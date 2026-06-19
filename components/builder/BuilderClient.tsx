@@ -49,6 +49,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 type Tab = "edit" | "preview" | "templates" | "assistant" | "ats";
 type SaveState = "saved" | "saving" | "failed" | "guest";
+type PdfExportMode = "standard-a4" | "auto-height";
 type SavePayload = {
   title: string;
   templateId: string;
@@ -112,6 +113,8 @@ export function BuilderClient({
   const [isAssistantOpen, setIsAssistantOpen] = useState(initialTab === "assistant");
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
+  const [isPdfOptionsOpen, setIsPdfOptionsOpen] = useState(false);
+  const [pdfRenderMode, setPdfRenderMode] = useState<PdfExportMode>("standard-a4");
   const [templateToast, setTemplateToast] = useState("");
   const [saveState, setSaveState] = useState<SaveState>(isGuest ? "guest" : "saved");
   const [connectionMessage, setConnectionMessage] = useState("");
@@ -376,7 +379,16 @@ export function BuilderClient({
     }
   };
 
-  const downloadPdf = async () => {
+  const openPdfOptions = () => {
+    if (isGuest) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    setIsPdfOptionsOpen(true);
+  };
+
+  const downloadPdf = async (exportMode: PdfExportMode = "standard-a4") => {
     if (isGuest) {
       setIsAuthModalOpen(true);
       return;
@@ -389,6 +401,9 @@ export function BuilderClient({
     setIsDownloading(true);
     setDownloadError("");
     try {
+      const renderMode = exportMode === "auto-height" ? "auto-height" : "standard-a4";
+      setPdfRenderMode(renderMode);
+      await waitForNextFrame();
       await document.fonts?.ready;
       const [{ toPng }, { jsPDF }] = await Promise.all([
         import("html-to-image"),
@@ -396,7 +411,14 @@ export function BuilderClient({
       ]);
       const captureWidth = 794;
       const pagePixelHeight = 1123;
-      const captureHeight = Math.max(pagePixelHeight, pdfRef.current.scrollHeight);
+      await waitForImages(pdfRef.current);
+      const contentHeight = await measureResumeHeight(pdfRef.current);
+      const shouldAutoHeight = exportMode === "auto-height" && contentHeight <= pagePixelHeight;
+      if (exportMode === "auto-height" && !shouldAutoHeight) {
+        setPdfRenderMode("standard-a4");
+        await waitForNextFrame();
+      }
+      const captureHeight = shouldAutoHeight ? contentHeight : Math.max(pagePixelHeight, pdfRef.current.scrollHeight);
       const imageData = await toPng(pdfRef.current, {
         backgroundColor: "#ffffff",
         cacheBust: true,
@@ -410,14 +432,14 @@ export function BuilderClient({
       });
       const sourceImage = await loadImage(imageData);
       const pageChunks = Math.ceil(captureHeight / pagePixelHeight);
+      const pdfWidth = 595.28;
+      const autoPdfHeight = Math.max(72, (captureHeight * pdfWidth) / captureWidth);
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "pt",
-        format: "a4",
+        format: shouldAutoHeight ? [pdfWidth, autoPdfHeight] : "a4",
         compress: true,
       });
-      const pdfWidth = 595.28;
-      const pdfHeight = 841.89;
 
       for (let pageIndex = 0; pageIndex < pageChunks; pageIndex += 1) {
         if (pageIndex > 0) {
@@ -444,7 +466,7 @@ export function BuilderClient({
           sourceImage.width,
           canvas.height,
         );
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, (chunkHeight * pdfWidth) / captureWidth, undefined, "FAST");
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, shouldAutoHeight ? autoPdfHeight : (chunkHeight * pdfWidth) / captureWidth, undefined, "FAST");
       }
       const pdfBlob = pdf.output("blob");
       const downloadUrl = URL.createObjectURL(pdfBlob);
@@ -455,11 +477,13 @@ export function BuilderClient({
       anchor.click();
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      setIsPdfOptionsOpen(false);
     } catch (error) {
       console.error(error);
       setDownloadError("PDF export failed. Please try again after switching to Preview.");
     } finally {
       setIsDownloading(false);
+      setPdfRenderMode("standard-a4");
     }
   };
 
@@ -506,7 +530,7 @@ export function BuilderClient({
                 Preview Resume
               </button>
               <button
-                onClick={downloadPdf}
+                onClick={openPdfOptions}
                 disabled={isDownloading}
                 className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-blue-900 bg-white px-4 text-sm font-bold text-blue-900 shadow-sm transition hover:bg-blue-50 disabled:opacity-70 sm:flex-none sm:px-5 lg:min-h-[52px] lg:text-base"
               >
@@ -651,10 +675,10 @@ export function BuilderClient({
       <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <button onClick={() => setIsResumePreviewOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500"><Eye size={19} />Preview</button>
         <button onClick={() => setIsTemplateSelectorOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500"><LayoutTemplate size={19} />Templates</button>
-        <button onClick={downloadPdf} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
+        <button onClick={openPdfOptions} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
       </nav>
-      <div className="pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white" aria-hidden="true">
-        <div ref={pdfRef} className="min-h-[1123px] w-[794px] bg-white">
+      <div className={`pdf-export-root pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white ${pdfRenderMode === "auto-height" ? "pdf-export-auto-height" : "pdf-export-standard-a4"}`} aria-hidden="true">
+        <div ref={pdfRef} className={`${pdfRenderMode === "auto-height" ? "min-h-0" : "min-h-[1123px]"} w-[794px] bg-white`}>
           <ResumeRenderer data={data} sectionOrder={sectionOrder} templateId={templateId} isWatermarked={false} />
         </div>
       </div>
@@ -671,6 +695,42 @@ export function BuilderClient({
           onUseTemplate={applyTemplate}
           onClose={() => setIsTemplateSelectorOpen(false)}
         />
+      ) : null}
+      {isPdfOptionsOpen ? (
+        <div className="fixed inset-0 z-[95] flex items-end justify-center bg-slate-950/55 p-3 backdrop-blur-sm sm:items-center">
+          <section className="w-full max-w-lg rounded-lg bg-white p-5 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-950">Download PDF</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">Most job portals prefer Standard A4. Auto-fit removes extra blank space for short resumes.</p>
+              </div>
+              <button onClick={() => setIsPdfOptionsOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Cancel PDF export">
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+            <div className="mt-5 grid gap-3">
+              <button
+                onClick={() => downloadPdf("standard-a4")}
+                disabled={isDownloading}
+                className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-400 disabled:opacity-60"
+              >
+                <span className="block font-bold text-blue-950">Standard A4</span>
+                <span className="mt-1 block text-sm leading-6 text-blue-800">Best for job applications, printing, and long resumes. Keeps normal A4 pagination.</span>
+              </button>
+              <button
+                onClick={() => downloadPdf("auto-height")}
+                disabled={isDownloading}
+                className="rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-blue-300 hover:bg-slate-50 disabled:opacity-60"
+              >
+                <span className="block font-bold text-slate-950">Auto-fit content</span>
+                <span className="mt-1 block text-sm leading-6 text-slate-600">Removes extra blank space when your resume is shorter than one page. Long resumes use Standard A4 automatically.</span>
+              </button>
+            </div>
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <AppButton variant="secondary" onClick={() => setIsPdfOptionsOpen(false)}>Cancel</AppButton>
+            </div>
+          </section>
+        </div>
       ) : null}
       {templateToast ? (
         <div className="fixed bottom-20 left-1/2 z-[120] -translate-x-1/2 rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-700 shadow-xl lg:bottom-5">
@@ -723,7 +783,7 @@ export function BuilderClient({
               ) : null}
             </div>
             <div className="border-t border-slate-200 bg-white p-4 sm:hidden">
-              <AppButton onClick={downloadPdf} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
+              <AppButton onClick={openPdfOptions} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
             </div>
           </aside>
         </div>
@@ -1269,6 +1329,35 @@ function loadImage(src: string) {
     image.onerror = () => reject(new Error("Resume preview image could not be loaded."));
     image.src = src;
   });
+}
+
+function waitForNextFrame() {
+  return new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
+async function waitForImages(root: HTMLElement) {
+  const images = Array.from(root.querySelectorAll("img"));
+  await Promise.all(images.map((image) => {
+    if (image.complete) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
+      image.addEventListener("load", () => resolve(), { once: true });
+      image.addEventListener("error", () => resolve(), { once: true });
+    });
+  }));
+}
+
+async function measureResumeHeight(root: HTMLElement) {
+  await waitForNextFrame();
+  const resumePage = root.querySelector<HTMLElement>(".resume-page");
+  const target = resumePage ?? root;
+  const rect = target.getBoundingClientRect();
+  const measuredHeight = Math.max(target.scrollHeight, target.offsetHeight, Math.ceil(rect.height));
+  return Math.ceil(measuredHeight + 36);
 }
 
 function atsCategoryId(sectionId: ResumeSection) {

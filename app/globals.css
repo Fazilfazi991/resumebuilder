@@ -166,6 +166,15 @@ a {
   print-color-adjust: exact;
 }
 
+.pdf-export-root.pdf-export-auto-height .resume-page {
+  min-height: auto;
+  height: auto;
+}
+
+.pdf-export-root.pdf-export-standard-a4 .resume-page {
+  min-height: 297mm;
+}
+
 .resume-section {
   break-inside: avoid;
   page-break-inside: avoid;
