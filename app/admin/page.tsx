@@ -4,7 +4,7 @@ import { isAdminEmail } from "@/lib/auth/admin-access";
 import { requireUser } from "@/lib/auth/require-user";
 import type { Database } from "@/types/database";
 import type { ResumeData } from "@/types/resume";
-import { CreditCard, Download, FileText, Mail, Phone, ShieldCheck, UsersRound, WalletCards } from "lucide-react";
+import { Activity, BarChart3, CreditCard, Download, FileText, Mail, Phone, ShieldCheck, TrendingUp, UsersRound, WalletCards } from "lucide-react";
 import { redirect } from "next/navigation";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -40,10 +40,27 @@ export default async function AdminDashboardPage() {
   const totalRevenue = paidPayments.reduce((total, item) => total + Number(item.amount ?? 0), 0);
   const premiumUsers = profiles.filter((item) => item.plan === "premium" || item.plan === "lifetime").length;
   const adminUsers = profiles.filter((item) => item.plan === "admin").length;
+  const today = startOfDay(new Date());
+  const usersToday = profiles.filter((item) => new Date(item.created_at) >= today).length;
+  const resumesToday = resumes.filter((item) => new Date(item.created_at) >= today).length;
+  const downloadsToday = downloads.filter((item) => new Date(item.downloaded_at) >= today).length;
+  const paymentsToday = payments.filter((item) => new Date(item.created_at) >= today).length;
+  const resumesWithEmail = resumes.filter((item) => Boolean(item.resume_data.personal.email?.trim())).length;
+  const resumesWithPhone = resumes.filter((item) => Boolean(item.resume_data.personal.phone?.trim())).length;
+  const resumesWithLinks = resumes.filter((item) => Boolean(item.resume_data.personal.linkedin?.trim() || item.resume_data.personal.portfolio?.trim() || item.resume_data.personal.website?.trim())).length;
+  const averageResumesPerUser = profiles.length ? (resumes.length / profiles.length).toFixed(1) : "0";
+  const planCounts = countBy(profiles, (item) => item.plan);
+  const templateCounts = countBy(resumes, (item) => item.template_id);
   const latestResumes = resumes.slice(0, 12);
   const latestUsers = profiles.slice(0, 10);
   const latestPayments = payments.slice(0, 8);
   const latestDownloads = downloads.slice(0, 8);
+  const recentActivity = [
+    ...profiles.slice(0, 6).map((item) => ({ id: `user-${item.id}`, type: "User joined", title: item.email || item.full_name || "New user", date: item.created_at })),
+    ...resumes.slice(0, 6).map((item) => ({ id: `resume-${item.id}`, type: "Resume updated", title: item.title, date: item.updated_at })),
+    ...downloads.slice(0, 6).map((item) => ({ id: `download-${item.id}`, type: "PDF downloaded", title: item.template_id, date: item.downloaded_at })),
+    ...payments.slice(0, 6).map((item) => ({ id: `payment-${item.id}`, type: "Payment", title: `${item.plan} ${item.status}`, date: item.created_at })),
+  ].sort((first, second) => new Date(second.date).getTime() - new Date(first.date).getTime()).slice(0, 12);
 
   return (
     <>
@@ -62,10 +79,17 @@ export default async function AdminDashboardPage() {
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard icon={UsersRound} label="Users" value={String(profiles.length)} helper={`${premiumUsers} paid users, ${adminUsers} admins`} />
-            <StatCard icon={FileText} label="Resumes" value={String(resumes.length)} helper="Saved resumes across all users" />
-            <StatCard icon={Download} label="Downloads" value={String(downloads.length)} helper="Tracked PDF exports" />
-            <StatCard icon={WalletCards} label="Payments" value={formatMoney(totalRevenue, payments[0]?.currency)} helper={`${payments.length} payment records`} />
+            <StatCard icon={UsersRound} label="Users" value={String(profiles.length)} helper={`${usersToday} joined today, ${adminUsers} owners/admins`} />
+            <StatCard icon={FileText} label="Resumes" value={String(resumes.length)} helper={`${resumesToday} created today, ${averageResumesPerUser} per user`} />
+            <StatCard icon={Download} label="Downloads" value={String(downloads.length)} helper={`${downloadsToday} downloads today`} />
+            <StatCard icon={WalletCards} label="Payments" value={formatMoney(totalRevenue, payments[0]?.currency)} helper={`${payments.length} records, ${paymentsToday} today`} />
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard icon={TrendingUp} label="Paid users" value={String(premiumUsers)} helper={`${planCounts.premium ?? 0} premium, ${planCounts.lifetime ?? 0} lifetime`} />
+            <StatCard icon={Mail} label="Resume emails" value={String(resumesWithEmail)} helper={`${percent(resumesWithEmail, resumes.length)} of resumes`} />
+            <StatCard icon={Phone} label="Resume phones" value={String(resumesWithPhone)} helper={`${percent(resumesWithPhone, resumes.length)} of resumes`} />
+            <StatCard icon={BarChart3} label="Resume links" value={String(resumesWithLinks)} helper={`${percent(resumesWithLinks, resumes.length)} added LinkedIn/portfolio/site`} />
           </div>
 
           <div className="mt-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -136,6 +160,37 @@ export default async function AdminDashboardPage() {
           </div>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><Activity size={19} /></div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-950">Live website activity</h2>
+                  <p className="mt-1 text-sm text-slate-500">Latest users, resume edits, downloads, and payment events.</p>
+                </div>
+              </div>
+              <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {recentActivity.map((item) => (
+                  <article key={item.id} className="rounded-lg border border-slate-200 p-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.08em] text-blue-700">{item.type}</p>
+                    <p className="mt-2 truncate font-bold text-slate-950">{item.title}</p>
+                    <p className="mt-1 text-xs text-slate-500">{formatDateTime(item.date)}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <ActivityPanel title="Template usage" icon={BarChart3}>
+              {Object.entries(templateCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([templateId, count]) => (
+                <ActivityRow key={templateId} title={templateId} meta={`${percent(count, resumes.length)} of resumes`} value={String(count)} />
+              ))}
+            </ActivityPanel>
+
+            <ActivityPanel title="Plan breakdown" icon={UsersRound}>
+              {(["free", "premium", "lifetime", "admin"] as const).map((plan) => (
+                <ActivityRow key={plan} title={plan} meta={`${percent(planCounts[plan] ?? 0, profiles.length)} of users`} value={String(planCounts[plan] ?? 0)} />
+              ))}
+            </ActivityPanel>
+
             <ActivityPanel title="Recent payments" icon={CreditCard}>
               {latestPayments.length ? latestPayments.map((payment) => {
                 const owner = profileByUserId.get(payment.user_id);
@@ -218,10 +273,33 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(value));
 }
 
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
 function formatMoney(amount: number, currency = "AED") {
   return new Intl.NumberFormat("en", {
     style: "currency",
     currency: currency || "AED",
     maximumFractionDigits: 0,
   }).format(amount || 0);
+}
+
+function startOfDay(date: Date) {
+  const next = new Date(date);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
+function percent(value: number, total: number) {
+  if (!total) return "0%";
+  return `${Math.round((value / total) * 100)}%`;
+}
+
+function countBy<T>(items: T[], getKey: (item: T) => string) {
+  return items.reduce<Record<string, number>>((counts, item) => {
+    const key = getKey(item) || "unknown";
+    counts[key] = (counts[key] ?? 0) + 1;
+    return counts;
+  }, {});
 }
