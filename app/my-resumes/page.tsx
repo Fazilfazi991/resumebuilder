@@ -2,6 +2,7 @@ import { PortalShell } from "@/components/app/PortalShell";
 import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
 import { SubmitButton } from "@/components/app/SubmitButton";
+import { CreateResumeModal } from "@/components/resume/CreateResumeModal";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { requireUser } from "@/lib/auth/require-user";
 import { createResumeAndRedirect, deleteResume, duplicateResume, getUserResumes } from "@/lib/resume/server";
@@ -70,9 +71,7 @@ export default async function MyResumesPage() {
               </div>
               <h3 className="mt-5 text-lg font-bold text-slate-950">Create your first resume</h3>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">Start with a polished template and manage all versions here.</p>
-              <form action={createResumeAndRedirect} className="mt-5">
-                <SubmitButton pendingText="Creating resume...">Create Resume</SubmitButton>
-              </form>
+              <div className="mt-5"><CreateResumeModal createAction={createResumeAndRedirect} buttonLabel="Create your first resume" /></div>
             </div>
           )}
         </div>

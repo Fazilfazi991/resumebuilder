@@ -70,12 +70,14 @@ export async function createResume(input?: Partial<ResumeInput>) {
 
 export async function createResumeAndRedirect(formData: FormData) {
   const templateId = String(formData.get("templateId") ?? "modern-minimal");
+  const tab = String(formData.get("tab") ?? "");
   const resume = await createResume({
     title: "Untitled Resume",
     templateId,
   });
 
-  redirect(`/builder/${resume.id}`);
+  const query = tab ? `?tab=${encodeURIComponent(tab)}` : "";
+  redirect(`/builder/${resume.id}${query}`);
 }
 
 export async function getUserResumes() {

@@ -1,7 +1,17 @@
 import { AppHeader } from "@/components/app/AppHeader";
 import { TemplatesClient } from "@/components/templates/TemplatesClient";
+import { createResumeAndRedirect } from "@/lib/resume/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
 
-export default function TemplatesPage() {
+export default async function TemplatesPage() {
+  let isLoggedIn = false;
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    isLoggedIn = Boolean(data.user);
+  }
+
   return (
     <>
       <AppHeader />
@@ -12,7 +22,7 @@ export default function TemplatesPage() {
             <h1 className="mt-2 text-3xl font-bold text-slate-950">Choose a resume template</h1>
             <p className="mt-3 text-slate-600">Start with one profile, then switch between ATS, modern, UAE, and premium designs anytime.</p>
           </div>
-          <TemplatesClient />
+          <TemplatesClient createAction={isLoggedIn ? createResumeAndRedirect : undefined} />
         </section>
       </main>
     </>

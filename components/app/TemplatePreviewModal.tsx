@@ -5,8 +5,9 @@ import type { TemplateDefinition } from "@/types/template";
 import { A4Preview } from "./A4Preview";
 import { AppButton } from "./AppButton";
 import { SectionBadge } from "./SectionBadge";
+import { SubmitButton } from "./SubmitButton";
 
-export function TemplatePreviewModal({ template, onClose }: { template: TemplateDefinition | null; onClose: () => void }) {
+export function TemplatePreviewModal({ template, onClose, createAction }: { template: TemplateDefinition | null; onClose: () => void; createAction?: (formData: FormData) => void | Promise<void> }) {
   if (!template) {
     return null;
   }
@@ -44,12 +45,26 @@ export function TemplatePreviewModal({ template, onClose }: { template: Template
             <li>Live builder compatible</li>
           </ul>
           <div className="mt-7 hidden gap-3 lg:grid">
-            <AppButton href={`/builder/guest?template=${template.id}`}>Use Template</AppButton>
+            {createAction ? (
+              <form action={createAction}>
+                <input type="hidden" name="templateId" value={template.id} />
+                <SubmitButton className="w-full" pendingText="Creating...">Use Template</SubmitButton>
+              </form>
+            ) : (
+              <AppButton href={`/builder/guest?template=${template.id}`}>Use Template</AppButton>
+            )}
             <AppButton href={`/builder/guest?template=${template.id}`} variant="secondary">Open in Builder</AppButton>
           </div>
         </aside>
         <div className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-2 border-t border-slate-200 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
-          <AppButton href={`/builder/guest?template=${template.id}`}>Use Template</AppButton>
+          {createAction ? (
+            <form action={createAction}>
+              <input type="hidden" name="templateId" value={template.id} />
+              <SubmitButton className="w-full" pendingText="Creating...">Use Template</SubmitButton>
+            </form>
+          ) : (
+            <AppButton href={`/builder/guest?template=${template.id}`}>Use Template</AppButton>
+          )}
           <AppButton href={`/builder/guest?template=${template.id}`} variant="secondary">Open in Builder</AppButton>
         </div>
       </div>

@@ -3,11 +3,12 @@ import { AppButton } from "@/components/app/AppButton";
 import { AppHeader } from "@/components/app/AppHeader";
 import { StatCard } from "@/components/app/StatCard";
 import { SubmitButton } from "@/components/app/SubmitButton";
+import { CreateResumeModal } from "@/components/resume/CreateResumeModal";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { requireUser } from "@/lib/auth/require-user";
 import { createResumeAndRedirect, deleteResume, duplicateResume, getUserResumes } from "@/lib/resume/server";
 import { resumeTemplates } from "@/lib/resume/template-registry";
-import { Copy, Download, FileText, LayoutTemplate, Pencil, Plus, Trash2, TrendingUp } from "lucide-react";
+import { Copy, Download, FileText, LayoutTemplate, Pencil, Trash2, TrendingUp } from "lucide-react";
 
 export default async function DashboardPage() {
   const { user, profile } = await requireUser("/dashboard");
@@ -27,9 +28,7 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <AppButton href="/cover-letter"><FileText size={18} aria-hidden="true" /> Create Cover Letter</AppButton>
-              <form action={createResumeAndRedirect}>
-                <SubmitButton pendingText="Creating resume..."><Plus size={18} aria-hidden="true" /> Create New Resume</SubmitButton>
-              </form>
+              <CreateResumeModal createAction={createResumeAndRedirect} buttonLabel="Create New Resume" />
             </div>
           </div>
 
@@ -83,9 +82,7 @@ export default async function DashboardPage() {
                 <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
                   <h3 className="text-lg font-bold text-slate-950">Create your first resume</h3>
                   <p className="mt-2 text-sm text-slate-600">Start with a polished template and your drafts will appear here.</p>
-                  <form action={createResumeAndRedirect} className="mt-5">
-                    <SubmitButton pendingText="Creating resume...">Create New Resume</SubmitButton>
-                  </form>
+                  <div className="mt-5"><CreateResumeModal createAction={createResumeAndRedirect} buttonLabel="Create your first resume" /></div>
                 </div>
               )}
             </section>

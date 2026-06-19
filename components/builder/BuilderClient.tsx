@@ -2,10 +2,10 @@
 
 import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
-import { TemplatePreviewModal } from "@/components/app/TemplatePreviewModal";
 import { AtsInsightsCompact, AtsScorePanel, toneFor } from "@/components/builder/AtsScorePanel";
 import { ResumeAssistant } from "@/components/builder/ResumeAssistant";
 import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
+import { TemplateSelectionModal } from "@/components/builder/TemplateSelectionModal";
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/resume/mock-data";
@@ -91,17 +91,20 @@ export function BuilderClient({
 }: BuilderClientProps) {
   const searchParams = useSearchParams();
   const initialTemplate = initialTemplateId ?? searchParams.get("template") ?? "modern-minimal";
+  const requestedTab = searchParams.get("tab");
+  const initialTab = isTab(requestedTab) ? requestedTab : "edit";
   const [resumeTitle, setResumeTitle] = useState(initialTitle);
   const [templateId, setTemplateId] = useState(initialTemplate);
   const [data, setData] = useState<ResumeData>(initialData);
   const [activeSection, setActiveSection] = useState<ResumeSection>("personal");
-  const [mobileTab, setMobileTab] = useState<Tab>("edit");
+  const [mobileTab, setMobileTab] = useState<Tab>(initialTab);
   const [zoom, setZoom] = useState<"fit" | 75 | 100>("fit");
-  const [isTemplatePreviewOpen, setIsTemplatePreviewOpen] = useState(false);
+  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
   const [isResumePreviewOpen, setIsResumePreviewOpen] = useState(false);
-  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(initialTab === "assistant");
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
+  const [templateToast, setTemplateToast] = useState("");
   const [saveState, setSaveState] = useState<SaveState>(isGuest ? "guest" : "saved");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
@@ -111,7 +114,7 @@ export function BuilderClient({
   const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
   const atsScore = useMemo(() => calculateAtsScore(data), [data]);
   const atsTone = toneFor(atsScore.percentage);
-  const selectedTemplate = useMemo(() => resumeTemplates.find((template) => template.id === templateId), [templateId]);
+  const selectedTemplate = useMemo(() => resumeTemplates.find((template) => template.id === templateId) ?? resumeTemplates[0], [templateId]);
   const zoomLabel = zoom === "fit" ? "Fit" : `${zoom}%`;
   const zoomOut = () => setZoom((current) => current === 100 ? 75 : "fit");
   const zoomIn = () => setZoom((current) => current === "fit" ? 75 : 100);
@@ -162,6 +165,13 @@ export function BuilderClient({
 
     return () => window.clearTimeout(timeout);
   }, [data, isGuest, resumeTitle, saveResume, sectionOrder, templateId]);
+
+  useEffect(() => {
+    if (searchParams.get("tab") === "assistant") {
+      setMobileTab("assistant");
+      setIsAssistantOpen(true);
+    }
+  }, [searchParams]);
 
   const setPersonal = (field: keyof ResumeData["personal"], value: string) => {
     setData((current) => ({ ...current, personal: { ...current.personal, [field]: value } }));
@@ -220,6 +230,13 @@ export function BuilderClient({
   const openEditorSection = (section: ResumeSection) => {
     setActiveSection(section);
     setMobileTab("edit");
+  };
+
+  const applyTemplate = (template: typeof resumeTemplates[number]) => {
+    setTemplateId(template.id);
+    setIsTemplateSelectorOpen(false);
+    setTemplateToast(`Template changed to ${template.name}.`);
+    window.setTimeout(() => setTemplateToast(""), 2600);
   };
 
   const downloadPdf = async () => {
@@ -363,23 +380,15 @@ export function BuilderClient({
           </div>
 
           <div className="mt-3 hidden items-center justify-center lg:flex">
-            <select
-              value={templateId}
-              onChange={(event) => {
-                const nextTemplate = resumeTemplates.find((template) => template.id === event.target.value);
-                if (isGuest && nextTemplate?.isPremium) {
-                  setIsAuthModalOpen(true);
-                  return;
-                }
-                setTemplateId(event.target.value);
-              }}
-              className="h-12 w-full max-w-xl rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-blue-600"
-              aria-label="Template selector"
-            >
-              {resumeTemplates.map((template) => (
-                <option key={template.id} value={template.id}>{template.name} - {template.category} - {template.isPremium ? "Premium" : "Free"}</option>
-              ))}
-            </select>
+            <div className="flex w-full max-w-xl items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-slate-950">{selectedTemplate.name}</p>
+                <p className="mt-0.5 truncate text-xs font-semibold text-slate-500">{selectedTemplate.category} · {selectedTemplate.isPremium ? "Premium" : "Free"}</p>
+              </div>
+              <button onClick={() => setIsTemplateSelectorOpen(true)} className="shrink-0 rounded-lg bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100">
+                Change Template
+              </button>
+            </div>
             <Link href={resumeId ? `/cover-letter?resumeId=${resumeId}` : "/cover-letter"} className="ml-3 inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"><FileText size={16} aria-hidden="true" /> Cover Letter</Link>
             <button onClick={() => setIsAssistantOpen(true)} className="ml-3 inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"><Bot size={16} aria-hidden="true" /> Assistant</button>
           </div>
@@ -468,8 +477,12 @@ export function BuilderClient({
         <AtsInsightsCompact data={data} onViewRecommendations={() => setMobileTab("ats")} onFixSection={openEditorSection} />
 
         <section className={`${mobileTab === "templates" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
-          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4"><p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700">Selected template</p><p className="mt-1 font-bold text-slate-950">{resumeTemplates.find((template) => template.id === templateId)?.name}</p></div>
-          <div className="space-y-3">{resumeTemplates.map((template) => <article key={template.id} className={`grid grid-cols-[92px_1fr] gap-3 rounded-lg border bg-white p-3 ${template.id === templateId ? "border-blue-600 ring-2 ring-blue-100" : "border-slate-200"}`}><div className="h-28 overflow-hidden rounded-md bg-slate-100"><A4Preview templateId={template.id} /></div><div className="min-w-0"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-slate-950">{template.name}</h3><p className="mt-0.5 text-xs font-semibold text-slate-500">{template.category}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${template.isPremium ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span></div><button onClick={() => { if (isGuest && template.isPremium) { setIsAuthModalOpen(true); return; } setTemplateId(template.id); setIsResumePreviewOpen(true); }} className="mt-4 min-h-11 w-full rounded-lg bg-blue-700 text-sm font-bold text-white">{template.id === templateId ? "Selected" : "Select Template"}</button></div></article>)}</div>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700">Selected template</p>
+            <p className="mt-1 font-bold text-slate-950">{selectedTemplate.name}</p>
+            <p className="mt-1 text-sm font-semibold text-blue-900">{selectedTemplate.category} · {selectedTemplate.isPremium ? "Premium" : "Free"}</p>
+            <button onClick={() => setIsTemplateSelectorOpen(true)} className="mt-4 min-h-11 w-full rounded-lg bg-blue-700 px-4 text-sm font-bold text-white">Change Template</button>
+          </div>
         </section>
         <section className={`${mobileTab === "assistant" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
           <ResumeAssistant data={data} setData={setData} onPreview={() => setMobileTab("preview")} />
@@ -477,7 +490,7 @@ export function BuilderClient({
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <button onClick={() => setIsResumePreviewOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500"><Eye size={19} />Preview</button>
-        <button onClick={() => setMobileTab("templates")} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold ${mobileTab === "templates" ? "text-blue-700" : "text-slate-500"}`}><LayoutTemplate size={19} />Templates</button>
+        <button onClick={() => setIsTemplateSelectorOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500"><LayoutTemplate size={19} />Templates</button>
         <button onClick={downloadPdf} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
       </nav>
       <div className="pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white" aria-hidden="true">
@@ -490,10 +503,20 @@ export function BuilderClient({
           {downloadError}
         </div>
       ) : null}
-      <TemplatePreviewModal
-        template={isTemplatePreviewOpen ? resumeTemplates.find((template) => template.id === templateId) ?? null : null}
-        onClose={() => setIsTemplatePreviewOpen(false)}
-      />
+      {isTemplateSelectorOpen ? (
+        <TemplateSelectionModal
+          currentTemplateId={templateId}
+          data={data}
+          sectionOrder={sectionOrder}
+          onUseTemplate={applyTemplate}
+          onClose={() => setIsTemplateSelectorOpen(false)}
+        />
+      ) : null}
+      {templateToast ? (
+        <div className="fixed bottom-20 left-1/2 z-[120] -translate-x-1/2 rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-700 shadow-xl lg:bottom-5">
+          {templateToast}
+        </div>
+      ) : null}
       {isAssistantOpen ? (
         <div className="fixed inset-0 z-[65] bg-slate-950/35 lg:block">
           <aside className="ml-auto flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
@@ -1027,6 +1050,10 @@ function BulletEditor({ bullets, onChange }: { bullets: string[]; onChange: (bul
 
 function labelize(value: string) {
   return value.replace(/([A-Z])/g, " $1").replace(/^./, (char) => char.toUpperCase());
+}
+
+function isTab(value: string | null): value is Tab {
+  return value === "edit" || value === "preview" || value === "templates" || value === "assistant" || value === "ats";
 }
 
 function uid(prefix: string) {

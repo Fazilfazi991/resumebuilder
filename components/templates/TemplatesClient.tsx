@@ -9,7 +9,7 @@ import type { TemplateDefinition } from "@/types/template";
 
 const filters = ["All", "ATS", "Modern", "Executive", "Creative", "Freshers", "UAE", "Tech", "Sales", "Simple"];
 
-export function TemplatesClient() {
+export function TemplatesClient({ createAction }: { createAction?: (formData: FormData) => void | Promise<void> }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [query, setQuery] = useState("");
   const [previewTemplate, setPreviewTemplate] = useState<TemplateDefinition | null>(null);
@@ -48,10 +48,10 @@ export function TemplatesClient() {
       </div>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((template) => (
-          <TemplateGalleryCard key={template.id} {...template} isReferralUnlocked={template.id === unlockedTemplateId} onPreview={() => setPreviewTemplate(template)} />
+          <TemplateGalleryCard key={template.id} {...template} isReferralUnlocked={template.id === unlockedTemplateId} onPreview={() => setPreviewTemplate(template)} createAction={createAction} />
         ))}
       </div>
-      <TemplatePreviewModal template={previewTemplate} onClose={() => setPreviewTemplate(null)} />
+      <TemplatePreviewModal template={previewTemplate} onClose={() => setPreviewTemplate(null)} createAction={createAction} />
     </>
   );
 }
