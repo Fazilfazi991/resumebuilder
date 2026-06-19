@@ -6,6 +6,7 @@ import { A4Preview } from "./A4Preview";
 import { AppButton } from "./AppButton";
 import { SectionBadge } from "./SectionBadge";
 import { SubmitButton } from "./SubmitButton";
+import { sampleTemplateData, sampleTemplateSectionOrder } from "@/lib/resume/sample-template-data";
 
 export function TemplatePreviewModal({ template, onClose, createAction }: { template: TemplateDefinition | null; onClose: () => void; createAction?: (formData: FormData) => void | Promise<void> }) {
   if (!template) {
@@ -20,7 +21,8 @@ export function TemplatePreviewModal({ template, onClose, createAction }: { temp
           <button onClick={onClose} className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Close preview"><X size={20} /></button>
         </header>
         <div className="min-h-0 flex-1 overflow-auto bg-slate-100 p-3 sm:p-5 lg:p-7">
-          <A4Preview templateId={template.id} scale="builder" />
+          <p className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">Preview uses sample content to show the full template design.</p>
+          <A4Preview templateId={template.id} data={sampleTemplateData} sectionOrder={sampleTemplateSectionOrder} scale="builder" />
         </div>
         <aside className="max-h-[38vh] overflow-y-auto border-t border-slate-200 p-5 pb-24 lg:max-h-none lg:overflow-visible lg:border-l lg:border-t-0 lg:p-6">
           <div className="flex items-start justify-between gap-3">

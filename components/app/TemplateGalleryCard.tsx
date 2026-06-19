@@ -2,6 +2,7 @@ import { Eye, LockKeyhole, WandSparkles } from "lucide-react";
 import { A4Preview } from "./A4Preview";
 import { AppButton } from "./AppButton";
 import { SubmitButton } from "./SubmitButton";
+import { sampleTemplateData, sampleTemplateSectionOrder } from "@/lib/resume/sample-template-data";
 
 type TemplateGalleryCardProps = {
   id: string;
@@ -23,7 +24,7 @@ export function TemplateGalleryCard({ id, name, category, description, bestFor, 
 
   return (
     <article className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1.5 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-300/60">
-      <div className="relative bg-slate-100 p-3 pb-0 sm:p-4"><A4Preview templateId={id} /><div className="pointer-events-none absolute inset-x-3 bottom-0 h-12 bg-gradient-to-t from-slate-100 to-transparent sm:inset-x-4 sm:h-16" /></div>
+      <div className="relative bg-slate-100 p-3 pb-0 sm:p-4"><A4Preview templateId={id} data={sampleTemplateData} sectionOrder={sampleTemplateSectionOrder} /><div className="pointer-events-none absolute inset-x-3 bottom-0 h-12 bg-gradient-to-t from-slate-100 to-transparent sm:inset-x-4 sm:h-16" /></div>
       <div className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>

@@ -2,7 +2,7 @@
 
 import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
-import { defaultResumeData } from "@/lib/resume/mock-data";
+import { sampleTemplateData, sampleTemplateSectionOrder } from "@/lib/resume/sample-template-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import type { ResumeData } from "@/types/resume";
 import type { TemplateDefinition } from "@/types/template";
@@ -23,7 +23,7 @@ export function TemplateSelectionModal({ currentTemplateId, data, sectionOrder, 
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [previewTemplate, setPreviewTemplate] = useState<TemplateDefinition | null>(null);
-  const previewData = isResumeDataEmpty(data) ? defaultResumeData : data;
+  const isUserResumeIncomplete = isResumeDataMostlyEmpty(data);
 
   const filteredTemplates = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -78,8 +78,6 @@ export function TemplateSelectionModal({ currentTemplateId, data, sectionOrder, 
                 key={template.id}
                 template={template}
                 isSelected={template.id === currentTemplateId}
-                previewData={previewData}
-                sectionOrder={sectionOrder}
                 onPreview={() => setPreviewTemplate(template)}
                 onUse={() => onUseTemplate(template)}
               />
@@ -91,8 +89,9 @@ export function TemplateSelectionModal({ currentTemplateId, data, sectionOrder, 
       {previewTemplate ? (
         <TemplateDetailPreview
           template={previewTemplate}
-          data={previewData}
-          sectionOrder={sectionOrder}
+          userData={data}
+          userSectionOrder={sectionOrder}
+          isUserResumeIncomplete={isUserResumeIncomplete}
           onUse={() => onUseTemplate(previewTemplate)}
           onClose={() => setPreviewTemplate(null)}
         />
@@ -104,22 +103,18 @@ export function TemplateSelectionModal({ currentTemplateId, data, sectionOrder, 
 function TemplateChoiceCard({
   template,
   isSelected,
-  previewData,
-  sectionOrder,
   onPreview,
   onUse,
 }: {
   template: TemplateDefinition;
   isSelected: boolean;
-  previewData: ResumeData;
-  sectionOrder: string[];
   onPreview: () => void;
   onUse: () => void;
 }) {
   return (
     <article className={`overflow-hidden rounded-lg border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-300/50 ${isSelected ? "border-blue-600 ring-4 ring-blue-100" : "border-slate-200"}`}>
       <div className="relative bg-slate-100 p-3 pb-0">
-        <A4Preview templateId={template.id} data={previewData} sectionOrder={sectionOrder} />
+        <A4Preview templateId={template.id} data={sampleTemplateData} sectionOrder={sampleTemplateSectionOrder} />
         <div className="pointer-events-none absolute inset-x-3 bottom-0 h-16 bg-gradient-to-t from-slate-100 to-transparent" />
       </div>
       <div className="p-4">
@@ -141,7 +136,25 @@ function TemplateChoiceCard({
   );
 }
 
-function TemplateDetailPreview({ template, data, sectionOrder, onUse, onClose }: { template: TemplateDefinition; data: ResumeData; sectionOrder: string[]; onUse: () => void; onClose: () => void }) {
+function TemplateDetailPreview({
+  template,
+  userData,
+  userSectionOrder,
+  isUserResumeIncomplete,
+  onUse,
+  onClose,
+}: {
+  template: TemplateDefinition;
+  userData: ResumeData;
+  userSectionOrder: string[];
+  isUserResumeIncomplete: boolean;
+  onUse: () => void;
+  onClose: () => void;
+}) {
+  const [previewMode, setPreviewMode] = useState<"sample" | "mine">("sample");
+  const previewData = previewMode === "sample" ? sampleTemplateData : userData;
+  const previewSectionOrder = previewMode === "sample" ? sampleTemplateSectionOrder : userSectionOrder;
+
   return (
     <div className="fixed inset-0 z-[105] bg-slate-950/65 lg:p-5">
       <section className="ml-auto flex h-full w-full flex-col bg-white shadow-2xl lg:max-w-6xl lg:rounded-lg">
@@ -154,7 +167,20 @@ function TemplateDetailPreview({ template, data, sectionOrder, onUse, onClose }:
         </header>
         <div className="grid min-h-0 flex-1 lg:grid-cols-[1fr_360px]">
           <div className="min-h-0 overflow-auto bg-slate-100 p-4 sm:p-6">
-            <A4Preview templateId={template.id} data={data} sectionOrder={sectionOrder} scale="builder" />
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+                {(["sample", "mine"] as const).map((mode) => (
+                  <button key={mode} onClick={() => setPreviewMode(mode)} className={`rounded-md px-3 py-2 text-sm font-bold ${previewMode === mode ? "bg-blue-700 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
+                    {mode === "sample" ? "Sample Resume" : "My Resume"}
+                  </button>
+                ))}
+              </div>
+              <p className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">Preview uses sample content to show the full template design.</p>
+            </div>
+            {previewMode === "mine" && isUserResumeIncomplete ? (
+              <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">Your resume is still incomplete. Sample preview shows the full design.</p>
+            ) : null}
+            <A4Preview templateId={template.id} data={previewData} sectionOrder={previewSectionOrder} scale="builder" />
           </div>
           <aside className="min-h-0 overflow-y-auto border-t border-slate-200 p-5 pb-24 lg:border-l lg:border-t-0 lg:pb-5">
             <p className="text-sm leading-6 text-slate-600">{template.description}</p>
@@ -175,13 +201,13 @@ function TemplateDetailPreview({ template, data, sectionOrder, onUse, onClose }:
   );
 }
 
-function isResumeDataEmpty(data: ResumeData) {
-  return !hasText(data);
+function isResumeDataMostlyEmpty(data: ResumeData) {
+  return countTextValues(data) < 8;
 }
 
-function hasText(value: unknown): boolean {
-  if (typeof value === "string") return value.trim().length > 0;
-  if (Array.isArray(value)) return value.some(hasText);
-  if (value && typeof value === "object") return Object.values(value).some(hasText);
-  return false;
+function countTextValues(value: unknown): number {
+  if (typeof value === "string") return value.trim().length > 0 ? 1 : 0;
+  if (Array.isArray(value)) return value.reduce((total, item) => total + countTextValues(item), 0);
+  if (value && typeof value === "object") return Object.values(value).reduce((total, item) => total + countTextValues(item), 0);
+  return 0;
 }
