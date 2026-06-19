@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { defaultResumeData, defaultSectionOrder } from "./mock-data";
+import { defaultSectionOrder, emptyResumeData } from "./mock-data";
 import { createResumeSchema, updateResumeSchema } from "@/lib/validations/resume";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type { ResumeData } from "@/types/resume";
@@ -43,7 +43,7 @@ export async function createResume(input?: Partial<ResumeInput>) {
   const payload = createResumeSchema.parse({
     title: input?.title ?? "Untitled Resume",
     templateId: input?.templateId ?? "modern-minimal",
-    resumeData: input?.resumeData ?? defaultResumeData,
+    resumeData: input?.resumeData ?? emptyResumeData,
     sectionOrder: input?.sectionOrder ?? defaultSectionOrder,
   });
   const { supabase, user } = await getAuthenticatedClient();

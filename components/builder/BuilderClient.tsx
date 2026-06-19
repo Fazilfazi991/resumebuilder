@@ -8,7 +8,7 @@ import { ResumeAssistant } from "@/components/builder/ResumeAssistant";
 import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
-import { defaultResumeData, defaultSectionOrder } from "@/lib/resume/mock-data";
+import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import type { ResumeData, ResumeSection } from "@/types/resume";
 import {
@@ -84,7 +84,7 @@ export function BuilderClient({
   resumeId,
   initialTitle = "Product Manager Resume",
   initialTemplateId,
-  initialData = defaultResumeData,
+  initialData = emptyResumeData,
   initialSectionOrder = defaultSectionOrder,
   isGuest = false,
   saveResume,

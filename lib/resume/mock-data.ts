@@ -12,6 +12,30 @@ export const defaultSectionOrder = [
   "references",
 ];
 
+export const emptyResumeData: ResumeData = {
+  personal: {
+    fullName: "",
+    jobTitle: "",
+    email: "",
+    phone: "",
+    location: "",
+    website: "",
+    linkedin: "",
+    portfolio: "",
+    photoUrl: "",
+  },
+  summary: "",
+  experience: [],
+  education: [],
+  skills: [],
+  languages: [],
+  projects: [],
+  certificates: [],
+  achievements: [],
+  references: [],
+  customSections: [],
+};
+
 export const defaultResumeData: ResumeData = {
   personal: {
     fullName: "Sophia Bennett",

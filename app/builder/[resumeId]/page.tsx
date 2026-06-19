@@ -1,6 +1,6 @@
 import { BuilderClient } from "@/components/builder/BuilderClient";
 import { requireUser } from "@/lib/auth/require-user";
-import { createResume, getResumeById, updateResume } from "@/lib/resume/server";
+import { getResumeById, updateResume } from "@/lib/resume/server";
 import type { ResumeData } from "@/types/resume";
 import { notFound, redirect } from "next/navigation";
 
@@ -19,14 +19,6 @@ export default async function BuilderPage({
   }
 
   await requireUser(`/builder/${resumeId}`);
-
-  if (resumeId === "new") {
-    const resume = await createResume({
-      title: "Untitled Resume",
-      templateId: query.template ?? "modern-minimal",
-    });
-    redirect(`/builder/${resume.id}`);
-  }
 
   let resume;
   try {
