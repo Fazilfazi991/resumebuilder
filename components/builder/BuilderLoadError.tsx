@@ -24,7 +24,7 @@ export function BuilderLoadError() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
       <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 text-center shadow-xl">
-        <h1 className="text-2xl font-bold text-slate-950">We couldn't load this resume.</h1>
+        <h1 className="text-2xl font-bold text-slate-950">We couldn&apos;t load this resume.</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">Connection issue. Your latest edits may still be saved on this device.</p>
         <div className="mt-6 grid gap-3">
           <button onClick={() => window.location.reload()} className="min-h-11 rounded-lg bg-blue-700 px-4 text-sm font-bold text-white">Retry</button>

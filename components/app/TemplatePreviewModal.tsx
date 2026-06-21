@@ -3,7 +3,6 @@
 import { X } from "lucide-react";
 import type { TemplateDefinition } from "@/types/template";
 import { A4Preview } from "./A4Preview";
-import { AppButton } from "./AppButton";
 import { GuestTemplateAction } from "./GuestTemplateAction";
 import { SectionBadge } from "./SectionBadge";
 import { SubmitButton } from "./SubmitButton";

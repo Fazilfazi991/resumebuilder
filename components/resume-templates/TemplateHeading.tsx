@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { resumeTypography } from "./resume-typography";
 
 export function TemplateHeading({ children, tone = "slate", rule = true, className = "" }: { children: ReactNode; tone?: "slate" | "teal" | "navy" | "gold" | "cyan" | "orange" | "purple"; rule?: boolean; className?: string }) {
   const colors = {
@@ -11,5 +12,5 @@ export function TemplateHeading({ children, tone = "slate", rule = true, classNa
     purple: "text-violet-700 border-violet-500",
   };
 
-  return <h2 className={`mb-2.5 text-[11px] font-bold uppercase tracking-[0.16em] ${rule ? "border-b pb-1.5" : ""} ${colors[tone]} ${className}`}>{children}</h2>;
+  return <h2 className={`mb-2.5 font-bold uppercase tracking-[0.1em] ${rule ? "border-b pb-1.5" : ""} ${colors[tone]} ${className}`} style={{ fontSize: resumeTypography.sectionHeadingCompact }}>{children}</h2>;
 }

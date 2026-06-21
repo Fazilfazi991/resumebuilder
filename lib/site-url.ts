@@ -9,6 +9,6 @@ export function getSiteUrl() {
   }
 
   return process.env.NODE_ENV === "production"
-    ? "https://resumebuilder-one-beta.vercel.app"
-    : "http://localhost:3000";
+    ? "https://resumi.live"
+    : "http://127.0.0.1:3000";
 }

@@ -8,9 +8,9 @@ export function FreshGraduate({ data, sectionOrder, isWatermarked }: ResumeTempl
       <Watermark show={isWatermarked} />
       <header className="flex items-center justify-between gap-5 border-l-[6px] border-sky-600 bg-sky-50 px-6 py-5">
         <div className="min-w-0">
-          <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.2em] text-sky-700">Graduate Candidate</p>
-          <h1 className="text-[29px] font-bold tracking-normal text-slate-950">{data.personal.fullName}</h1>
-          <p className="mt-1 text-[12px] font-bold text-sky-700">{data.personal.jobTitle}</p>
+          <p className="mb-2 text-[10pt] font-bold uppercase tracking-[0.2em] text-sky-700">Graduate Candidate</p>
+          <h1 className="text-[23pt] font-bold tracking-normal text-slate-950">{data.personal.fullName}</h1>
+          <p className="mt-1 text-[12pt] font-bold text-sky-700">{data.personal.jobTitle}</p>
           <div className="mt-2.5"><ContactLine data={data} /></div>
         </div>
         {hasText(data.personal.photoUrl) ? <img src={data.personal.photoUrl} alt="" className="h-[23mm] w-[23mm] shrink-0 rounded-full border-[3px] border-white object-cover shadow-sm" /> : null}

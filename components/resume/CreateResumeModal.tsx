@@ -9,10 +9,9 @@ type CreateResumeModalProps = {
   createAction: (formData: FormData) => void | Promise<void>;
   buttonLabel?: string;
   buttonClassName?: string;
-  emptyState?: boolean;
 };
 
-export function CreateResumeModal({ createAction, buttonLabel = "Create Resume", buttonClassName, emptyState = false }: CreateResumeModalProps) {
+export function CreateResumeModal({ createAction, buttonLabel = "Create Resume", buttonClassName }: CreateResumeModalProps) {
   const [open, setOpen] = useState(false);
 
   return (

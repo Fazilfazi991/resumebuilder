@@ -11,20 +11,20 @@ Authentication -> URL Configuration
 Set Site URL:
 
 ```txt
-https://resumebuilder-one-beta.vercel.app
+https://resumi.live
 ```
 
 Add Redirect URLs:
 
 ```txt
-https://resumebuilder-one-beta.vercel.app/auth/confirm
-https://resumebuilder-one-beta.vercel.app/auth/callback
-https://resumebuilder-one-beta.vercel.app/dashboard
-https://resumebuilder-one-beta.vercel.app/login
-http://localhost:3000/auth/confirm
-http://localhost:3000/auth/callback
-http://localhost:3000/dashboard
-http://localhost:3000/login
+https://resumi.live/auth/confirm
+https://resumi.live/auth/callback
+https://resumi.live/dashboard
+https://resumi.live/login
+http://127.0.0.1:3000/auth/confirm
+http://127.0.0.1:3000/auth/callback
+http://127.0.0.1:3000/dashboard
+http://127.0.0.1:3000/login
 ```
 
 ## 2. Environment Variables
@@ -32,13 +32,13 @@ http://localhost:3000/login
 Production:
 
 ```txt
-NEXT_PUBLIC_SITE_URL=https://resumebuilder-one-beta.vercel.app
+NEXT_PUBLIC_SITE_URL=https://resumi.live
 ```
 
 Local:
 
 ```txt
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000
 ```
 
 ## 3. Confirm Signup Email Template
@@ -106,13 +106,13 @@ Resumi <noreply@resumi.live>
 Local:
 
 ```txt
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000
 ```
 
 Production:
 
 ```txt
-NEXT_PUBLIC_SITE_URL=https://resumebuilder-one-beta.vercel.app
+NEXT_PUBLIC_SITE_URL=https://resumi.live
 ```
 
 After signup, the confirmation email should point to `/auth/confirm`, verify the account, and redirect to `/dashboard`.

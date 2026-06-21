@@ -1,0 +1,15 @@
+export const resumeTypography = {
+  name: "22pt",
+  nameCompact: "18pt",
+  sectionHeading: "14pt",
+  sectionHeadingCompact: "12pt",
+  body: "10.5pt",
+  bodyLarge: "11pt",
+  bullet: "10pt",
+  contact: "10pt",
+  meta: "9.5pt",
+  sidebar: "10pt",
+  small: "9pt",
+  lineHeightBody: "1.45",
+  lineHeightCompact: "1.35",
+};

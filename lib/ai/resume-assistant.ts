@@ -12,6 +12,7 @@ export type ResumeAssistantResponse = {
 };
 
 export async function getResumeAssistantSuggestion(_request: ResumeAssistantRequest): Promise<ResumeAssistantResponse> {
+  void _request;
   // TODO: Connect this placeholder to a real resume improvement API.
   return {
     message: "Resume assistant API is not connected yet.",

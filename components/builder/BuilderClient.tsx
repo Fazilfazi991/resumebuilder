@@ -2,7 +2,7 @@
 
 import { A4Preview } from "@/components/app/A4Preview";
 import { AppButton } from "@/components/app/AppButton";
-import { AtsInsightsCompact, AtsScorePanel, toneFor } from "@/components/builder/AtsScorePanel";
+import { AtsInsightsCompact, AtsScorePanel } from "@/components/builder/AtsScorePanel";
 import { ResumeAssistant } from "@/components/builder/ResumeAssistant";
 import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
 import { TemplateSelectionModal } from "@/components/builder/TemplateSelectionModal";
@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Tab = "edit" | "preview" | "templates" | "assistant" | "ats";
 type SaveState = "saved" | "saving" | "failed" | "guest";
@@ -127,7 +127,6 @@ export function BuilderClient({
   const [sectionOrder, setSectionOrder] = useState<ResumeSection[]>(initialSectionOrder as ResumeSection[]);
   const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
   const atsScore = useMemo(() => calculateAtsScore(data), [data]);
-  const atsTone = toneFor(atsScore.percentage);
   const selectedTemplate = useMemo(() => resumeTemplates.find((template) => template.id === templateId) ?? resumeTemplates[0], [templateId]);
   const zoomLabel = zoom === "fit" ? "Fit" : `${zoom}%`;
   const zoomOut = () => setZoom((current) => current === 100 ? 75 : "fit");
@@ -135,12 +134,12 @@ export function BuilderClient({
 
   const draftKey = `resumi_builder_draft_${isGuest ? "guest" : resumeId ?? "guest"}`;
 
-  const buildCurrentPayload = (nextTemplateId = templateId): SavePayload => ({
+  const buildCurrentPayload = useCallback((nextTemplateId = templateId): SavePayload => ({
     title: resumeTitle,
     templateId: nextTemplateId,
     resumeData: data,
     sectionOrder,
-  });
+  }), [data, resumeTitle, sectionOrder, templateId]);
 
   const saveCurrentDraftImmediately = (nextTemplateId = templateId) => {
     const payload = buildCurrentPayload(nextTemplateId);
@@ -229,9 +228,9 @@ export function BuilderClient({
     }, 850);
 
     return () => window.clearTimeout(timeout);
-  }, [data, draftKey, isGuest, resumeTitle, saveResume, sectionOrder, templateId]);
+  }, [buildCurrentPayload, draftKey, isGuest, saveResume]);
 
-  const retrySave = async () => {
+  const retrySave = useCallback(async () => {
     if (isGuest || !saveResume) return;
     setSaveState("saving");
     try {
@@ -243,7 +242,7 @@ export function BuilderClient({
       setSaveState("failed");
       setConnectionMessage(navigator.onLine ? "Save failed. We'll retry." : "Offline changes saved on this device.");
     }
-  };
+  }, [isGuest, saveResume]);
 
   useEffect(() => {
     const recoverActiveTab = async () => {
@@ -281,7 +280,7 @@ export function BuilderClient({
       window.removeEventListener("online", online);
       window.removeEventListener("offline", offline);
     };
-  }, [isGuest, saveState, saveResume]);
+  }, [isGuest, retrySave, saveState]);
 
   useEffect(() => {
     if (searchParams.get("tab") === "assistant") {
@@ -669,7 +668,7 @@ export function BuilderClient({
           </div>
         </section>
         <section className={`${mobileTab === "assistant" ? "block" : "hidden"} bg-slate-50 px-3 py-4 lg:hidden`}>
-          <ResumeAssistant data={data} setData={setData} onPreview={() => setMobileTab("preview")} />
+          <ResumeAssistant setData={setData} onPreview={() => setMobileTab("preview")} />
         </section>
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
@@ -745,7 +744,7 @@ export function BuilderClient({
               <button onClick={() => setIsAssistantOpen(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Close assistant"><X size={18} /></button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
-              <ResumeAssistant data={data} setData={setData} onPreview={() => setIsAssistantOpen(false)} />
+              <ResumeAssistant setData={setData} onPreview={() => setIsAssistantOpen(false)} />
             </div>
           </aside>
         </div>
@@ -1198,20 +1197,7 @@ function PortfolioField({ value, onChange }: { value: string; onChange: (value: 
   const isSample = isSampleText(value);
   return (
     <label className="block">
-      <span className="block text-sm font-bold text-slate-700">
-        Portfolio
-      </span>
-      <span className="mt-1 block">
-        <a
-          href="https://portfoliobuilder-rose.vercel.app/"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex min-h-6 min-w-0 items-center gap-1 rounded-md text-xs font-semibold leading-5 text-blue-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-300"
-        >
-          <span className="min-w-0 whitespace-normal">Don't have a portfolio? Create your portfolio</span>
-          <LinkIcon size={13} className="shrink-0" aria-hidden="true" />
-        </a>
-      </span>
+      <span className="block text-sm font-bold text-slate-700">Portfolio</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}

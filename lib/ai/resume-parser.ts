@@ -5,6 +5,7 @@ export type ParsedResumeDraft = Partial<ResumeData> & {
 };
 
 export async function parseResumeText(_text: string): Promise<ParsedResumeDraft> {
+  void _text;
   // TODO: Parse uploaded resumes into structured ResumeData.
   return {
     warnings: ["Resume parsing is not connected yet."],

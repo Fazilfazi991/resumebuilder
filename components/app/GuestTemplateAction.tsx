@@ -11,6 +11,13 @@ type GuestTemplateActionProps = {
 
 const guestDraftKeys = ["resumi_builder_draft_guest", "resumi_guest_resume"];
 
+type GuestDraft = {
+  resumeData: unknown;
+  templateId?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+};
+
 export function GuestTemplateAction({ templateId, children = "Use Template", variant = "primary" }: GuestTemplateActionProps) {
   const [showDraftChoice, setShowDraftChoice] = useState(false);
 
@@ -74,13 +81,13 @@ export function GuestTemplateAction({ templateId, children = "Use Template", var
   );
 }
 
-function readGuestDraft(): Record<string, any> | null {
+function readGuestDraft(): GuestDraft | null {
   for (const key of guestDraftKeys) {
     const raw = window.localStorage.getItem(key);
     if (!raw) continue;
 
     try {
-      const parsed = JSON.parse(raw) as Record<string, any>;
+      const parsed = JSON.parse(raw) as GuestDraft;
       if (parsed && typeof parsed === "object" && parsed.resumeData) {
         return parsed;
       }
@@ -92,7 +99,7 @@ function readGuestDraft(): Record<string, any> | null {
   return null;
 }
 
-function writeGuestDraft(draft: Record<string, any>) {
+function writeGuestDraft(draft: GuestDraft) {
   guestDraftKeys.forEach((key) => window.localStorage.setItem(key, JSON.stringify(draft)));
 }
 

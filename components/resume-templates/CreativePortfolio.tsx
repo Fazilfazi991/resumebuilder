@@ -3,8 +3,6 @@ import { Award, BriefcaseBusiness, CalendarDays, Camera, Folder, Globe, Graduati
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
-const purple = "#5a3ea6";
-
 export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
   const contacts = [
@@ -26,7 +24,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
             {hasText(data.personal.photoUrl) ? (
               <img src={data.personal.photoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-[27px] font-bold text-white">{initials || "RC"}</div>
+              <div className="flex h-full w-full items-center justify-center text-[20pt] font-bold text-white">{initials || "RC"}</div>
             )}
           </div>
           <div className="absolute inset-x-0 bottom-[-1px] h-[18mm] bg-[#fbf9ff]" style={{ clipPath: "polygon(0 0, 50% 100%, 100% 0, 100% 100%, 0 100%)" }} />
@@ -38,9 +36,9 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
               <div className="space-y-4">
                 {data.education.filter((item) => hasText(item.degree) || hasText(item.institution)).map((item) => (
                   <article key={item.id} className="avoid-break border-b border-[#e8e2fb] pb-3 last:border-b-0 last:pb-0">
-                    <h3 className="text-[10px] font-bold leading-[1.28] text-[#111827]">{[item.degree, item.field].filter(hasText).join(" in ")}</h3>
-                    <p className="mt-1 text-[9.2px] font-semibold leading-[1.35] text-[#5a3ea6]">{[item.institution, item.location].filter(hasText).join(", ")}</p>
-                    <p className="mt-1.5 flex items-center gap-1.5 text-[8.8px] font-semibold text-[#475569]"><CalendarDays size={9} aria-hidden="true" />{dateRange(item.startDate, item.endDate)}</p>
+                    <h3 className="text-[10pt] font-bold leading-[1.28] text-[#111827]">{[item.degree, item.field].filter(hasText).join(" in ")}</h3>
+                    <p className="mt-1 text-[10pt] font-semibold leading-[1.35] text-[#5a3ea6]">{[item.institution, item.location].filter(hasText).join(", ")}</p>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-[10pt] font-semibold text-[#475569]"><CalendarDays size={9} aria-hidden="true" />{dateRange(item.startDate, item.endDate)}</p>
                   </article>
                 ))}
               </div>
@@ -52,7 +50,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
               <div className="space-y-2.1">
                 {data.skills.filter((skill) => hasText(skill.name)).map((skill) => (
                   <div key={skill.id} className="avoid-break grid grid-cols-[0.75fr_1fr] items-center gap-2">
-                    <p className="text-[8.7px] leading-[1.15] text-[#111827]">{skill.name}</p>
+                    <p className="text-[10pt] leading-[1.15] text-[#111827]">{skill.name}</p>
                     <div className="relative h-[3.2px] rounded-full bg-[#d7d4dd]">
                       <div className="h-full rounded-full bg-[#5a3ea6]" style={{ width: `${skillProgress(skill.level)}%` }} />
                       <span className="absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full border border-[#5a3ea6] bg-white" style={{ left: `calc(${skillProgress(skill.level)}% - 4px)` }} />
@@ -67,7 +65,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
             <SidebarSection icon={Palette} title="Tools">
               <div className="grid grid-cols-3 gap-2">
                 {data.skills.filter((skill) => hasText(skill.name)).slice(0, 12).map((skill) => (
-                  <span key={skill.id} className="rounded-md border border-[#cfc7ec] bg-white px-2 py-1 text-center text-[8px] font-semibold text-[#111827]">{skill.name}</span>
+                  <span key={skill.id} className="rounded-md border border-[#cfc7ec] bg-white px-2 py-1 text-center text-[10pt] font-semibold text-[#111827]">{skill.name}</span>
                 ))}
               </div>
             </SidebarSection>
@@ -77,7 +75,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
             <SidebarSection icon={Languages} title="Languages">
               <div className="space-y-1.8">
                 {data.languages.filter((language) => hasText(language.name)).map((language) => (
-                  <div key={language.id} className="grid grid-cols-[0.74fr_1fr] items-center gap-2 text-[8.8px]">
+                  <div key={language.id} className="grid grid-cols-[0.74fr_1fr] items-center gap-2 text-[10pt]">
                     <p className="font-semibold text-[#111827]">{language.name}</p>
                     <DotRating level={language.level} />
                   </div>
@@ -88,7 +86,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
 
           {hasItems(data.certificates) ? (
             <SidebarSection icon={Award} title="Certifications">
-              <div className="space-y-2 text-[8.7px] leading-[1.38]">
+              <div className="space-y-2 text-[10pt] leading-[1.38]">
                 {data.certificates.filter((cert) => hasText(cert.name)).map((cert) => (
                   <p key={cert.id} className="avoid-break">
                     <span className="font-bold text-[#111827]">- {cert.name}</span><br />
@@ -100,7 +98,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
           ) : null}
 
           <SidebarSection icon={Heart} title="Interests">
-            <div className="grid grid-cols-4 gap-2 text-center text-[7.5px] font-semibold text-[#111827]">
+            <div className="grid grid-cols-4 gap-2 text-center text-[10pt] font-semibold text-[#111827]">
               {[
                 [Camera, "Portfolio"],
                 [Palette, "Design"],
@@ -119,15 +117,15 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
 
       <main className="px-[11mm] py-[8.5mm]">
         <header>
-          <h1 className="text-[31px] font-bold uppercase leading-none tracking-[0.02em] text-[#111827]">
+          <h1 className="text-[24pt] font-bold uppercase leading-none tracking-[0.02em] text-[#111827]">
             {firstName || "Your"} <span className="text-[#5a3ea6]">{restName.join(" ") || "Name"}</span>
           </h1>
-          {hasText(data.personal.jobTitle) ? <p className="mt-3 text-[12px] font-bold uppercase tracking-[0.24em] text-[#5a3ea6]">{data.personal.jobTitle}</p> : null}
-          {hasText(data.summary) ? <p className="mt-4 max-w-[150mm] text-[10.2px] leading-[1.5] text-[#111827]">{data.summary}</p> : null}
+          {hasText(data.personal.jobTitle) ? <p className="mt-3 text-[12pt] font-bold uppercase tracking-[0.24em] text-[#5a3ea6]">{data.personal.jobTitle}</p> : null}
+          {hasText(data.summary) ? <p className="mt-4 max-w-[150mm] text-[10.5pt] leading-[1.5] text-[#111827]">{data.summary}</p> : null}
           <div className="mt-5 h-px bg-[#9b86d9]" />
           <div className="mt-4 grid grid-cols-3 gap-x-6 gap-y-3">
             {contacts.map(({ icon: Icon, value }) => (
-              <div key={value} className="flex min-w-0 items-center gap-2 text-[8.9px] font-semibold text-[#111827]">
+              <div key={value} className="flex min-w-0 items-center gap-2 text-[10pt] font-semibold text-[#111827]">
                 <Icon size={11} className="shrink-0 text-[#5a3ea6]" aria-hidden="true" />
                 <span className="break-words">{value}</span>
               </div>
@@ -142,16 +140,16 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
                 <TimelineItem key={item.id}>
                   <div className="flex items-start justify-between gap-5">
                     <div className="min-w-0">
-                      <h3 className="text-[10.8px] font-bold text-[#111827]">{item.role}</h3>
-                      {hasText(item.company) ? <p className="mt-1 text-[9.4px] font-bold text-[#5a3ea6]">{item.company}</p> : null}
+                      <h3 className="text-[11pt] font-bold text-[#111827]">{item.role}</h3>
+                      {hasText(item.company) ? <p className="mt-1 text-[10pt] font-bold text-[#5a3ea6]">{item.company}</p> : null}
                     </div>
-                    <div className="shrink-0 text-right text-[8.8px] font-semibold text-[#111827]">
+                    <div className="shrink-0 text-right text-[10pt] font-semibold text-[#111827]">
                       <p>{dateRange(item.startDate, item.endDate, item.isCurrent)}</p>
                       {hasText(item.location) ? <p className="mt-1 text-[#5a3ea6]">{item.location}</p> : null}
                     </div>
                   </div>
-                  {hasText(item.description) ? <p className="mt-1.5 text-[9.5px] leading-[1.38] text-[#111827]">{item.description}</p> : null}
-                  {item.bullets.some(hasText) ? <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-[9.5px] leading-[1.38] text-[#111827]">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
+                  {hasText(item.description) ? <p className="mt-1.5 text-[10pt] leading-[1.38] text-[#111827]">{item.description}</p> : null}
+                  {item.bullets.some(hasText) ? <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-[10pt] leading-[1.38] text-[#111827]">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
                 </TimelineItem>
               ))}
             </Timeline>
@@ -165,11 +163,11 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
                 <article key={project.id} className="avoid-break rounded-md border border-[#e0daf5] bg-[#fbf9ff] p-3">
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#5a3ea6] text-white">{index + 1}</span>
-                    {hasText(project.role) ? <span className="text-[8px] font-bold text-[#5a3ea6]">{project.role}</span> : null}
+                    {hasText(project.role) ? <span className="text-[10pt] font-bold text-[#5a3ea6]">{project.role}</span> : null}
                   </div>
-                  <h3 className="text-[9.4px] font-bold text-[#111827]">{project.name}</h3>
-                  {hasText(project.description) ? <p className="mt-2 text-[8.7px] leading-[1.4] text-[#111827]">{project.description}</p> : null}
-                  {project.bullets.some(hasText) ? <p className="mt-3 w-fit rounded-full border border-[#5a3ea6] px-2 py-0.5 text-[7.8px] font-bold text-[#5a3ea6]">{project.bullets.filter(hasText)[0]}</p> : null}
+                  <h3 className="text-[10pt] font-bold text-[#111827]">{project.name}</h3>
+                  {hasText(project.description) ? <p className="mt-2 text-[10pt] leading-[1.4] text-[#111827]">{project.description}</p> : null}
+                  {project.bullets.some(hasText) ? <p className="mt-3 w-fit rounded-full border border-[#5a3ea6] px-2 py-0.5 text-[10pt] font-bold text-[#5a3ea6]">{project.bullets.filter(hasText)[0]}</p> : null}
                 </article>
               ))}
             </div>
@@ -184,8 +182,8 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
                   <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-[#5a3ea6] text-white">
                     {index === 0 ? <Award size={15} /> : index === 1 ? <Star size={15} /> : index === 2 ? <UserRound size={15} /> : <Heart size={15} />}
                   </span>
-                  <h3 className="mt-2 text-[8px] font-bold text-[#111827]">{achievement.title}</h3>
-                  {hasText(achievement.description) ? <p className="mt-1 text-[7.6px] leading-[1.28] text-[#111827]">{achievement.description}</p> : null}
+                  <h3 className="mt-2 text-[10pt] font-bold text-[#111827]">{achievement.title}</h3>
+                  {hasText(achievement.description) ? <p className="mt-1 text-[10pt] leading-[1.28] text-[#111827]">{achievement.description}</p> : null}
                 </article>
               ))}
             </div>
@@ -196,7 +194,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
           <MainSection icon={Award} title="Certifications">
             <div className="grid grid-cols-2 gap-2">
               {data.certificates.filter((cert) => hasText(cert.name)).map((cert) => (
-                <p key={cert.id} className="avoid-break rounded-md border border-[#e0daf5] px-3 py-2 text-[8.8px] leading-[1.35]">
+                <p key={cert.id} className="avoid-break rounded-md border border-[#e0daf5] px-3 py-2 text-[10pt] leading-[1.35]">
                   <span className="font-bold text-[#111827]">{cert.name}</span><br />
                   <span className="text-[#475569]">{[cert.issuer, cert.date].filter(hasText).join(" | ")}</span>
                 </p>
@@ -214,7 +212,7 @@ function SidebarSection({ icon: Icon, title, children }: { icon: typeof UserRoun
     <section className="resume-section py-3.5">
       <div className="mb-3 grid grid-cols-[22px_auto_1fr] items-center gap-2">
         <span className="inline-flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[#5a3ea6] text-white"><Icon size={12} aria-hidden="true" /></span>
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5a3ea6]">{title}</h2>
+        <h2 className="text-[11pt] font-bold uppercase tracking-[0.08em] text-[#5a3ea6]">{title}</h2>
         <div className="h-px bg-[#b8abd9]" />
       </div>
       {children}
@@ -227,7 +225,7 @@ function MainSection({ icon: Icon, title, children }: { icon: typeof UserRound; 
     <section className="resume-section pt-5">
       <div className="mb-3 grid grid-cols-[27px_auto_1fr] items-center gap-2">
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#5a3ea6] text-white"><Icon size={13} aria-hidden="true" /></span>
-        <h2 className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[#5a3ea6]">{title}</h2>
+        <h2 className="text-[12pt] font-bold uppercase tracking-[0.06em] text-[#5a3ea6]">{title}</h2>
         <div className="h-px bg-[#9b86d9]" />
       </div>
       {children}

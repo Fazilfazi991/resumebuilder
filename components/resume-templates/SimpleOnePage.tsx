@@ -1,4 +1,5 @@
 import type { ResumeTemplateProps } from "@/types/resume";
+import { resumeTypography } from "./resume-typography";
 import { ContactLine, RenderSection, Watermark } from "./TemplateHelpers";
 
 export function SimpleOnePage({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
@@ -7,10 +8,10 @@ export function SimpleOnePage({ data, sectionOrder, isWatermarked }: ResumeTempl
       <Watermark show={isWatermarked} />
       <header className="grid grid-cols-[0.44fr_0.56fr] items-end gap-5 border-b border-slate-400 pb-3">
         <div className="min-w-0">
-          <h1 className="break-words text-[22px] font-bold leading-[1.08] text-slate-950">{data.personal.fullName || "Your Name"}</h1>
-          <p className="mt-1 break-words text-[10.25px] font-bold text-slate-700">{data.personal.jobTitle}</p>
+          <h1 className="break-words font-bold leading-[1.08] text-slate-950" style={{ fontSize: "20pt" }}>{data.personal.fullName || "Your Name"}</h1>
+          <p className="mt-1 break-words font-bold text-slate-700" style={{ fontSize: resumeTypography.contact }}>{data.personal.jobTitle}</p>
         </div>
-        <ContactLine data={data} align="right" separator="  |  " className="ml-auto max-w-[96mm] text-[8.7px] leading-[1.35]" />
+        <ContactLine data={data} align="right" separator="  |  " className="ml-auto max-w-[96mm] text-[10pt] leading-[1.35]" />
       </header>
       <div className="mt-3 grid grid-cols-[0.66fr_0.34fr] gap-5">
         <main className="min-w-0 space-y-2.5">

@@ -14,17 +14,17 @@ export function CreativeDesigner({ data, sectionOrder, isWatermarked }: ResumeTe
         ) : (
           <div className="mb-6 h-2 w-14 bg-[#e06f76]" />
         )}
-        <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.2em] text-violet-200">Portfolio Resume</p>
-        <h1 className="font-sans text-[25px] font-bold leading-[1.15]">{data.personal.fullName}</h1>
-        <p className="mt-2 text-[11px] font-bold text-[#f3a3a8]">{data.personal.jobTitle}</p>
-        <div className="mt-6 space-y-1 text-[10px] leading-5 text-slate-200">
+        <p className="mb-2 text-[10pt] font-bold uppercase tracking-[0.2em] text-violet-200">Portfolio Resume</p>
+        <h1 className="font-sans text-[20pt] font-bold leading-[1.15]">{data.personal.fullName}</h1>
+        <p className="mt-2 text-[11pt] font-bold text-[#f3a3a8]">{data.personal.jobTitle}</p>
+        <div className="mt-6 space-y-1 text-[10pt] leading-5 text-slate-200">
           {[data.personal.email, data.personal.phone, data.personal.location, data.personal.portfolio].filter(Boolean).map((item) => <p key={item}>{item}</p>)}
         </div>
-        {hasText(data.personal.portfolio) ? <div className="mt-5 rounded-lg border border-white/10 bg-white/10 p-3 text-[9.5px] font-bold text-[#f3a3a8]">{data.personal.portfolio}</div> : null}
+        {hasText(data.personal.portfolio) ? <div className="mt-5 rounded-lg border border-white/10 bg-white/10 p-3 text-[10pt] font-bold text-[#f3a3a8]">{data.personal.portfolio}</div> : null}
         <div className="mt-6 space-y-5">{sidebar.map((section) => <RenderSection key={section} id={section} data={data} variant="uae" />)}</div>
       </aside>
       <main className="px-[12mm] py-[14mm]">
-        <div className="mb-6 flex items-center gap-3"><div className="h-px flex-1 bg-violet-300" /><span className="text-[9px] font-bold uppercase tracking-[0.2em] text-violet-700">Selected Work</span></div>
+        <div className="mb-6 flex items-center gap-3"><div className="h-px flex-1 bg-violet-300" /><span className="text-[10pt] font-bold uppercase tracking-[0.2em] text-violet-700">Selected Work</span></div>
         <div className="space-y-4.5">{main.map((section) => <RenderSection key={section} id={section} data={data} variant="modern" />)}</div>
       </main>
     </div>

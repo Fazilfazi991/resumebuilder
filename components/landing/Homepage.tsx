@@ -18,6 +18,7 @@ import {
   WandSparkles,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { BuilderMockup } from "./BuilderMockup";
 import { ButtonLink } from "./ButtonLink";
 import { FeatureCard } from "./FeatureCard";
@@ -251,12 +252,12 @@ export function Homepage() {
               Start with one profile and generate resumes for multiple job applications.
             </p>
           </div>
-          <a
+          <Link
             href="/builder/guest"
             className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-3 text-sm font-bold text-blue-900 shadow-lg transition hover:bg-blue-50"
           >
             Create Resume Now
-          </a>
+          </Link>
         </div>
       </section>
     </main>

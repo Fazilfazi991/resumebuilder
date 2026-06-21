@@ -46,11 +46,9 @@ const questions: AssistantQuestion[] = [
 ];
 
 export function ResumeAssistant({
-  data,
   setData,
   onPreview,
 }: {
-  data: ResumeData;
   setData: React.Dispatch<React.SetStateAction<ResumeData>>;
   onPreview?: () => void;
 }) {

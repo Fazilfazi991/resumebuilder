@@ -3,14 +3,10 @@ import { StatCard } from "@/components/app/StatCard";
 import { isAdminEmail } from "@/lib/auth/admin-access";
 import { requireUser } from "@/lib/auth/require-user";
 import type { Database } from "@/types/database";
-import type { ResumeData } from "@/types/resume";
 import { Activity, BarChart3, CreditCard, Download, FileText, Mail, Phone, ShieldCheck, TrendingUp, UsersRound, WalletCards } from "lucide-react";
 import { redirect } from "next/navigation";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Resume = Database["public"]["Tables"]["resumes"]["Row"];
-type DownloadRow = Database["public"]["Tables"]["downloads"]["Row"];
-type Payment = Database["public"]["Tables"]["payments"]["Row"];
 
 export default async function AdminDashboardPage() {
   const { supabase, user, profile } = await requireUser("/admin");
