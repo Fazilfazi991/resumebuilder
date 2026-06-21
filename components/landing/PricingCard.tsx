@@ -2,10 +2,11 @@
 
 import { Check } from "lucide-react";
 import { ButtonLink } from "./ButtonLink";
-import { currencyStorageKey, formatPlanPrice, type PaymentCurrency } from "@/lib/payments/currency";
+import { currencyStorageKey, type PaymentCurrency } from "@/lib/payments/currency";
 import type { PaidPlanId } from "@/lib/payments/plans";
 import { paidPlans } from "@/lib/payments/plans";
 import { useEffect, useState } from "react";
+import { CurrencyAmount } from "@/components/payments/CurrencyAmount";
 
 type PricingCardProps = {
   name: string;
@@ -18,7 +19,6 @@ type PricingCardProps = {
 export function PricingCard({ name, price, planId, features, featured = false }: PricingCardProps) {
   const [currency, setCurrency] = useState<PaymentCurrency>("aed");
   const plan = planId ? paidPlans[planId] : null;
-  const displayedPrice = plan ? formatPlanPrice(plan.amounts[currency], currency) : price;
 
   useEffect(() => {
     const savedCurrency = localStorage.getItem(currencyStorageKey);
@@ -42,7 +42,9 @@ export function PricingCard({ name, price, planId, features, featured = false }:
         <h3 className="text-xl font-bold text-slate-950">{name}</h3>
         {featured ? <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">Popular</span> : null}
       </div>
-      <p className="mt-5 text-3xl font-bold text-slate-950">{displayedPrice}</p>
+      <p className="mt-5 text-3xl font-bold text-slate-950">
+        {plan ? <CurrencyAmount amount={plan.amounts[currency]} currency={currency} /> : price}
+      </p>
       <ul className="mt-6 space-y-3">
         {features.map((feature) => (
           <li key={feature} className="flex gap-3 text-sm text-slate-600">

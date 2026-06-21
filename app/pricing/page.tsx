@@ -10,8 +10,8 @@ import { Check } from "lucide-react";
 
 const plans = [
   { name: "Free", price: "0", features: ["Create resumes", "Basic templates", "Preview resume", "Watermarked downloads"], href: "/builder/guest" },
-  { name: "Premium", price: "\u20C3 4.99 / \u20B9 99", features: ["Premium templates", "No watermark", "PDF download", "AI writing tools", "Cover letters"], featured: true, planId: "premium" as const },
-  { name: "Lifetime", price: "\u20C3 19.99 / \u20B9 499", features: ["Unlimited resumes", "All templates", "Lifetime access", "Priority templates"], planId: "lifetime" as const },
+  { name: "Premium", price: "", features: ["Premium templates", "No watermark", "PDF download", "AI writing tools", "Cover letters"], featured: true, planId: "premium" as const },
+  { name: "Lifetime", price: "", features: ["Unlimited resumes", "All templates", "Lifetime access", "Priority templates"], planId: "lifetime" as const },
   { name: "Career Pro", price: "Coming soon", features: ["Job tracker", "AI matching", "Interview prep", "LinkedIn tools"], disabled: true },
 ];
 

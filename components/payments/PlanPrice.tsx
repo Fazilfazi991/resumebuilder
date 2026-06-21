@@ -1,8 +1,9 @@
 "use client";
 
-import { currencyStorageKey, formatPlanPrice, type PaymentCurrency } from "@/lib/payments/currency";
+import { currencyStorageKey, type PaymentCurrency } from "@/lib/payments/currency";
 import { paidPlans, type PaidPlanId } from "@/lib/payments/plans";
 import { useEffect, useState } from "react";
+import { CurrencyAmount } from "./CurrencyAmount";
 
 export function PlanPrice({ planId, className = "" }: { planId: PaidPlanId; className?: string }) {
   const [currency, setCurrency] = useState<PaymentCurrency>("aed");
@@ -19,5 +20,5 @@ export function PlanPrice({ planId, className = "" }: { planId: PaidPlanId; clas
     return () => window.removeEventListener("resumi:currency-change", syncCurrency);
   }, []);
 
-  return <span className={className}>{formatPlanPrice(paidPlans[planId].amounts[currency], currency)}</span>;
+  return <CurrencyAmount amount={paidPlans[planId].amounts[currency]} currency={currency} className={className} />;
 }

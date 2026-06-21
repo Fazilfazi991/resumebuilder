@@ -2,11 +2,12 @@
 
 import { AppButton } from "@/components/app/AppButton";
 import { applyFreeCouponUpgrade, validateCouponAction } from "@/lib/actions/coupons";
-import { currencyStorageKey, formatPlanPrice, type PaymentCurrency } from "@/lib/payments/currency";
+import { currencyStorageKey, type PaymentCurrency } from "@/lib/payments/currency";
 import { paidPlans, type PaidPlanId } from "@/lib/payments/plans";
 import { CheckCircle2, Gift, Tag } from "lucide-react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { CheckoutButton } from "./CheckoutButton";
+import { CurrencyAmount } from "./CurrencyAmount";
 
 type CouponCheckoutBoxProps = {
   planId: PaidPlanId;
@@ -46,12 +47,6 @@ export function CouponCheckoutBox({ planId, variant = "primary", children = "Cho
     window.addEventListener("resumi:currency-change", syncCurrency);
     return () => window.removeEventListener("resumi:currency-change", syncCurrency);
   }, []);
-
-  const breakdown = useMemo(() => ({
-    original: formatPlanPrice(originalAmount, currency),
-    discount: `-${formatPlanPrice(originalAmount - finalAmount, currency)}`,
-    total: formatPlanPrice(finalAmount, currency),
-  }), [currency, finalAmount, originalAmount]);
 
   const applyCoupon = () => {
     startTransition(async () => {
@@ -94,9 +89,9 @@ export function CouponCheckoutBox({ planId, variant = "primary", children = "Cho
         {message ? <p className={`mt-2 text-xs font-bold ${isApplied || isActivated ? "text-green-700" : "text-red-700"}`}>{message}</p> : null}
       </div>
       <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm">
-        <div className="flex justify-between gap-3 text-slate-600"><span>Original price</span><strong className="text-slate-950">{breakdown.original}</strong></div>
-        <div className="mt-1 flex justify-between gap-3 text-slate-600"><span>Discount</span><strong className={isApplied ? "text-green-700" : "text-slate-950"}>{breakdown.discount}</strong></div>
-        <div className="mt-2 flex justify-between gap-3 border-t border-slate-100 pt-2 font-bold text-slate-950"><span>Total</span><span>{breakdown.total}</span></div>
+        <div className="flex justify-between gap-3 text-slate-600"><span>Original price</span><strong className="text-slate-950"><CurrencyAmount amount={originalAmount} currency={currency} /></strong></div>
+        <div className="mt-1 flex justify-between gap-3 text-slate-600"><span>Discount</span><strong className={isApplied ? "text-green-700" : "text-slate-950"}><CurrencyAmount amount={originalAmount - finalAmount} currency={currency} prefix="-" /></strong></div>
+        <div className="mt-2 flex justify-between gap-3 border-t border-slate-100 pt-2 font-bold text-slate-950"><span>Total</span><CurrencyAmount amount={finalAmount} currency={currency} /></div>
       </div>
       {isApplied ? (
         <AppButton onClick={activate} disabled={isPending || isActivated}>
