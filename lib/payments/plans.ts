@@ -15,8 +15,8 @@ export const paidPlans: Record<PaidPlanId, PaidPlan> = {
     id: "premium",
     name: "Premium",
     amounts: {
-      aed: 1900,
-      inr: 39900,
+      aed: 500,
+      inr: 9900,
     },
     description: "Premium templates, no watermark, PDF downloads, and AI writing tools.",
   },
@@ -24,8 +24,8 @@ export const paidPlans: Record<PaidPlanId, PaidPlan> = {
     id: "lifetime",
     name: "Lifetime",
     amounts: {
-      aed: 4900,
-      inr: 99900,
+      aed: 2000,
+      inr: 49900,
     },
     description: "Unlimited resumes, all templates, lifetime access, and priority templates.",
   },

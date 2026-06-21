@@ -8,7 +8,7 @@ export const currencyLabels: Record<PaymentCurrency, string> = {
 };
 
 const currencySymbols: Record<PaymentCurrency, string> = {
-  aed: "د.إ",
+  aed: "AED",
   inr: "₹",
 };
 
@@ -18,6 +18,8 @@ export function getPaymentCurrency(value: string | null | undefined): PaymentCur
 
 export function formatPlanPrice(amount: number, currency: PaymentCurrency) {
   const majorAmount = amount / 100;
-  const formattedAmount = majorAmount.toLocaleString("en-US", { maximumFractionDigits: 0 });
-  return currency === "inr" ? `${currencySymbols[currency]}${formattedAmount}` : `${currencySymbols[currency]} ${formattedAmount}`;
+  const formattedAmount = majorAmount.toLocaleString("en-US", {
+    maximumFractionDigits: currency === "aed" ? 2 : 0,
+  });
+  return currency === "inr" ? `${currencySymbols[currency]}${formattedAmount}/-` : `${currencySymbols[currency]} ${formattedAmount}`;
 }

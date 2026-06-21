@@ -1,17 +1,11 @@
 import type { ResumeTemplateProps } from "@/types/resume";
-import { Award, BriefcaseBusiness, CalendarDays, Globe, GraduationCap, Languages, Linkedin, Mail, MapPin, Phone, Settings, Star, Trophy, UserRound, Users, Wrench } from "lucide-react";
+import { Award, BriefcaseBusiness, CalendarDays, GraduationCap, Languages, Settings, Star, Trophy, UserRound, Users, Wrench } from "lucide-react";
+import { ResumeContactBlock } from "./ResumeContactBlock";
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
 export function PremiumImpact({ data, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
-  const contactItems = [
-    { icon: Mail, value: data.personal.email },
-    { icon: Phone, value: data.personal.phone },
-    { icon: MapPin, value: data.personal.location },
-    { icon: Globe, value: data.personal.website },
-    { icon: Linkedin, value: data.personal.linkedin },
-  ].filter((item) => hasText(item.value));
   const stats = [
     { icon: Trophy, value: data.experience.length ? `${data.experience.length}+` : "", label: "Experience Roles" },
     { icon: BriefcaseBusiness, value: data.projects.length ? `${data.projects.length}+` : "", label: "Projects" },
@@ -34,14 +28,7 @@ export function PremiumImpact({ data, isWatermarked }: ResumeTemplateProps) {
         </div>
 
         <SidebarBlock icon={UserRound} title="Contact">
-          <div className="space-y-2.5">
-            {contactItems.map(({ icon: Icon, value }) => (
-              <div key={value} className="grid grid-cols-[14px_1fr] gap-3 text-[10pt] leading-[1.35] text-white/92">
-                <Icon size={12} className="mt-0.5 text-white" aria-hidden="true" />
-                <p className="break-words">{value}</p>
-              </div>
-            ))}
-          </div>
+          <ResumeContactBlock personal={data.personal} variant="sidebar" className="text-white/92" />
         </SidebarBlock>
 
         {hasItems(data.skills) ? (

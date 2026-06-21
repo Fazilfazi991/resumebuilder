@@ -1,17 +1,11 @@
 import type { ResumeTemplateProps } from "@/types/resume";
-import { Award, BriefcaseBusiness, CheckCircle2, Globe, GraduationCap, Languages, Linkedin, Mail, MapPin, Phone, Star, UserRound, Wrench } from "lucide-react";
+import { Award, BriefcaseBusiness, CheckCircle2, GraduationCap, Languages, Star, UserRound, Wrench } from "lucide-react";
+import { ResumeContactBlock } from "./ResumeContactBlock";
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
 export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
-  const contact = [
-    { icon: Mail, value: data.personal.email },
-    { icon: Phone, value: data.personal.phone },
-    { icon: MapPin, value: data.personal.location },
-    { icon: Globe, value: data.personal.website },
-    { icon: Linkedin, value: data.personal.linkedin },
-  ].filter((item) => hasText(item.value));
 
   return (
     <div className="resume-page grid grid-cols-[0.315fr_0.685fr] bg-white font-[Arial] text-[#0c1830]">
@@ -26,14 +20,7 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
         </div>
 
         <SidebarSection icon={UserRound} title="Contact">
-          <div className="space-y-2.5">
-            {contact.map(({ icon: Icon, value }) => (
-              <div key={value} className="grid grid-cols-[14px_1fr] gap-3 text-[10pt] leading-[1.35] text-white/90">
-                <Icon size={12} className="mt-0.5 text-white" aria-hidden="true" />
-                <p className="break-words">{value}</p>
-              </div>
-            ))}
-          </div>
+          <ResumeContactBlock personal={data.personal} variant="sidebar" className="text-white/90" />
         </SidebarSection>
 
         {hasItems(data.skills) ? (
@@ -99,14 +86,7 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
             {splitName(data.personal.fullName).first} <span className="text-[#0b7478]">{splitName(data.personal.fullName).last}</span>
           </h1>
           {hasText(data.personal.jobTitle) ? <p className="mt-3 text-[12pt] font-bold uppercase tracking-[0.18em] text-[#0b7478]">{data.personal.jobTitle}</p> : null}
-          <div className="mt-5 grid grid-cols-3 gap-x-5 gap-y-3">
-            {contact.map(({ icon: Icon, value }) => (
-              <div key={value} className="flex items-center gap-2 text-[10pt] font-semibold text-[#26324a]">
-                <Icon size={11} className="shrink-0 text-[#0b7478]" aria-hidden="true" />
-                <span className="break-words">{value}</span>
-              </div>
-            ))}
-          </div>
+          <ResumeContactBlock personal={data.personal} className="mt-5 font-semibold text-[#26324a]" />
         </header>
 
         <div className="mt-5 h-px bg-[#7b8a9c]" />

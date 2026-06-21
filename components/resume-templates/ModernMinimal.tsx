@@ -13,7 +13,7 @@ export function ModernMinimal({ data, sectionOrder, isWatermarked }: ResumeTempl
           <p className="mt-1.5 font-semibold text-teal-700" style={{ fontSize: resumeTypography.sectionHeadingCompact }}>{data.personal.jobTitle}</p>
         </div>
         <div className="self-end text-right">
-          <ContactLine data={data} />
+          <ContactLine data={data} align="right" />
         </div>
       </header>
       <div className="mt-5 space-y-4.5">

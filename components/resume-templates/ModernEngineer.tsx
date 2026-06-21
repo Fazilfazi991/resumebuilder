@@ -1,18 +1,11 @@
 import type { ResumeTemplateProps } from "@/types/resume";
-import { Award, BriefcaseBusiness, CalendarDays, ExternalLink, Folder, Github, Globe, GraduationCap, Heart, Languages, Linkedin, Mail, MapPin, Phone, Star, UserRound, Wrench } from "lucide-react";
+import { Award, BriefcaseBusiness, CalendarDays, ExternalLink, Folder, GraduationCap, Heart, Languages, Star, UserRound, Wrench } from "lucide-react";
+import { ResumeContactBlock } from "./ResumeContactBlock";
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
 export function ModernEngineer({ data, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
-  const contacts = [
-    { icon: Mail, value: data.personal.email },
-    { icon: Phone, value: data.personal.phone },
-    { icon: MapPin, value: data.personal.location },
-    { icon: Globe, value: data.personal.website },
-    { icon: Linkedin, value: data.personal.linkedin },
-    { icon: Github, value: data.personal.portfolio },
-  ].filter((item) => hasText(item.value));
 
   return (
     <div className="resume-page grid grid-cols-[0.29fr_0.71fr] bg-[#fbfbfa] font-[Arial] text-[#111827]">
@@ -29,14 +22,7 @@ export function ModernEngineer({ data, isWatermarked }: ResumeTemplateProps) {
         </div>
 
         <SidebarSection icon={UserRound} title="Contact">
-          <div className="space-y-2.5">
-            {contacts.map(({ icon: Icon, value }) => (
-              <div key={value} className="grid grid-cols-[13px_1fr] gap-3 text-[10pt] leading-[1.35] text-white/92">
-                <Icon size={11} className="mt-0.5 text-white" aria-hidden="true" />
-                <p className="break-words">{value}</p>
-              </div>
-            ))}
-          </div>
+          <ResumeContactBlock personal={data.personal} variant="sidebar" className="text-white/92" />
         </SidebarSection>
 
         {hasItems(data.skills) ? (
@@ -104,14 +90,7 @@ export function ModernEngineer({ data, isWatermarked }: ResumeTemplateProps) {
             <span className="h-2 w-2 rotate-45 bg-[#5e6f52]" />
             <div className="h-px flex-1 bg-[#c9d1c3]" />
           </div>
-          <div className="mt-5 grid grid-cols-3 gap-x-5 gap-y-3">
-            {contacts.map(({ icon: Icon, value }) => (
-              <div key={value} className="flex min-w-0 items-center gap-2 text-[10pt] font-semibold text-[#111827]">
-                <Icon size={10.5} className="shrink-0 text-[#5e6f52]" aria-hidden="true" />
-                <span className="break-words">{value}</span>
-              </div>
-            ))}
-          </div>
+          <ResumeContactBlock personal={data.personal} className="mt-5 font-semibold text-[#111827]" />
         </header>
 
         {hasText(data.summary) ? (

@@ -1,12 +1,13 @@
 import type { ResumeData } from "@/types/resume";
 import { ContactLine } from "./ContactLine";
+import { ResumeContactBlock } from "./ResumeContactBlock";
 import { resumeTypography } from "./resume-typography";
 import { SkillList } from "./SkillList";
 import { TemplateHeading } from "./TemplateHeading";
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
-export { ContactLine, Watermark, hasItems, hasText };
+export { ContactLine, ResumeContactBlock, Watermark, hasItems, hasText };
 
 export function SectionTitle({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <h3 className={`font-bold uppercase tracking-[0.1em] ${className}`} style={{ fontSize: resumeTypography.sectionHeadingCompact }}>{children}</h3>;

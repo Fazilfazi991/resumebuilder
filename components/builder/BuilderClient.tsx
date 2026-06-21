@@ -838,10 +838,9 @@ function EditorPanel({
           <Field label="Email" value={data.personal.email} onChange={(next) => setPersonal("email", next)} />
           <Field label="Phone" value={data.personal.phone} onChange={(next) => setPersonal("phone", next)} />
           <Field label="Location" value={data.personal.location} onChange={(next) => setPersonal("location", next)} />
-          <Field label="LinkedIn" value={data.personal.linkedin} onChange={(next) => setPersonal("linkedin", next)} />
-          <PortfolioField value={data.personal.portfolio || data.personal.website} onChange={(next) => {
-            setData((current) => ({ ...current, personal: { ...current.personal, portfolio: next, website: next } }));
-          }} />
+          <Field label="Website" helper="Your personal website or business site." value={data.personal.website} onChange={(next) => setPersonal("website", next)} />
+          <Field label="LinkedIn" helper="Your LinkedIn profile URL." value={data.personal.linkedin} onChange={(next) => setPersonal("linkedin", next)} />
+          <PortfolioField value={data.personal.portfolio} onChange={(next) => setPersonal("portfolio", next)} />
           <TextArea label="Professional Headline" value={data.summary} onChange={(next) => setData((current) => ({ ...current, summary: next }))} />
         </div>
         <div className="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm leading-6 text-blue-900">
@@ -1176,7 +1175,7 @@ function EditorCard({ children, onRemove, title }: { children: React.ReactNode; 
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function Field({ label, value, onChange, helper }: { label: string; value: string; onChange: (value: string) => void; helper?: string }) {
   const isSample = isSampleText(value);
   return (
     <label className="block">
@@ -1189,6 +1188,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
         }}
         className={`mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-600 focus:text-slate-950 focus:blur-none ${isSample ? "text-slate-400 blur-[0.6px]" : "text-slate-950"}`}
       />
+      {helper ? <span className="mt-1.5 block text-xs leading-5 text-slate-500">{helper}</span> : null}
     </label>
   );
 }
@@ -1206,6 +1206,7 @@ function PortfolioField({ value, onChange }: { value: string; onChange: (value: 
         }}
         className={`mt-2 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-600 focus:text-slate-950 focus:blur-none ${isSample ? "text-slate-400 blur-[0.6px]" : "text-slate-950"}`}
       />
+      <span className="mt-1.5 block text-xs leading-5 text-slate-500">Portfolio, Behance, GitHub, or project link.</span>
     </label>
   );
 }

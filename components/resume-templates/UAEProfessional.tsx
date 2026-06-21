@@ -1,6 +1,6 @@
 import type { ResumeTemplateProps } from "@/types/resume";
 import { resumeTypography } from "./resume-typography";
-import { hasText, RenderSection, SectionTitle, Watermark } from "./TemplateHelpers";
+import { hasText, RenderSection, ResumeContactBlock, SectionTitle, Watermark } from "./TemplateHelpers";
 
 export function UAEProfessional({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
   const sidebarSections = ["skills", "languages", "certificates", "references"];
@@ -23,9 +23,7 @@ export function UAEProfessional({ data, sectionOrder, isWatermarked }: ResumeTem
         <p className="mt-2 font-semibold uppercase tracking-[0.1em] text-teal-100" style={{ fontSize: resumeTypography.sectionHeadingCompact }}>{data.personal.jobTitle}</p>
         <section className="mt-6 space-y-2">
           <SectionTitle className="text-teal-100">Contact</SectionTitle>
-          {[data.personal.email, data.personal.phone, data.personal.location, data.personal.linkedin, data.personal.portfolio].filter(hasText).map((item) => (
-            <p key={item} className="break-words text-teal-50" style={{ fontSize: resumeTypography.contact, lineHeight: resumeTypography.lineHeightBody }}>{item}</p>
-          ))}
+          <ResumeContactBlock personal={data.personal} variant="sidebar" className="text-teal-50" />
         </section>
         <div className="mt-6 space-y-5">
           {sidebarSections.map((section) => (

@@ -1,5 +1,5 @@
 import type { ResumeTemplateProps } from "@/types/resume";
-import { RenderSection, Watermark } from "./TemplateHelpers";
+import { RenderSection, ResumeContactBlock, Watermark } from "./TemplateHelpers";
 import { hasText } from "./template-utils";
 
 export function CreativeDesigner({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
@@ -17,10 +17,7 @@ export function CreativeDesigner({ data, sectionOrder, isWatermarked }: ResumeTe
         <p className="mb-2 text-[10pt] font-bold uppercase tracking-[0.2em] text-violet-200">Portfolio Resume</p>
         <h1 className="font-sans text-[20pt] font-bold leading-[1.15]">{data.personal.fullName}</h1>
         <p className="mt-2 text-[11pt] font-bold text-[#f3a3a8]">{data.personal.jobTitle}</p>
-        <div className="mt-6 space-y-1 text-[10pt] leading-5 text-slate-200">
-          {[data.personal.email, data.personal.phone, data.personal.location, data.personal.portfolio].filter(Boolean).map((item) => <p key={item}>{item}</p>)}
-        </div>
-        {hasText(data.personal.portfolio) ? <div className="mt-5 rounded-lg border border-white/10 bg-white/10 p-3 text-[10pt] font-bold text-[#f3a3a8]">{data.personal.portfolio}</div> : null}
+        <ResumeContactBlock personal={data.personal} variant="sidebar" className="mt-6 text-slate-200" />
         <div className="mt-6 space-y-5">{sidebar.map((section) => <RenderSection key={section} id={section} data={data} variant="uae" />)}</div>
       </aside>
       <main className="px-[12mm] py-[14mm]">

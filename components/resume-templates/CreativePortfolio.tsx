@@ -1,18 +1,11 @@
 import type { ResumeTemplateProps } from "@/types/resume";
-import { Award, BriefcaseBusiness, CalendarDays, Camera, Folder, Globe, GraduationCap, Heart, Languages, Linkedin, Mail, MapPin, Palette, Phone, Star, UserRound, Wrench } from "lucide-react";
+import { Award, BriefcaseBusiness, CalendarDays, Camera, Folder, Globe, GraduationCap, Heart, Languages, Palette, Star, UserRound, Wrench } from "lucide-react";
+import { ResumeContactBlock } from "./ResumeContactBlock";
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
 export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
-  const contacts = [
-    { icon: Mail, value: data.personal.email },
-    { icon: Phone, value: data.personal.phone },
-    { icon: MapPin, value: data.personal.location },
-    { icon: Globe, value: data.personal.website },
-    { icon: Linkedin, value: data.personal.linkedin },
-    { icon: Palette, value: data.personal.portfolio },
-  ].filter((item) => hasText(item.value));
   const [firstName, ...restName] = (data.personal.fullName || "Your Name").split(" ");
 
   return (
@@ -123,14 +116,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
           {hasText(data.personal.jobTitle) ? <p className="mt-3 text-[12pt] font-bold uppercase tracking-[0.24em] text-[#5a3ea6]">{data.personal.jobTitle}</p> : null}
           {hasText(data.summary) ? <p className="mt-4 max-w-[150mm] text-[10.5pt] leading-[1.5] text-[#111827]">{data.summary}</p> : null}
           <div className="mt-5 h-px bg-[#9b86d9]" />
-          <div className="mt-4 grid grid-cols-3 gap-x-6 gap-y-3">
-            {contacts.map(({ icon: Icon, value }) => (
-              <div key={value} className="flex min-w-0 items-center gap-2 text-[10pt] font-semibold text-[#111827]">
-                <Icon size={11} className="shrink-0 text-[#5a3ea6]" aria-hidden="true" />
-                <span className="break-words">{value}</span>
-              </div>
-            ))}
-          </div>
+          <ResumeContactBlock personal={data.personal} className="mt-4 font-semibold text-[#111827]" />
         </header>
 
         {hasItems(data.experience) ? (
