@@ -2,13 +2,22 @@ import { AppHeader } from "@/components/app/AppHeader";
 import { StatCard } from "@/components/app/StatCard";
 import { isAdminEmail } from "@/lib/auth/admin-access";
 import { requireUser } from "@/lib/auth/require-user";
+import { getContactLinks } from "@/lib/resume/contact-links";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/types/database";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Activity, BarChart3, CreditCard, Download, FileText, Mail, Phone, ShieldCheck, TrendingUp, UsersRound, WalletCards } from "lucide-react";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function AdminDashboardPage() {
+  noStore();
   const { supabase, user, profile } = await requireUser("/admin");
   const allowedByEmail = isAdminEmail(user.email ?? profile?.email);
 
@@ -18,13 +27,15 @@ export default async function AdminDashboardPage() {
 
   if (profile?.plan !== "admin" && allowedByEmail) {
     await supabase.from("profiles").update({ plan: "admin" }).eq("user_id", user.id);
+    revalidatePath("/admin");
   }
 
+  const dataSupabase = getAdminDashboardClient(supabase);
   const [profilesResult, resumesResult, downloadsResult, paymentsResult] = await Promise.all([
-    supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(500),
-    supabase.from("resumes").select("*").order("updated_at", { ascending: false }).limit(500),
-    supabase.from("downloads").select("*").order("downloaded_at", { ascending: false }).limit(500),
-    supabase.from("payments").select("*").order("created_at", { ascending: false }).limit(500),
+    dataSupabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(500),
+    dataSupabase.from("resumes").select("*").order("updated_at", { ascending: false }).limit(500),
+    dataSupabase.from("downloads").select("*").order("downloaded_at", { ascending: false }).limit(500),
+    dataSupabase.from("payments").select("*").order("created_at", { ascending: false }).limit(500),
   ]);
 
   const profiles = profilesResult.data ?? [];
@@ -43,7 +54,7 @@ export default async function AdminDashboardPage() {
   const paymentsToday = payments.filter((item) => new Date(item.created_at) >= today).length;
   const resumesWithEmail = resumes.filter((item) => Boolean(item.resume_data.personal.email?.trim())).length;
   const resumesWithPhone = resumes.filter((item) => Boolean(item.resume_data.personal.phone?.trim())).length;
-  const resumesWithLinks = resumes.filter((item) => Boolean(item.resume_data.personal.linkedin?.trim() || item.resume_data.personal.portfolio?.trim() || item.resume_data.personal.website?.trim())).length;
+  const resumesWithLinks = resumes.filter((item) => getContactLinks(item.resume_data.personal).some((link) => link.type === "website" || link.type === "linkedin" || link.type === "portfolio")).length;
   const averageResumesPerUser = profiles.length ? (resumes.length / profiles.length).toFixed(1) : "0";
   const planCounts = countBy(profiles, (item) => item.plan);
   const templateCounts = countBy(resumes, (item) => item.template_id);
@@ -121,7 +132,7 @@ export default async function AdminDashboardPage() {
                           <td className="px-3 py-4">
                             <ContactLine icon={Mail} value={personal.email} fallback="No resume email" />
                             <ContactLine icon={Phone} value={personal.phone} fallback="No phone" />
-                            <p className="mt-1 text-xs text-slate-500">{[personal.linkedin, personal.portfolio || personal.website].filter(Boolean).join(" | ") || "No links"}</p>
+                            <p className="mt-1 text-xs text-slate-500">{getContactLinks(personal).filter((link) => link.type === "website" || link.type === "linkedin" || link.type === "portfolio").map((link) => link.label).join(" | ") || "No links"}</p>
                           </td>
                           <td className="px-3 py-4 text-slate-600">{personal.location || "Not added"}</td>
                           <td className="px-3 py-4">
@@ -219,6 +230,14 @@ export default async function AdminDashboardPage() {
       </main>
     </>
   );
+}
+
+function getAdminDashboardClient(fallbackClient: SupabaseClient<Database>) {
+  try {
+    return createAdminClient();
+  } catch {
+    return fallbackClient;
+  }
 }
 
 function ContactLine({ icon: Icon, value, fallback }: { icon: typeof Mail; value: string; fallback: string }) {

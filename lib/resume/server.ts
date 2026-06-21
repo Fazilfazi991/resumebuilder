@@ -65,6 +65,7 @@ export async function createResume(input?: Partial<ResumeInput>) {
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");
   revalidatePath("/my-resumes");
+  revalidatePath("/admin");
   return data;
 }
 
@@ -108,7 +109,9 @@ export async function updateResume(resumeId: string, input: Partial<ResumeInput>
   const { data, error } = await supabase.from("resumes").update(update).eq("id", resumeId).select().single();
   if (error) throw new Error(error.message);
   revalidatePath(`/builder/${resumeId}`);
+  revalidatePath("/dashboard");
   revalidatePath("/my-resumes");
+  revalidatePath("/admin");
   return data;
 }
 
@@ -118,6 +121,7 @@ export async function deleteResume(resumeId: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");
   revalidatePath("/my-resumes");
+  revalidatePath("/admin");
 }
 
 export async function duplicateResume(resumeId: string) {
@@ -159,5 +163,6 @@ export async function recordDownload(resumeId: string, templateId: string) {
     .single();
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");
+  revalidatePath("/admin");
   return data;
 }

@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/require-user";
 import { validateCoupon } from "@/lib/coupons/validate-coupon";
@@ -40,6 +41,9 @@ export async function applyFreeCouponUpgrade(code: string, planId: PaidPlanId, c
   }
 
   await recordCouponRedemption(user.id, result.code, result.discountAmount, result.originalAmount, result.finalAmount);
+  revalidatePath("/admin");
+  revalidatePath("/billing");
+  revalidatePath("/account");
   return { ok: true, message: "Coupon applied. Your premium access is active.", plan: upgradePlan };
 }
 
