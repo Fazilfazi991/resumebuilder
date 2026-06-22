@@ -33,6 +33,7 @@ import {
   UserRound,
   WandSparkles,
   LayoutTemplate,
+  LockKeyhole,
   Bot,
   X,
   Minus,
@@ -67,8 +68,11 @@ type BuilderClientProps = {
   initialSectionOrder?: string[];
   initialUpdatedAt?: string;
   isGuest?: boolean;
+  hasPremiumAccess?: boolean;
   saveResume?: (payload: SavePayload) => Promise<void>;
   saveTemplateId?: (templateId: string) => Promise<void>;
+  authorizeDownload?: (templateId: string) => Promise<{ ok: boolean; reason?: "not_found" | "upgrade_required"; message?: string; hasPremiumAccess?: boolean }>;
+  trackDownload?: (templateId: string) => Promise<void>;
 };
 
 const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] = [
@@ -95,8 +99,11 @@ export function BuilderClient({
   initialSectionOrder = defaultSectionOrder,
   initialUpdatedAt,
   isGuest = false,
+  hasPremiumAccess = false,
   saveResume,
   saveTemplateId,
+  authorizeDownload,
+  trackDownload,
 }: BuilderClientProps) {
   const searchParams = useSearchParams();
   const initialTemplate = initialTemplateId ?? searchParams.get("template") ?? "modern-minimal";
@@ -114,6 +121,7 @@ export function BuilderClient({
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const [isPdfOptionsOpen, setIsPdfOptionsOpen] = useState(false);
+  const [isUpgradeRequiredOpen, setIsUpgradeRequiredOpen] = useState(false);
   const [pdfRenderMode, setPdfRenderMode] = useState<PdfExportMode>("standard-a4");
   const [templateToast, setTemplateToast] = useState("");
   const [saveState, setSaveState] = useState<SaveState>(isGuest ? "guest" : "saved");
@@ -384,6 +392,11 @@ export function BuilderClient({
       return;
     }
 
+    if (selectedTemplate.isPremium && !hasPremiumAccess) {
+      setIsUpgradeRequiredOpen(true);
+      return;
+    }
+
     setIsPdfOptionsOpen(true);
   };
 
@@ -400,6 +413,20 @@ export function BuilderClient({
     setIsDownloading(true);
     setDownloadError("");
     try {
+      if (!authorizeDownload) {
+        throw new Error("Download authorization is unavailable.");
+      }
+
+      const authorization = await authorizeDownload(templateId);
+      if (!authorization.ok) {
+        setIsPdfOptionsOpen(false);
+        if (authorization.reason === "upgrade_required") {
+          setIsUpgradeRequiredOpen(true);
+          return;
+        }
+        throw new Error(authorization.message ?? "Download authorization failed.");
+      }
+
       const renderMode = exportMode === "auto-height" ? "auto-height" : "standard-a4";
       setPdfRenderMode(renderMode);
       await waitForNextFrame();
@@ -476,6 +503,9 @@ export function BuilderClient({
       anchor.click();
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      if (trackDownload) {
+        void trackDownload(templateId).catch((error) => console.error("Download tracking failed", error));
+      }
       setIsPdfOptionsOpen(false);
     } catch (error) {
       console.error(error);
@@ -678,7 +708,7 @@ export function BuilderClient({
       </nav>
       <div className={`pdf-export-root pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white ${pdfRenderMode === "auto-height" ? "pdf-export-auto-height" : "pdf-export-standard-a4"}`} aria-hidden="true">
         <div ref={pdfRef} className={`${pdfRenderMode === "auto-height" ? "min-h-0" : "min-h-[1123px]"} w-[794px] bg-white`}>
-          <ResumeRenderer data={data} sectionOrder={sectionOrder} templateId={templateId} isWatermarked={false} />
+          <ResumeRenderer data={data} sectionOrder={sectionOrder} templateId={templateId} isWatermarked={!hasPremiumAccess} />
         </div>
       </div>
       {downloadError ? (
@@ -727,6 +757,23 @@ export function BuilderClient({
             </div>
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <AppButton variant="secondary" onClick={() => setIsPdfOptionsOpen(false)}>Cancel</AppButton>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      {isUpgradeRequiredOpen ? (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-950/55 p-3 backdrop-blur-sm sm:items-center">
+          <section className="w-full max-w-md rounded-lg bg-white p-6 text-center shadow-2xl">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+              <LockKeyhole size={23} aria-hidden="true" />
+            </div>
+            <h2 className="mt-4 text-xl font-bold text-slate-950">Premium template download</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {selectedTemplate.name} can be previewed for free. Upgrade to Premium or Lifetime to download this design.
+            </p>
+            <div className="mt-6 grid gap-2 sm:grid-cols-2">
+              <AppButton variant="secondary" onClick={() => setIsUpgradeRequiredOpen(false)}>Not now</AppButton>
+              <AppButton href="/pricing">View plans</AppButton>
             </div>
           </section>
         </div>

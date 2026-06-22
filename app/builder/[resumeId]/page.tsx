@@ -1,8 +1,9 @@
 import { BuilderClient } from "@/components/builder/BuilderClient";
 import { BuilderErrorBoundary } from "@/components/builder/BuilderErrorBoundary";
 import { BuilderLoadError } from "@/components/builder/BuilderLoadError";
+import { getCurrentProfile } from "@/lib/auth/get-current-user";
 import { requireUser } from "@/lib/auth/require-user";
-import { getResumeById, selectTemplateForResume, updateResume } from "@/lib/resume/server";
+import { authorizeResumeDownload, getResumeById, recordDownload, selectTemplateForResume, updateResume } from "@/lib/resume/server";
 import type { ResumeData } from "@/types/resume";
 import { redirect } from "next/navigation";
 
@@ -33,6 +34,9 @@ export default async function BuilderPage({
     );
   }
 
+  const profile = await getCurrentProfile();
+  const hasPremiumAccess = profile?.plan === "premium" || profile?.plan === "lifetime" || profile?.plan === "admin";
+
   async function saveResume(payload: { title: string; templateId: string; resumeData: ResumeData; sectionOrder: string[] }) {
     "use server";
     await updateResume(resumeId, payload);
@@ -41,6 +45,16 @@ export default async function BuilderPage({
   async function saveTemplateId(templateId: string) {
     "use server";
     await selectTemplateForResume(resumeId, templateId);
+  }
+
+  async function authorizeDownload(templateId: string) {
+    "use server";
+    return authorizeResumeDownload(resumeId, templateId);
+  }
+
+  async function trackDownload(templateId: string) {
+    "use server";
+    await recordDownload(resumeId, templateId);
   }
 
   return (
@@ -52,8 +66,11 @@ export default async function BuilderPage({
         initialData={resume.resume_data}
         initialSectionOrder={resume.section_order}
         initialUpdatedAt={resume.updated_at}
+        hasPremiumAccess={hasPremiumAccess}
         saveResume={saveResume}
         saveTemplateId={saveTemplateId}
+        authorizeDownload={authorizeDownload}
+        trackDownload={trackDownload}
       />
     </BuilderErrorBoundary>
   );

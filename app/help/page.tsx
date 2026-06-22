@@ -11,7 +11,7 @@ const faqs = [
   { question: "Are templates ATS-friendly?", answer: "Classic ATS and Simple One Page are designed to be simple, readable, and ATS-friendly." },
   { question: "Can I edit later?", answer: "Yes. The builder uses shared resume data now; persistent editing will come once Supabase is connected." },
   { question: "Can I create multiple resumes?", answer: "Yes. The portal includes dashboard and My Resumes flows for managing multiple resumes." },
-  { question: "Do premium templates cost money?", answer: "Premium locking will be connected later. For now premium labels are visible in the UI." },
+  { question: "Do premium templates cost money?", answer: "You can preview premium templates for free. Downloading them requires a Premium or Lifetime plan." },
   { question: "Can I use it for UAE jobs?", answer: "Yes. UAE Professional and UAE example categories are part of the product direction." },
 ];
 
