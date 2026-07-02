@@ -20,7 +20,7 @@ export default async function TemplatesPage() {
           <div className="max-w-3xl">
             <p className="text-sm font-bold text-blue-700">Templates</p>
             <h1 className="mt-2 text-3xl font-bold text-slate-950">Choose a resume template</h1>
-            <p className="mt-3 text-slate-600">Start with one profile, then switch between ATS, modern, UAE, and premium designs anytime.</p>
+            <p className="mt-3 text-slate-600">Start with one profile, then switch between ATS, modern, UAE, executive, and creative designs anytime.</p>
           </div>
           <TemplatesClient createAction={isLoggedIn ? createResumeAndRedirect : undefined} />
         </section>

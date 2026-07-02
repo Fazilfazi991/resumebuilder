@@ -17,7 +17,7 @@ export function TemplatePreviewModal({ template, onClose, createAction }: { temp
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/55 lg:p-4">
       <div className="flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl lg:grid lg:h-auto lg:max-h-[94vh] lg:max-w-6xl lg:grid-cols-[1fr_370px] lg:rounded-lg">
         <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden">
-          <div className="min-w-0"><p className="truncate font-bold text-slate-950">{template.name}</p><p className="text-xs font-semibold text-slate-500">{template.category} · {template.isPremium ? "Premium" : "Free"}</p></div>
+          <div className="min-w-0"><p className="truncate font-bold text-slate-950">{template.name}</p><p className="text-xs font-semibold text-slate-500">{template.category}</p></div>
           <button onClick={onClose} className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Close preview"><X size={20} /></button>
         </header>
         <div className="min-h-0 flex-1 overflow-auto bg-slate-100 p-3 sm:p-5 lg:p-7">
@@ -36,7 +36,6 @@ export function TemplatePreviewModal({ template, onClose, createAction }: { temp
           </div>
           <p className="mt-4 text-sm leading-6 text-slate-600">{template.description}</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <SectionBadge tone={template.isPremium ? "teal" : "emerald"}>{template.isPremium ? "Premium" : "Free"}</SectionBadge>
             <SectionBadge tone={template.supportsPhoto ? "teal" : "slate"}>{template.supportsPhoto ? "Photo supported" : "No photo"}</SectionBadge>
           </div>
           <p className="mt-5 text-sm text-slate-600"><span className="font-bold text-slate-950">Best for:</span> {template.bestFor}</p>

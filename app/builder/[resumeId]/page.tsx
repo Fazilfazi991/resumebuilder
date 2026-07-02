@@ -1,7 +1,6 @@
 import { BuilderClient } from "@/components/builder/BuilderClient";
 import { BuilderErrorBoundary } from "@/components/builder/BuilderErrorBoundary";
 import { BuilderLoadError } from "@/components/builder/BuilderLoadError";
-import { getCurrentProfile } from "@/lib/auth/get-current-user";
 import { requireUser } from "@/lib/auth/require-user";
 import { authorizeResumeDownload, getResumeById, recordDownload, selectTemplateForResume, updateResume } from "@/lib/resume/server";
 import type { ResumeData } from "@/types/resume";
@@ -34,9 +33,6 @@ export default async function BuilderPage({
     );
   }
 
-  const profile = await getCurrentProfile();
-  const hasPremiumAccess = profile?.plan === "premium" || profile?.plan === "lifetime" || profile?.plan === "admin";
-
   async function saveResume(payload: { title: string; templateId: string; resumeData: ResumeData; sectionOrder: string[] }) {
     "use server";
     await updateResume(resumeId, payload);
@@ -66,7 +62,6 @@ export default async function BuilderPage({
         initialData={resume.resume_data}
         initialSectionOrder={resume.section_order}
         initialUpdatedAt={resume.updated_at}
-        hasPremiumAccess={hasPremiumAccess}
         saveResume={saveResume}
         saveTemplateId={saveTemplateId}
         authorizeDownload={authorizeDownload}

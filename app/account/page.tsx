@@ -1,8 +1,5 @@
 import { AppButton } from "@/components/app/AppButton";
 import { AppHeader } from "@/components/app/AppHeader";
-import { CouponCheckoutBox } from "@/components/payments/CouponCheckoutBox";
-import { CurrencySelector } from "@/components/payments/CurrencySelector";
-import { ReferralUnlockCard } from "@/components/account/ReferralUnlockCard";
 import { CreditCard, Download, Settings, ShieldCheck, UserRound } from "lucide-react";
 import { logout, updateProfile } from "@/app/(auth)/actions";
 import { requireUser } from "@/lib/auth/require-user";
@@ -58,16 +55,9 @@ export default async function AccountPage({
             </AccountPanel>
             <AccountPanel icon={CreditCard} title="Plan">
               <p className="text-2xl font-bold capitalize text-slate-950">{plan}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Upgrade for premium templates, AI tools, and watermark-free PDF exports.</p>
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <CurrencySelector compact />
-                <CouponCheckoutBox planId="premium">Upgrade to Premium</CouponCheckoutBox>
-              </div>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Launch mode is active: all templates and PDF downloads are free. Paid upgrades are hidden for now.</p>
+              <div className="mt-5"><AppButton href="/builder/guest">Build Resume</AppButton></div>
             </AccountPanel>
-          </div>
-
-          <div className="mt-6">
-            <ReferralUnlockCard />
           </div>
 
           <div className="mt-6 grid gap-5 md:grid-cols-2">

@@ -9,7 +9,7 @@ import type { TemplateDefinition } from "@/types/template";
 import { CheckCircle2, Eye, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
-const filters = ["All", "Free", "Premium", "ATS", "Modern", "Executive", "Creative", "Tech", "UAE", "Freshers"];
+const filters = ["All", "ATS", "Modern", "Executive", "Creative", "Tech", "UAE", "Freshers", "Photo CV"];
 
 type TemplateSelectionModalProps = {
   currentTemplateId: string;
@@ -30,8 +30,6 @@ export function TemplateSelectionModal({ currentTemplateId, data, sectionOrder, 
     return resumeTemplates.filter((template) => {
       const filterMatch =
         activeFilter === "All" ||
-        (activeFilter === "Free" && !template.isPremium) ||
-        (activeFilter === "Premium" && template.isPremium) ||
         template.category === activeFilter ||
         template.tags.some((tag) => tag.toLowerCase().includes(activeFilter.toLowerCase()));
       const searchMatch = !normalizedQuery || [template.name, template.category, template.bestFor, template.description, ...template.tags].join(" ").toLowerCase().includes(normalizedQuery);
@@ -123,7 +121,7 @@ function TemplateChoiceCard({
             <h3 className="font-bold text-slate-950">{template.name}</h3>
             <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{template.category}</p>
           </div>
-          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${template.isPremium ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"}`}>{template.isPremium ? "Premium" : "Free"}</span>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${template.supportsPhoto ? "bg-cyan-50 text-cyan-700" : "bg-slate-100 text-slate-600"}`}>{template.supportsPhoto ? "Photo CV" : "ATS ready"}</span>
         </div>
         <p className="mt-3 text-sm leading-5 text-slate-600"><span className="font-bold text-slate-900">Best for:</span> {template.bestFor}</p>
         <div className="mt-3 flex flex-wrap gap-1.5">{template.tags.slice(0, 5).map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">{tag}</span>)}</div>
@@ -161,7 +159,7 @@ function TemplateDetailPreview({
         <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6">
           <div>
             <h3 className="text-xl font-bold text-slate-950">{template.name}</h3>
-            <p className="mt-1 text-sm font-semibold text-slate-500">{template.category} · {template.isPremium ? "Premium" : "Free"}</p>
+            <p className="mt-1 text-sm font-semibold text-slate-500">{template.category}</p>
           </div>
           <button onClick={onClose} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Close template preview"><X size={18} /></button>
         </header>

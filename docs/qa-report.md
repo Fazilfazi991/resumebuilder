@@ -28,7 +28,7 @@ Production smoke testing confirmed the public homepage loads at `www.resumi.live
 - Template preview uses sample data; applying a template preserves actual guest resume data.
 - Guest draft content and the selected template restore after reload.
 - Resume Preview displays current user content and exposes zoom/close controls.
-- Guest PDF download opens the expected account/login gate.
+- Guest PDF download is free in launch mode and no longer opens a payment or upgrade gate.
 - Mobile builder controls are reachable at 390px and no horizontal overflow was detected.
 - Template modal search and filters render on mobile without body overflow.
 - Coupon validation is case-insensitive and server-side; free upgrades require an authenticated user.
@@ -44,6 +44,8 @@ Production smoke testing confirmed the public homepage loads at `www.resumi.live
 - Template switching preserves user data.
 - ATS score updates correctly.
 - Mobile layout is usable for the primary builder journey.
+- Launch mode is enabled: all templates are free, premium/payment gating is disabled for the resume flow, PDF downloads are free, and premium badges/tags are removed from template UI.
+- Payment and coupon backend code is retained for future re-enable, but checkout/coupon controls are hidden from normal launch pricing, billing, and account screens.
 
 ## Bugs Found And Fixed
 
@@ -56,6 +58,7 @@ Production smoke testing confirmed the public homepage loads at `www.resumi.live
 
 - The builder promoted an unrelated external portfolio-builder URL beside the Portfolio field. Removed the promotion while retaining the field.
 - Internal homepage and navbar navigation used plain anchors. Replaced them with Next.js `Link` navigation.
+- Launch friction remained in template selection and download flows through premium badges, watermark copy, and plan checks. Disabled that launch gating while preserving payment/coupon backend code.
 - Guest draft helpers used explicit `any` types. Added a bounded draft type.
 - Autosave/retry effects used unstable callbacks. Memoized them to avoid stale hook dependencies.
 - Local QA emitted a blocked dev-origin warning for `127.0.0.1`. Added a local-only allowed dev origin.
@@ -74,7 +77,7 @@ These are not confirmed product defects, but they are still worth checking after
 
 ## Risk Level
 
-**Low to Medium.** Public pages, access control, guest editing, authenticated editing, ATS updates, template switching, draft recovery, preview behavior, PDF export, cover letter, responsive layout, lint, TypeScript, and production build are healthy. Remaining risk is mostly around external provider flows that were outside this stabilization checkpoint.
+**Low to Medium.** Public pages, access control, guest editing, authenticated editing, ATS updates, template switching, draft recovery, preview behavior, free launch PDF export, cover letter, responsive layout, lint, TypeScript, and production build are healthy. Remaining risk is mostly around external provider flows that were intentionally hidden during launch mode.
 
 ## Recommended Next Checks
 

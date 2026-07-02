@@ -1,4 +1,4 @@
-import { Eye, LockKeyhole, WandSparkles } from "lucide-react";
+import { Eye, WandSparkles } from "lucide-react";
 import { A4Preview } from "./A4Preview";
 import { AppButton } from "./AppButton";
 import { GuestTemplateAction } from "./GuestTemplateAction";
@@ -13,16 +13,12 @@ type TemplateGalleryCardProps = {
   bestFor: string;
   tags: string[];
   features: string[];
-  isPremium: boolean;
   supportsPhoto?: boolean;
-  isReferralUnlocked?: boolean;
   onPreview?: () => void;
   createAction?: (formData: FormData) => void | Promise<void>;
 };
 
-export function TemplateGalleryCard({ id, name, category, description, bestFor, tags, features, isPremium, supportsPhoto, isReferralUnlocked = false, onPreview, createAction }: TemplateGalleryCardProps) {
-  const premiumLabel = isReferralUnlocked ? "Referral unlocked" : "Premium";
-
+export function TemplateGalleryCard({ id, name, category, description, bestFor, tags, features, supportsPhoto, onPreview, createAction }: TemplateGalleryCardProps) {
   return (
     <article className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1.5 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-300/60">
       <div className="relative bg-slate-100 p-3 pb-0 sm:p-4"><A4Preview templateId={id} data={sampleTemplateData} sectionOrder={sampleTemplateSectionOrder} /><div className="pointer-events-none absolute inset-x-3 bottom-0 h-12 bg-gradient-to-t from-slate-100 to-transparent sm:inset-x-4 sm:h-16" /></div>
@@ -32,9 +28,9 @@ export function TemplateGalleryCard({ id, name, category, description, bestFor, 
           <h3 className="font-bold text-slate-950">{name}</h3>
           <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{category}</p>
         </div>
-        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${isReferralUnlocked ? "bg-amber-50 text-amber-700" : isPremium ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"}`}>
-          {isPremium ? <LockKeyhole size={12} aria-hidden="true" /> : <WandSparkles size={12} aria-hidden="true" />}
-          {isPremium ? premiumLabel : "Free"}
+        <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
+          <WandSparkles size={12} aria-hidden="true" />
+          {category}
         </span>
       </div>
       <div className="mt-3">
@@ -52,10 +48,10 @@ export function TemplateGalleryCard({ id, name, category, description, bestFor, 
         {createAction ? (
           <form action={createAction}>
             <input type="hidden" name="templateId" value={id} />
-            <SubmitButton className="w-full" pendingText="Creating...">{isReferralUnlocked ? "Use Unlocked" : "Use Template"}</SubmitButton>
+            <SubmitButton className="w-full" pendingText="Creating...">Use Template</SubmitButton>
           </form>
         ) : (
-          <GuestTemplateAction templateId={id}>{isReferralUnlocked ? "Use Unlocked" : "Use Template"}</GuestTemplateAction>
+          <GuestTemplateAction templateId={id}>Use Template</GuestTemplateAction>
         )}
         <AppButton variant="secondary" onClick={onPreview}><Eye size={16} aria-hidden="true" /> Preview</AppButton>
       </div>

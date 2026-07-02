@@ -63,7 +63,7 @@ export const sampleTemplateData: ResumeData = {
       description: "Managed mobile productivity and analytics features from concept to launch.",
       bullets: [
         "Launched self-serve analytics dashboards that reduced weekly account reporting work by 8 hours.",
-        "Increased trial-to-paid conversion by 17% by redesigning plan comparison and upgrade prompts.",
+        "Increased onboarding completion by 17% by redesigning plan comparison and guidance prompts.",
         "Worked with design and data teams to prioritize high-impact user needs across 5 product squads.",
       ],
     },

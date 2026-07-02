@@ -4,7 +4,7 @@ import { A4Preview } from "@/components/app/A4Preview";
 type TemplateCardProps = {
   id: string;
   name: string;
-  badge: "Free" | "Premium";
+  badge: "ATS" | "Photo CV";
   category: string;
   bestFor: string;
 };
@@ -22,7 +22,7 @@ export function TemplateCard({ id, name, badge, category, bestFor }: TemplateCar
           <p className="mt-2 text-sm leading-5 text-slate-600">{bestFor}</p>
           <span
             className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-              badge === "Free" ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-700"
+              badge === "Photo CV" ? "bg-cyan-50 text-cyan-700" : "bg-emerald-50 text-emerald-700"
             }`}
           >
             {badge}

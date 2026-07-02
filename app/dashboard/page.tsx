@@ -35,7 +35,7 @@ export default async function DashboardPage() {
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard icon={FileText} label="Resumes Created" value={String(resumes.length)} helper="Saved to your account" />
             <StatCard icon={Download} label="Downloads" value="0" helper="Tracked after PDF export" />
-            <StatCard icon={TrendingUp} label="Current Plan" value={profile?.plan ?? "Free"} helper="Upgrade for premium templates" />
+            <StatCard icon={TrendingUp} label="Launch Access" value="Free" helper="All templates included" />
             <StatCard icon={LayoutTemplate} label="Templates Used" value={String(new Set(resumes.map((resume) => resume.template_id)).size)} helper="Across saved resumes" />
           </div>
 
@@ -89,9 +89,9 @@ export default async function DashboardPage() {
 
             <aside className="space-y-5">
               <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
-                <p className="text-sm font-bold text-blue-700">Current plan</p>
-                <h2 className="mt-2 text-2xl font-bold text-slate-950">{profile?.plan ?? "Free"}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">Use free templates and preview premium designs before upgrading.</p>
+                <p className="text-sm font-bold text-blue-700">Launch access</p>
+                <h2 className="mt-2 text-2xl font-bold text-slate-950">All templates free</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">Switch designs and download PDFs without payment during launch.</p>
                 <div className="mt-5"><AppButton href="/account">Manage Account</AppButton></div>
               </section>
               <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">

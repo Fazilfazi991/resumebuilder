@@ -43,9 +43,9 @@ export function ReferralUnlockCard() {
             <Gift size={21} aria-hidden="true" />
           </div>
           <p className="text-sm font-bold text-blue-700">Referral rewards</p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-950">Refer 1 friend. Unlock 1 premium template.</h2>
+          <h2 className="mt-2 text-2xl font-bold text-slate-950">Refer 1 friend. Highlight a favorite template.</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            Share your referral link. Once one friend joins, the Creative Portfolio premium template unlocks for your account.
+            Share your referral link. Once one friend joins, Creative Portfolio is saved as a recommended template for your account.
           </p>
         </div>
         <div className={`rounded-lg px-4 py-3 text-sm font-bold ${isUnlocked ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>

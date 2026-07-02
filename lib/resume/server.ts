@@ -7,7 +7,6 @@ import { defaultSectionOrder, emptyResumeData } from "./mock-data";
 import { createResumeSchema, updateResumeSchema } from "@/lib/validations/resume";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type { ResumeData } from "@/types/resume";
-import { getTemplateById as getRegisteredTemplateById } from "./template-registry";
 
 type ResumeInput = {
   title: string;
@@ -155,29 +154,18 @@ export async function selectTemplateForResume(resumeId: string, templateId: stri
   return updateResume(resumeId, { templateId });
 }
 
-export async function authorizeResumeDownload(resumeId: string, templateId: string) {
+export async function authorizeResumeDownload(resumeId: string, _templateId: string) {
   const { supabase, user } = await getAuthenticatedClient();
-  const template = getRegisteredTemplateById(templateId);
+  void _templateId;
 
-  const [{ data: resume }, { data: profile }] = await Promise.all([
-    supabase.from("resumes").select("id").eq("id", resumeId).eq("user_id", user.id).maybeSingle(),
-    supabase.from("profiles").select("plan").eq("user_id", user.id).maybeSingle(),
-  ]);
+  const { data: resume } = await supabase.from("resumes").select("id").eq("id", resumeId).eq("user_id", user.id).maybeSingle();
 
   if (!resume) {
     return { ok: false, reason: "not_found" as const, message: "Resume access could not be verified." };
   }
 
-  const hasPremiumAccess = profile?.plan === "premium" || profile?.plan === "lifetime" || profile?.plan === "admin";
-  if (template.isPremium && !hasPremiumAccess) {
-    return {
-      ok: false,
-      reason: "upgrade_required" as const,
-      message: "Upgrade to Premium or Lifetime to download this premium template.",
-    };
-  }
-
-  return { ok: true, hasPremiumAccess };
+  // Launch mode: all resume templates and PDF downloads are free. Premium gating can be re-enabled later.
+  return { ok: true };
 }
 
 export async function recordDownload(resumeId: string, templateId: string) {

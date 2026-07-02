@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { TemplateGalleryCard } from "@/components/app/TemplateGalleryCard";
 import { TemplatePreviewModal } from "@/components/app/TemplatePreviewModal";
 import { resumeTemplates } from "@/lib/resume/template-registry";
@@ -13,11 +13,6 @@ export function TemplatesClient({ createAction }: { createAction?: (formData: Fo
   const [activeFilter, setActiveFilter] = useState("All");
   const [query, setQuery] = useState("");
   const [previewTemplate, setPreviewTemplate] = useState<TemplateDefinition | null>(null);
-  const [unlockedTemplateId, setUnlockedTemplateId] = useState("");
-
-  useEffect(() => {
-    setUnlockedTemplateId(localStorage.getItem("resumi_unlocked_template") ?? "");
-  }, []);
 
   const filtered = useMemo(() => {
     return resumeTemplates.filter((template) => {
@@ -48,7 +43,7 @@ export function TemplatesClient({ createAction }: { createAction?: (formData: Fo
       </div>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((template) => (
-          <TemplateGalleryCard key={template.id} {...template} isReferralUnlocked={template.id === unlockedTemplateId} onPreview={() => setPreviewTemplate(template)} createAction={createAction} />
+          <TemplateGalleryCard key={template.id} {...template} onPreview={() => setPreviewTemplate(template)} createAction={createAction} />
         ))}
       </div>
       <TemplatePreviewModal template={previewTemplate} onClose={() => setPreviewTemplate(null)} createAction={createAction} />
