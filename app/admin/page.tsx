@@ -31,17 +31,19 @@ export default async function AdminDashboardPage() {
   }
 
   const dataSupabase = getAdminDashboardClient(supabase);
-  const [profilesResult, resumesResult, downloadsResult, paymentsResult] = await Promise.all([
+  const [profilesResult, resumesResult, downloadsResult, paymentsResult, anonymousResumesResult] = await Promise.all([
     dataSupabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(500),
     dataSupabase.from("resumes").select("*").order("updated_at", { ascending: false }).limit(500),
     dataSupabase.from("downloads").select("*").order("downloaded_at", { ascending: false }).limit(500),
     dataSupabase.from("payments").select("*").order("created_at", { ascending: false }).limit(500),
+    dataSupabase.from("anonymous_resumes").select("*").order("last_seen_at", { ascending: false }).limit(500),
   ]);
 
   const profiles = profilesResult.data ?? [];
   const resumes = resumesResult.data ?? [];
   const downloads = downloadsResult.data ?? [];
   const payments = paymentsResult.data ?? [];
+  const anonymousResumes = anonymousResumesResult.data ?? [];
   const profileByUserId = new Map(profiles.map((item) => [item.user_id, item]));
   const paidPayments = payments.filter((item) => item.status.toLowerCase() === "paid" || item.status.toLowerCase() === "succeeded" || item.status.toLowerCase() === "complete");
   const totalRevenue = paidPayments.reduce((total, item) => total + Number(item.amount ?? 0), 0);
@@ -52,6 +54,8 @@ export default async function AdminDashboardPage() {
   const resumesToday = resumes.filter((item) => new Date(item.created_at) >= today).length;
   const downloadsToday = downloads.filter((item) => new Date(item.downloaded_at) >= today).length;
   const paymentsToday = payments.filter((item) => new Date(item.created_at) >= today).length;
+  const anonymousToday = anonymousResumes.filter((item) => new Date(item.created_at) >= today).length;
+  const anonymousDownloads = anonymousResumes.filter((item) => item.status === "downloaded" || item.downloaded_at).length;
   const resumesWithEmail = resumes.filter((item) => Boolean(item.resume_data.personal.email?.trim())).length;
   const resumesWithPhone = resumes.filter((item) => Boolean(item.resume_data.personal.phone?.trim())).length;
   const resumesWithLinks = resumes.filter((item) => getContactLinks(item.resume_data.personal).some((link) => link.type === "website" || link.type === "linkedin" || link.type === "portfolio")).length;
@@ -98,6 +102,54 @@ export default async function AdminDashboardPage() {
             <StatCard icon={Phone} label="Resume phones" value={String(resumesWithPhone)} helper={`${percent(resumesWithPhone, resumes.length)} of resumes`} />
             <StatCard icon={BarChart3} label="Resume links" value={String(resumesWithLinks)} helper={`${percent(resumesWithLinks, resumes.length)} added LinkedIn/portfolio/site`} />
           </div>
+
+          <section className="mt-8 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-slate-950">Resume Builder Leads</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Anonymous launch drafts synced from the guest builder. {anonymousToday} created today, {anonymousDownloads} downloaded.
+                </p>
+              </div>
+              <Download className="text-blue-700" size={22} aria-hidden="true" />
+            </div>
+            <div className="mt-5 overflow-x-auto">
+              <table className="w-full min-w-[980px] text-left text-sm">
+                <thead className="border-b border-slate-200 text-xs uppercase tracking-[0.08em] text-slate-500">
+                  <tr>
+                    {["Name", "Contact", "Job title", "Progress", "ATS", "Template", "Status", "Last seen", "Downloaded"].map((header) => <th key={header} className="px-3 py-3 font-bold">{header}</th>)}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {anonymousResumes.slice(0, 16).map((lead) => {
+                    const personal = lead.resume_data.personal;
+                    return (
+                      <tr key={lead.id} className="align-top">
+                        <td className="px-3 py-4">
+                          <p className="font-bold text-slate-950">{lead.user_name || personal.fullName || "Anonymous draft"}</p>
+                          <p className="mt-1 text-xs text-slate-500">{lead.session_id.slice(0, 18)}</p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <ContactLine icon={Mail} value={lead.user_email || personal.email} fallback="No email" />
+                          <ContactLine icon={Phone} value={lead.user_phone || personal.phone} fallback="No phone" />
+                        </td>
+                        <td className="px-3 py-4 text-slate-600">{personal.jobTitle || "Not added"}</td>
+                        <td className="px-3 py-4 font-bold text-slate-950">{lead.progress}%</td>
+                        <td className="px-3 py-4 font-bold text-slate-950">{lead.ats_score}%</td>
+                        <td className="px-3 py-4"><span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">{lead.template_id || "unknown"}</span></td>
+                        <td className="px-3 py-4"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">{lead.status}</span></td>
+                        <td className="px-3 py-4 text-slate-500">{formatDateTime(lead.last_seen_at)}</td>
+                        <td className="px-3 py-4 text-slate-500">{lead.downloaded_at ? formatDateTime(lead.downloaded_at) : "Not yet"}</td>
+                      </tr>
+                    );
+                  })}
+                  {!anonymousResumes.length ? (
+                    <tr><td colSpan={9} className="px-3 py-8 text-center text-sm font-semibold text-slate-500">No anonymous builder leads yet.</td></tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
           <div className="mt-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
             <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">

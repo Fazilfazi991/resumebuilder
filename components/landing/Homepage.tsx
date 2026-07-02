@@ -87,22 +87,22 @@ export function Homepage() {
           <div>
             <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
               <Sparkles size={15} aria-hidden="true" />
-              ATS-friendly resumes, ready in minutes
+              No signup required · Free PDF download
             </p>
             <h1 className="max-w-2xl font-sans text-4xl font-extrabold leading-[1.08] tracking-normal text-slate-950 sm:text-5xl xl:text-[3.55rem]">
               Create a Professional Resume. <span className="text-blue-600">Fast.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
-              Fill your details once, choose from professional templates, and download a polished PDF resume instantly.
+              Fill your details once, choose any free launch template, and download a polished PDF resume instantly.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/builder/guest">Create My Resume</ButtonLink>
+              <ButtonLink href="/builder/guest">Create Resume Free</ButtonLink>
               <ButtonLink href="/templates" variant="secondary">
                 View Templates
               </ButtonLink>
             </div>
             <div className="mt-9 grid gap-4 text-sm font-medium text-slate-600 sm:grid-cols-3">
-              {["No credit card required", "ATS-friendly", "PDF ready"].map((item) => (
+              {["No signup required", "All templates free", "PDF ready"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <CheckCircle2 size={17} className="text-blue-700" aria-hidden="true" />
                   {item}

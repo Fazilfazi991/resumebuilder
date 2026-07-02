@@ -8,6 +8,8 @@ import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
 import { TemplateSelectionModal } from "@/components/builder/TemplateSelectionModal";
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
+import { AUTH_REQUIRED_FOR_DOWNLOAD } from "@/lib/launch-config";
+import { syncAnonymousResume } from "@/lib/resume/anonymous-server";
 import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import { createClient } from "@/lib/supabase/client";
@@ -50,6 +52,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 type Tab = "edit" | "preview" | "templates" | "assistant" | "ats";
 type SaveState = "saved" | "saving" | "failed" | "guest";
 type PdfExportMode = "standard-a4" | "auto-height";
+type BuilderStepId = "personal" | "summary" | "experience" | "education" | "skills" | "extras" | "template" | "download";
 type SavePayload = {
   title: string;
   templateId: string;
@@ -86,6 +89,17 @@ const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] =
   { id: "references", label: "Interests", icon: BookOpen },
 ];
 
+const guidedSteps: { id: BuilderStepId; title: string; helper: string; section?: ResumeSection }[] = [
+  { id: "personal", title: "Personal Details", helper: "Add your name, role, and contact details.", section: "personal" },
+  { id: "summary", title: "Professional Summary", helper: "Write a focused opening summary.", section: "summary" },
+  { id: "experience", title: "Work Experience", helper: "Show companies, roles, and impact.", section: "experience" },
+  { id: "education", title: "Education", helper: "Add your education and certifications.", section: "education" },
+  { id: "skills", title: "Skills", helper: "List skills recruiters search for.", section: "skills" },
+  { id: "extras", title: "Extras", helper: "Add projects, languages, achievements, or interests.", section: "projects" },
+  { id: "template", title: "Choose Template", helper: "Pick the design that fits your target job." },
+  { id: "download", title: "Preview & Download", helper: "Review your resume and export your PDF." },
+];
+
 const sampleTextValues = new Set<string>();
 collectSampleText(defaultResumeData, sampleTextValues);
 
@@ -118,12 +132,15 @@ export function BuilderClient({
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const [isPdfOptionsOpen, setIsPdfOptionsOpen] = useState(false);
+  const [isIncompleteDownloadOpen, setIsIncompleteDownloadOpen] = useState(false);
   const [pdfRenderMode, setPdfRenderMode] = useState<PdfExportMode>("standard-a4");
   const [templateToast, setTemplateToast] = useState("");
   const [saveState, setSaveState] = useState<SaveState>(isGuest ? "guest" : "saved");
   const [connectionMessage, setConnectionMessage] = useState("");
   const [recoveryDraft, setRecoveryDraft] = useState<LocalDraft | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [mobileStepIndex, setMobileStepIndex] = useState(0);
+  const [anonymousSessionId, setAnonymousSessionId] = useState("");
   const pdfRef = useRef<HTMLDivElement>(null);
   const hasMountedRef = useRef(false);
   const draftReadyRef = useRef(false);
@@ -132,11 +149,23 @@ export function BuilderClient({
   const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
   const atsScore = useMemo(() => calculateAtsScore(data), [data]);
   const selectedTemplate = useMemo(() => resumeTemplates.find((template) => template.id === templateId) ?? resumeTemplates[0], [templateId]);
+  const completion = useMemo(() => calculateResumeCompletion(data, templateId), [data, templateId]);
+  const currentStep = guidedSteps[mobileStepIndex] ?? guidedSteps[0];
+  const mobileActiveSection = currentStep.section ?? activeSection;
   const zoomLabel = zoom === "fit" ? "Fit" : `${zoom}%`;
   const zoomOut = () => setZoom((current) => current === 100 ? 75 : "fit");
   const zoomIn = () => setZoom((current) => current === "fit" ? 75 : 100);
 
   const draftKey = `resumi_builder_draft_${isGuest ? "guest" : resumeId ?? "guest"}`;
+
+  useEffect(() => {
+    let sessionId = window.localStorage.getItem("resumi_session_id");
+    if (!sessionId) {
+      sessionId = `anon-${crypto.randomUUID()}`;
+      window.localStorage.setItem("resumi_session_id", sessionId);
+    }
+    setAnonymousSessionId(sessionId);
+  }, []);
 
   const buildCurrentPayload = useCallback((nextTemplateId = templateId): SavePayload => ({
     title: resumeTitle,
@@ -174,7 +203,7 @@ export function BuilderClient({
     setData(draft.resumeData);
     setSectionOrder(draft.sectionOrder as ResumeSection[]);
     setRecoveryDraft(null);
-    setConnectionMessage("Local draft restored.");
+    setConnectionMessage("Draft restored.");
   };
 
   useEffect(() => {
@@ -233,6 +262,27 @@ export function BuilderClient({
 
     return () => window.clearTimeout(timeout);
   }, [buildCurrentPayload, draftKey, isGuest, saveResume]);
+
+  useEffect(() => {
+    if (!connectionMessage) return;
+    const timeout = window.setTimeout(() => setConnectionMessage(""), 3200);
+    return () => window.clearTimeout(timeout);
+  }, [connectionMessage]);
+
+  useEffect(() => {
+    if (!isGuest || !anonymousSessionId || !draftReadyRef.current) return;
+    const timeout = window.setTimeout(() => {
+      void syncAnonymousResume({
+        sessionId: anonymousSessionId,
+        resumeData: data,
+        templateId,
+        progress: completion.percentage,
+        atsScore: atsScore.percentage,
+      });
+    }, 1200);
+
+    return () => window.clearTimeout(timeout);
+  }, [anonymousSessionId, atsScore.percentage, completion.percentage, data, isGuest, templateId]);
 
   const retrySave = useCallback(async () => {
     if (isGuest || !saveResume) return;
@@ -349,6 +399,10 @@ export function BuilderClient({
 
   const openEditorSection = (section: ResumeSection) => {
     setActiveSection(section);
+    const stepIndex = guidedSteps.findIndex((step) => step.section === section);
+    if (stepIndex >= 0) {
+      setMobileStepIndex(stepIndex);
+    }
     setMobileTab("edit");
   };
 
@@ -383,6 +437,16 @@ export function BuilderClient({
   };
 
   const openPdfOptions = () => {
+    if (AUTH_REQUIRED_FOR_DOWNLOAD && isGuest) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    if (completion.percentage < 50) {
+      setIsIncompleteDownloadOpen(true);
+      return;
+    }
+
     setIsPdfOptionsOpen(true);
   };
 
@@ -481,6 +545,17 @@ export function BuilderClient({
       if (trackDownload) {
         void trackDownload(templateId).catch((error) => console.error("Download tracking failed", error));
       }
+      if (isGuest && anonymousSessionId) {
+        void syncAnonymousResume({
+          sessionId: anonymousSessionId,
+          resumeData: data,
+          templateId,
+          progress: completion.percentage,
+          atsScore: atsScore.percentage,
+          status: "downloaded",
+          downloaded: true,
+        });
+      }
       setIsPdfOptionsOpen(false);
     } catch (error) {
       console.error(error);
@@ -510,14 +585,10 @@ export function BuilderClient({
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  if (isGuest) setIsAuthModalOpen(true);
-                }}
                 className="hidden h-11 shrink-0 items-center gap-2 border-l border-slate-200 pl-4 text-sm font-semibold text-slate-600 md:inline-flex"
               >
                 <Save size={17} className={saveState === "failed" ? "text-rose-600" : "text-blue-700"} />
-                <span>{saveState === "guest" ? "Guest draft" : saveState === "saving" ? "Saving..." : saveState === "failed" ? "Save failed" : "Saved just now"}</span>
-                {saveState === "guest" ? <span className="border-b border-dashed border-blue-600 font-bold text-blue-700">Create account to save</span> : null}
+                <span>{saveState === "guest" ? "Draft saved locally" : saveState === "saving" ? "Saving..." : saveState === "failed" ? "Save failed" : "Saved just now"}</span>
               </button>
               <button onClick={() => setMobileTab("ats")} className="hidden h-11 shrink-0 items-center gap-2 rounded-lg bg-blue-50 px-4 text-sm font-bold text-blue-900 ring-1 ring-blue-100 sm:inline-flex" aria-label="Open ATS score">
                 <Target size={17} aria-hidden="true" />
@@ -525,7 +596,7 @@ export function BuilderClient({
               </button>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <div className="hidden shrink-0 items-center gap-2 sm:gap-3 lg:flex">
               <button
                 onClick={() => setIsResumePreviewOpen(true)}
                 className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700 sm:flex-none sm:px-6 lg:min-h-[52px] lg:text-base"
@@ -558,16 +629,14 @@ export function BuilderClient({
             <button onClick={() => setIsAssistantOpen(true)} className="ml-3 inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"><Bot size={16} aria-hidden="true" /> Assistant</button>
           </div>
         </div>
-        <div className="mt-3 grid grid-cols-4 rounded-lg border border-slate-200 bg-white lg:hidden">
-          {(["edit", "ats", "assistant", "templates"] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setMobileTab(tab)}
-              className={`relative min-h-12 py-3 text-xs font-bold capitalize sm:text-sm ${mobileTab === tab ? "text-blue-700 after:absolute after:inset-x-5 after:bottom-0 after:h-0.5 after:bg-blue-700" : "text-slate-500"}`}
-            >
-              {tab === "ats" ? "ATS Score" : tab}
-            </button>
-          ))}
+        <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 lg:hidden">
+          <div className="flex items-center justify-between gap-3 text-xs font-bold text-blue-900">
+            <span>Step {mobileStepIndex + 1} of {guidedSteps.length}: {currentStep.title}</span>
+            <span>{completion.percentage}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
+            <div className="h-full rounded-full bg-blue-700 transition-all" style={{ width: `${completion.percentage}%` }} />
+          </div>
         </div>
       </header>
 
@@ -613,10 +682,7 @@ export function BuilderClient({
                   onDragStart={() => canMove && setDraggedSection(section.id)}
                   onDragOver={(event) => canMove && event.preventDefault()}
                   onDrop={() => dropSection(section.id)}
-                  onClick={() => {
-                    setActiveSection(section.id);
-                    setMobileTab("edit");
-                  }}
+                  onClick={() => openEditorSection(section.id)}
                   className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-bold transition ${
                     isActive ? "bg-blue-700 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                   }`}
@@ -649,10 +715,26 @@ export function BuilderClient({
 
         <section className={`${mobileTab === "edit" ? "block" : "hidden"} overflow-y-auto px-3 py-4 lg:block lg:p-6`}>
           <div className="mx-auto max-w-3xl">
-            <div className="-mx-3 mb-4 overflow-x-auto border-b border-slate-200 bg-white px-3 pb-3 lg:hidden">
-              <div className="flex w-max gap-2">{orderedSections.map((section) => <button key={section.id} onClick={() => setActiveSection(section.id)} className={`min-h-11 rounded-full border px-4 text-sm font-bold ${activeSection === section.id ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{section.label.replace(" Details", "")}</button>)}</div>
+            <div className="mb-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700">Step {mobileStepIndex + 1} of {guidedSteps.length}</p>
+              <h2 className="mt-1 text-xl font-bold text-slate-950">{currentStep.title}</h2>
+              <p className="mt-1 text-sm leading-6 text-slate-600">{currentStep.helper}</p>
+              <p className="mt-3 text-sm font-bold text-slate-700">{completion.completedCount} of {completion.totalCount} key sections complete</p>
             </div>
-            <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} />
+            {currentStep.id === "template" ? (
+              <TemplateStep selectedTemplate={selectedTemplate} onChangeTemplate={() => setIsTemplateSelectorOpen(true)} />
+            ) : currentStep.id === "download" ? (
+              <FinalStep
+                completion={completion}
+                atsScore={atsScore.percentage}
+                selectedTemplateName={selectedTemplate.name}
+                onPreview={() => setIsResumePreviewOpen(true)}
+                onDownload={openPdfOptions}
+                isDownloading={isDownloading}
+              />
+            ) : (
+              <EditorPanel activeSection={mobileActiveSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} />
+            )}
           </div>
         </section>
 
@@ -676,10 +758,28 @@ export function BuilderClient({
           <ResumeAssistant setData={setData} onPreview={() => setMobileTab("preview")} />
         </section>
       </div>
-      <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-        <button onClick={() => setIsResumePreviewOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500"><Eye size={19} />Preview</button>
-        <button onClick={() => setIsTemplateSelectorOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500"><LayoutTemplate size={19} />Templates</button>
-        <button onClick={openPdfOptions} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
+      <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-[1fr_1.2fr_1fr] border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+        <button
+          onClick={() => setMobileStepIndex((index) => Math.max(0, index - 1))}
+          disabled={mobileStepIndex === 0}
+          className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500 disabled:opacity-40"
+        >
+          Back
+        </button>
+        <button onClick={() => setIsResumePreviewOpen(true)} className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-blue-900">
+          <span>{completion.percentage}% complete</span>
+          <span className="text-[11px] text-slate-500">{completion.completedCount}/{completion.totalCount} sections</span>
+        </button>
+        {currentStep.id === "download" ? (
+          <button onClick={openPdfOptions} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
+        ) : (
+          <button
+            onClick={() => setMobileStepIndex((index) => Math.min(guidedSteps.length - 1, index + 1))}
+            className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white"
+          >
+            Next
+          </button>
+        )}
       </nav>
       <div className={`pdf-export-root pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white ${pdfRenderMode === "auto-height" ? "pdf-export-auto-height" : "pdf-export-standard-a4"}`} aria-hidden="true">
         <div ref={pdfRef} className={`${pdfRenderMode === "auto-height" ? "min-h-0" : "min-h-[1123px]"} w-[794px] bg-white`}>
@@ -699,6 +799,26 @@ export function BuilderClient({
           onUseTemplate={applyTemplate}
           onClose={() => setIsTemplateSelectorOpen(false)}
         />
+      ) : null}
+      {isIncompleteDownloadOpen ? (
+        <div className="fixed inset-0 z-[94] flex items-end justify-center bg-slate-950/55 p-3 backdrop-blur-sm sm:items-center">
+          <section className="w-full max-w-lg rounded-lg bg-white p-5 shadow-2xl">
+            <h2 className="text-xl font-bold text-slate-950">Your resume is still incomplete</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              You can download now, but adding Summary, Experience, Education, and Skills will make it stronger.
+            </p>
+            <div className="mt-4 rounded-lg bg-blue-50 p-3 text-sm font-bold text-blue-900">
+              Resume progress: {completion.percentage}% · {completion.completedCount} of {completion.totalCount} key sections complete
+            </div>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <AppButton variant="secondary" onClick={() => setIsIncompleteDownloadOpen(false)}>Continue Editing</AppButton>
+              <AppButton onClick={() => {
+                setIsIncompleteDownloadOpen(false);
+                setIsPdfOptionsOpen(true);
+              }}>Download Anyway</AppButton>
+            </div>
+          </section>
+        </div>
       ) : null}
       {isPdfOptionsOpen ? (
         <div className="fixed inset-0 z-[95] flex items-end justify-center bg-slate-950/55 p-3 backdrop-blur-sm sm:items-center">
@@ -809,6 +929,72 @@ export function BuilderClient({
         </div>
       ) : null}
     </main>
+  );
+}
+
+function TemplateStep({ selectedTemplate, onChangeTemplate }: { selectedTemplate: typeof resumeTemplates[number]; onChangeTemplate: () => void }) {
+  const recommended = resumeTemplates.slice(0, 3);
+
+  return (
+    <Panel title="Choose Template" description="All templates are free during launch. Switch anytime without losing your resume details.">
+      <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700">Selected template</p>
+        <h3 className="mt-1 text-xl font-bold text-slate-950">{selectedTemplate.name}</h3>
+        <p className="mt-1 text-sm font-semibold text-blue-900">{selectedTemplate.category}</p>
+        <div className="mt-4"><AppButton onClick={onChangeTemplate}><LayoutTemplate size={16} aria-hidden="true" /> Change Template</AppButton></div>
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        {recommended.map((template) => (
+          <button key={template.id} onClick={onChangeTemplate} className="rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-blue-200 hover:bg-blue-50">
+            <p className="font-bold text-slate-950">{template.name}</p>
+            <p className="mt-1 text-xs font-semibold text-slate-500">{template.category}</p>
+          </button>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+function FinalStep({
+  completion,
+  atsScore,
+  selectedTemplateName,
+  onPreview,
+  onDownload,
+  isDownloading,
+}: {
+  completion: ReturnType<typeof calculateResumeCompletion>;
+  atsScore: number;
+  selectedTemplateName: string;
+  onPreview: () => void;
+  onDownload: () => void;
+  isDownloading: boolean;
+}) {
+  return (
+    <Panel title="Preview & Download" description="Review your resume and export a PDF. No login or payment required during launch.">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <MetricCard label="Resume progress" value={`${completion.percentage}%`} helper={`${completion.completedCount} of ${completion.totalCount} complete`} />
+        <MetricCard label="ATS score" value={`${atsScore}%`} helper={atsScore >= 80 ? "Strong scan readiness" : "Add details to improve"} />
+        <MetricCard label="Template" value={selectedTemplateName} helper="Selected design" />
+      </div>
+      <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+        By downloading, you agree that your resume draft may be saved securely to help you continue editing and improve Resumi. See our <Link href="/privacy-policy" className="font-bold text-blue-700">Privacy Policy</Link>.
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <AppButton variant="secondary" onClick={onPreview}><Eye size={16} aria-hidden="true" /> Preview Resume</AppButton>
+        <AppButton onClick={onDownload} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
+      </div>
+    </Panel>
+  );
+}
+
+function MetricCard({ label, value, helper }: { label: string; value: string; helper: string }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
+      <p className="mt-2 text-xl font-bold text-slate-950">{value}</p>
+      <p className="mt-1 text-xs font-semibold text-slate-500">{helper}</p>
+    </div>
   );
 }
 
@@ -1305,6 +1491,37 @@ function collectSampleText(value: unknown, target: Set<string>) {
   if (value && typeof value === "object") {
     Object.values(value).forEach((item) => collectSampleText(item, target));
   }
+}
+
+function calculateResumeCompletion(data: ResumeData, templateId: string) {
+  const checks = [
+    {
+      id: "personal",
+      label: "Personal Details",
+      complete: Boolean(data.personal.fullName.trim() && data.personal.jobTitle.trim() && (data.personal.email.trim() || data.personal.phone.trim())),
+    },
+    { id: "summary", label: "Summary", complete: data.summary.trim().length >= 80 },
+    {
+      id: "experience",
+      label: "Experience",
+      complete: data.experience.some((item) => item.role.trim() && item.company.trim()),
+    },
+    {
+      id: "education",
+      label: "Education",
+      complete: data.education.some((item) => item.institution.trim() || item.degree.trim()),
+    },
+    { id: "skills", label: "Skills", complete: data.skills.filter((item) => item.name.trim()).length >= 5 },
+    { id: "template", label: "Template", complete: Boolean(templateId) },
+  ];
+  const completedCount = checks.filter((item) => item.complete).length;
+
+  return {
+    checks,
+    completedCount,
+    totalCount: checks.length,
+    percentage: Math.round((completedCount / checks.length) * 100),
+  };
 }
 
 function slugify(value: string) {

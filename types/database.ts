@@ -68,6 +68,58 @@ export type Database = {
         };
         Relationships: [];
       };
+      anonymous_resumes: {
+        Row: {
+          id: string;
+          session_id: string;
+          resume_data: ResumeData;
+          template_id: string | null;
+          progress: number;
+          ats_score: number;
+          source: string;
+          status: string;
+          user_email: string | null;
+          user_phone: string | null;
+          user_name: string | null;
+          downloaded_at: string | null;
+          created_at: string;
+          updated_at: string;
+          last_seen_at: string;
+          user_agent: string | null;
+          device_type: string | null;
+          referrer: string | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
+          ip_country: string | null;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          resume_data?: ResumeData;
+          template_id?: string | null;
+          progress?: number;
+          ats_score?: number;
+          source?: string;
+          status?: string;
+          user_email?: string | null;
+          user_phone?: string | null;
+          user_name?: string | null;
+          downloaded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          last_seen_at?: string;
+          user_agent?: string | null;
+          device_type?: string | null;
+          referrer?: string | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
+          ip_country?: string | null;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["anonymous_resumes"]["Insert"], "session_id">>;
+        Relationships: [];
+      };
       templates: {
         Row: {
           id: string;

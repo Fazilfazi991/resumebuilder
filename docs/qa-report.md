@@ -46,6 +46,10 @@ Production smoke testing confirmed the public homepage loads at `www.resumi.live
 - Mobile layout is usable for the primary builder journey.
 - Launch mode is enabled: all templates are free, premium/payment gating is disabled for the resume flow, PDF downloads are free, and premium badges/tags are removed from template UI.
 - Payment and coupon backend code is retained for future re-enable, but checkout/coupon controls are hidden from normal launch pricing, billing, and account screens.
+- No-login launch mode is enabled: homepage and navigation CTAs point to the guest builder, login/signup are no longer promoted in the normal launch flow, and guest PDF download works without auth.
+- Guided builder flow added for mobile launch: step progress, Back/Next navigation, Template step, Preview & Download step, and low-completion download warning are available without relying on hidden horizontal tabs.
+- Anonymous resume data collection added through `anonymous_resumes`: guest session id, resume data, template, progress, ATS score, contact details entered in the resume, status, and downloaded timestamp can sync for admin follow-up when the migration and service role are available.
+- Admin lead capture added: `/admin` now includes a Resume Builder Leads table for anonymous drafts/downloads.
 
 ## Bugs Found And Fixed
 
@@ -59,6 +63,7 @@ Production smoke testing confirmed the public homepage loads at `www.resumi.live
 - The builder promoted an unrelated external portfolio-builder URL beside the Portfolio field. Removed the promotion while retaining the field.
 - Internal homepage and navbar navigation used plain anchors. Replaced them with Next.js `Link` navigation.
 - Launch friction remained in template selection and download flows through premium badges, watermark copy, and plan checks. Disabled that launch gating while preserving payment/coupon backend code.
+- Mobile builder had too many always-visible actions and hidden section tabs. Reworked the launch builder into a guided step flow and moved Download emphasis to the final step with an incomplete-resume warning.
 - Guest draft helpers used explicit `any` types. Added a bounded draft type.
 - Autosave/retry effects used unstable callbacks. Memoized them to avoid stale hook dependencies.
 - Local QA emitted a blocked dev-origin warning for `127.0.0.1`. Added a local-only allowed dev origin.

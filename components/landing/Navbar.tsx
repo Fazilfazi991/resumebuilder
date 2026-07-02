@@ -6,7 +6,6 @@ const navItems = [
   { label: "Templates", href: "/templates" },
   { label: "Pricing", href: "/pricing" },
   { label: "AI Tools", href: "/ai-tools" },
-  { label: "Login", href: "/login" },
 ];
 
 export function Navbar() {
@@ -34,7 +33,7 @@ export function Navbar() {
             href="/builder/guest"
             className="hidden rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 sm:inline-flex"
           >
-            Create Resume
+            Create Resume Free
           </Link>
           <MobileNavbar />
         </div>
