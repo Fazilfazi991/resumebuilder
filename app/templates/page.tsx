@@ -1,4 +1,5 @@
-import { AppHeader } from "@/components/app/AppHeader";
+import { Footer } from "@/components/landing/Footer";
+import { Navbar } from "@/components/landing/Navbar";
 import { TemplatesClient } from "@/components/templates/TemplatesClient";
 import { createResumeAndRedirect } from "@/lib/resume/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -14,7 +15,7 @@ export default async function TemplatesPage() {
 
   return (
     <>
-      <AppHeader />
+      <Navbar />
       <main className="min-h-screen bg-slate-50">
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
@@ -25,6 +26,7 @@ export default async function TemplatesPage() {
           <TemplatesClient createAction={isLoggedIn ? createResumeAndRedirect : undefined} />
         </section>
       </main>
+      <Footer />
     </>
   );
 }

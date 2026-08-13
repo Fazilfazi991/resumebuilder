@@ -189,6 +189,7 @@ export function AtsInsightsCompact({
   const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const scoreTone = toneFor(score.percentage);
+  const scoreGuidance = guidanceFor(score.percentage);
   const rows = score.categories.slice(0, 6);
   const recommendations = score.categories.flatMap((category) =>
     category.items
@@ -230,7 +231,7 @@ export function AtsInsightsCompact({
             </div>
           </div>
           <p className={`mt-3 text-sm font-bold ${scoreTone.text}`}>{score.label === "Strong" ? "Strong Match" : score.label}</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">Your resume is well-optimized for ATS systems.</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{scoreGuidance}</p>
         </div>
         <div className="border-t border-slate-100 px-4 py-3">
           <p className="text-xs font-bold text-slate-950">Score Breakdown</p>
@@ -470,6 +471,13 @@ export function toneFor(percentage: number) {
   if (percentage >= 70) return { hex: "#2563eb", text: "text-blue-700", badge: "bg-blue-50 text-blue-700" };
   if (percentage >= 40) return { hex: "#d97706", text: "text-amber-700", badge: "bg-amber-50 text-amber-700" };
   return { hex: "#e11d48", text: "text-rose-700", badge: "bg-rose-50 text-rose-700" };
+}
+
+function guidanceFor(percentage: number) {
+  if (percentage < 40) return "Needs significant improvement before most ATS scans.";
+  if (percentage < 60) return "Good start, but important sections still need work.";
+  if (percentage < 80) return "Strong resume with a few optimization opportunities.";
+  return "Well optimized for ATS systems.";
 }
 
 function severityBadge(severity: AtsIssueSeverity) {

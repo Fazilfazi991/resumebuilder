@@ -36,7 +36,7 @@ export function BuilderMockup() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <MiniStat label="ATS score" value="92%" />
-            <MiniStat label="Templates" value="50+" />
+            <MiniStat label="Templates" value="Free" />
           </div>
         </div>
 

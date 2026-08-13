@@ -110,7 +110,7 @@ export function Homepage() {
               ))}
             </div>
             <div className="mt-8 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
-              {["50+ Templates", "PDF Export", "AI Writing Help", "ATS Friendly"].map((stat) => (
+              {["Designed Templates", "PDF Export", "Guided Builder", "ATS Friendly"].map((stat) => (
                 <div key={stat} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-center text-sm font-bold text-slate-800">
                   {stat}
                 </div>

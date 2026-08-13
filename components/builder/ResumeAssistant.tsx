@@ -120,7 +120,7 @@ export function ResumeAssistant({
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><Bot size={20} aria-hidden="true" /></span>
             <div>
               <h2 className="font-bold text-slate-950">Resume Assistant</h2>
-              <p className="text-xs font-semibold text-slate-500">Draft helper, no AI API yet</p>
+              <p className="text-xs font-semibold text-slate-500">Guided writing help for stronger resume content</p>
             </div>
           </div>
           <div className="grid grid-cols-2 rounded-lg bg-slate-100 p-1 text-xs font-bold">

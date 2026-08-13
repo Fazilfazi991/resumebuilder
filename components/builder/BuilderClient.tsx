@@ -8,7 +8,6 @@ import { ResumePhotoUpload } from "@/components/builder/ResumePhotoUpload";
 import { TemplateSelectionModal } from "@/components/builder/TemplateSelectionModal";
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
-import { AUTH_REQUIRED_FOR_DOWNLOAD } from "@/lib/launch-config";
 import { syncAnonymousResume } from "@/lib/resume/anonymous-server";
 import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/resume/mock-data";
 import { resumeTemplates } from "@/lib/resume/template-registry";
@@ -138,7 +137,6 @@ export function BuilderClient({
   const [saveState, setSaveState] = useState<SaveState>(isGuest ? "guest" : "saved");
   const [connectionMessage, setConnectionMessage] = useState("");
   const [recoveryDraft, setRecoveryDraft] = useState<LocalDraft | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [mobileStepIndex, setMobileStepIndex] = useState(0);
   const [anonymousSessionId, setAnonymousSessionId] = useState("");
   const pdfRef = useRef<HTMLDivElement>(null);
@@ -437,11 +435,6 @@ export function BuilderClient({
   };
 
   const openPdfOptions = () => {
-    if (AUTH_REQUIRED_FOR_DOWNLOAD && isGuest) {
-      setIsAuthModalOpen(true);
-      return;
-    }
-
     if (completion.percentage < 50) {
       setIsIncompleteDownloadOpen(true);
       return;
@@ -910,22 +903,6 @@ export function BuilderClient({
               <AppButton onClick={openPdfOptions} disabled={isDownloading}><Download size={16} aria-hidden="true" /> {isDownloading ? "Preparing PDF" : "Download PDF"}</AppButton>
             </div>
           </aside>
-        </div>
-      ) : null}
-      {isAuthModalOpen ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm">
-          <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-2xl">
-            <button onClick={() => setIsAuthModalOpen(false)} className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500" aria-label="Close">
-              <X size={17} aria-hidden="true" />
-            </button>
-            <h2 className="mt-3 text-2xl font-bold text-slate-950">Create a free account to continue</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Save your resume, upload photos, and download PDFs anytime.</p>
-            <div className="mt-6 grid gap-3">
-              <AppButton href="/signup?next=/onboarding">Create free account</AppButton>
-              <AppButton href="/login?next=/onboarding" variant="secondary">Login</AppButton>
-              <button onClick={() => setIsAuthModalOpen(false)} className="min-h-11 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50">Continue editing as guest</button>
-            </div>
-          </section>
         </div>
       ) : null}
     </main>
