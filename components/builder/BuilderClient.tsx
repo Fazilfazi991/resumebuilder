@@ -10,6 +10,11 @@ import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { syncAnonymousResume } from "@/lib/resume/anonymous-server";
 import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/resume/mock-data";
+import {
+  RESUME_PDF_CAPTURE_WIDTH_PX,
+  RESUME_PDF_PAGE_HEIGHT_PX,
+  resumePdfPageConfig,
+} from "@/lib/resume/pdf-export";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import { createClient } from "@/lib/supabase/client";
 import type { ResumeData, ResumeSection } from "@/types/resume";
@@ -471,8 +476,8 @@ export function BuilderClient({
         import("html-to-image"),
         import("jspdf"),
       ]);
-      const captureWidth = 794;
-      const pagePixelHeight = 1123;
+      const captureWidth = RESUME_PDF_CAPTURE_WIDTH_PX;
+      const pagePixelHeight = RESUME_PDF_PAGE_HEIGHT_PX;
       await waitForImages(pdfRef.current);
       const contentHeight = await measureResumeHeight(pdfRef.current);
       const shouldAutoHeight = exportMode === "auto-height" && contentHeight <= pagePixelHeight;
@@ -494,12 +499,11 @@ export function BuilderClient({
       });
       const sourceImage = await loadImage(imageData);
       const pageChunks = Math.ceil(captureHeight / pagePixelHeight);
-      const pdfWidth = 595.28;
-      const autoPdfHeight = Math.max(72, (captureHeight * pdfWidth) / captureWidth);
+      const pdfPage = resumePdfPageConfig(captureHeight, shouldAutoHeight);
       const pdf = new jsPDF({
-        orientation: "portrait",
+        orientation: pdfPage.orientation,
         unit: "pt",
-        format: shouldAutoHeight ? [pdfWidth, autoPdfHeight] : "a4",
+        format: pdfPage.format,
         compress: true,
       });
 
@@ -528,7 +532,7 @@ export function BuilderClient({
           sourceImage.width,
           canvas.height,
         );
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, shouldAutoHeight ? autoPdfHeight : (chunkHeight * pdfWidth) / captureWidth, undefined, "FAST");
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfPage.width, shouldAutoHeight ? pdfPage.height : (chunkHeight * pdfPage.width) / captureWidth, undefined, "FAST");
       }
       const pdfBlob = pdf.output("blob");
       const downloadUrl = URL.createObjectURL(pdfBlob);
