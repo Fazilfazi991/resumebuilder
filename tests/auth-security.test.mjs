@@ -85,3 +85,16 @@ test("migration 009 privatizes photo reads without rewriting stored objects", ()
   assert.match(migration, /resume_photos_owner_delete/i);
   assert.doesNotMatch(migration, /(?:delete|update)\s+from\s+storage\.objects/i);
 });
+
+test("migration 010 fixes the contact timestamp collision without weakening RPC grants", () => {
+  const migration = readFileSync(new URL("../supabase/migrations/010_fix_contact_submission_timestamp.sql", import.meta.url), "utf8");
+
+  assert.match(migration, /request_timestamp timestamptz := clock_timestamp\(\)/i);
+  assert.match(migration, /last_seen_at < request_timestamp - interval '24 hours'/i);
+  assert.doesNotMatch(migration, /last_seen_at < current_time/i);
+  assert.match(migration, /security invoker/i);
+  assert.doesNotMatch(migration, /security definer/i);
+  assert.match(migration, /grant execute on function public\.submit_contact_message[^;]+to service_role/is);
+  assert.match(migration, /revoke all on function public\.submit_contact_message[^;]+from anon/is);
+  assert.match(migration, /revoke all on function public\.submit_contact_message[^;]+from authenticated/is);
+});
