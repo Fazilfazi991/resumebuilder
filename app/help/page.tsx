@@ -3,14 +3,16 @@ import { FAQAccordion } from "@/components/app/FAQAccordion";
 import { PublicPageHeader } from "@/components/app/PublicPageHeader";
 import { Footer } from "@/components/landing/Footer";
 import { Navbar } from "@/components/landing/Navbar";
-import { Search } from "lucide-react";
+import { pageMetadata } from "@/lib/page-metadata";
 
-const categories = ["Getting Started", "Resume Builder", "Templates", "Downloads", "Payments", "Account"];
+export const metadata = pageMetadata("Help", "Answers about the Resumi builder, templates, PDF downloads, guest drafts, and accounts.", "/help");
+
+const categories = ["Getting Started", "Resume Builder", "Templates", "Downloads", "Guest Drafts", "Account"];
 const faqs = [
   { question: "Can I download as PDF?", answer: "Yes. The builder can export the selected resume template as a browser-generated A4 PDF." },
   { question: "Are templates ATS-friendly?", answer: "Classic ATS and Simple One Page are designed to be simple, readable, and ATS-friendly." },
-  { question: "Can I edit later?", answer: "Yes. The builder uses shared resume data now; persistent editing will come once Supabase is connected." },
-  { question: "Can I create multiple resumes?", answer: "Yes. The portal includes dashboard and My Resumes flows for managing multiple resumes." },
+  { question: "Can I edit later?", answer: "Yes. Guest drafts are restored from the same browser and device. Signed-in users can save resumes to their account and continue from another session." },
+  { question: "Can I create multiple resumes?", answer: "Yes. Signed-in users can create, save, duplicate, and manage multiple resumes from the dashboard." },
   { question: "Do templates cost money?", answer: "No. During launch, all resume templates and PDF downloads are free." },
   { question: "Can I use it for UAE jobs?", answer: "Yes. UAE Professional and UAE example categories are part of the product direction." },
 ];
@@ -19,15 +21,11 @@ export default function HelpPage() {
   return (
     <>
       <Navbar />
-      <PublicPageHeader eyebrow="Help" title="How can we help?" description="Find answers about templates, the builder, downloads, payments, and your account." />
+      <PublicPageHeader eyebrow="Help" title="How can we help?" description="Find answers about templates, the builder, downloads, guest drafts, and your account." />
       <main className="bg-slate-50">
         <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} aria-hidden="true" />
-            <input placeholder="Search help articles" className="h-14 w-full rounded-lg border border-slate-200 bg-white pl-12 pr-4 text-sm font-semibold outline-none focus:border-blue-600" />
-          </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((category) => <button key={category} className="rounded-lg border border-slate-200 bg-white p-4 text-left font-bold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50">{category}</button>)}
+          <div className="flex flex-wrap gap-2" aria-label="Help topics">
+            {categories.map((category) => <span key={category} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">{category}</span>)}
           </div>
           <div className="mt-8"><FAQAccordion items={faqs} /></div>
           <div className="mt-10 rounded-lg bg-blue-900 p-8 text-center text-white">

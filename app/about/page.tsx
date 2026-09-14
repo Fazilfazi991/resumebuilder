@@ -3,13 +3,16 @@ import { PublicPageHeader } from "@/components/app/PublicPageHeader";
 import { Footer } from "@/components/landing/Footer";
 import { Navbar } from "@/components/landing/Navbar";
 import { LockKeyhole, ScanSearch, ShieldCheck, UsersRound } from "lucide-react";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("About", "Learn how Resumi helps job seekers create, review, save, and download professional resumes.", "/about");
 
 const sections = [
   ["Why we built Resumi", "Resumi exists to make professional resume creation less confusing for students, freshers, UAE job seekers, and experienced professionals."],
   ["Built for job seekers, students, and professionals", "The product is designed for real application workflows: multiple resumes, reusable profile data, and templates for different roles."],
-  ["ATS-friendly by design", "Templates are built as clean HTML/CSS components so text stays readable, selectable, and ready for future PDF export."],
-  ["Privacy-first promise", "Resume data should stay under the user's control. Backend storage will be added carefully with clear account and data controls."],
-  ["Future roadmap", "Next phases include Supabase auth, saved resumes, PDF export, payments, admin metadata, and AI writing tools."],
+  ["ATS-friendly by design", "Templates use readable structure and selectable text, while the built-in ATS check highlights missing details, keywords, and measurable impact."],
+  ["Control over your work", "Guests can build without an account, while signed-in users can save multiple resumes. Account data is protected with user-scoped access rules."],
+  ["Practical, honest guidance", "The current assistant uses structured questions and checklists. Resumi labels rule-based tools accurately and leaves every final wording choice with you."],
 ];
 
 export default function AboutPage() {

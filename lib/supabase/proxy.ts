@@ -4,10 +4,18 @@ import type { Database } from "@/types/database";
 import { isSupabaseConfigured } from "./config";
 
 const protectedPaths = ["/dashboard", "/my-resumes", "/builder", "/billing", "/settings", "/account", "/admin"];
+const noIndexPaths = ["/login", "/signup", "/forgot-password", "/reset-password", "/auth", "/api", "/dashboard", "/my-resumes", "/billing", "/settings", "/account", "/admin", "/builder/new"];
+
+function applyRobotsHeader(response: NextResponse, pathname: string) {
+  if (noIndexPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
 
 export async function updateSession(request: NextRequest) {
   if (!isSupabaseConfigured()) {
-    return NextResponse.next({ request });
+    return applyRobotsHeader(NextResponse.next({ request }), request.nextUrl.pathname);
   }
 
   let response = NextResponse.next({ request });
@@ -30,20 +38,20 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const isGuestBuilder = request.nextUrl.pathname.startsWith("/builder/guest");
-  const isProtected = !isGuestBuilder && protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path));
+  const isProtected = !isGuestBuilder && protectedPaths.some((path) => request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(`${path}/`));
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
-    return NextResponse.redirect(url);
+    return applyRobotsHeader(NextResponse.redirect(url), request.nextUrl.pathname);
   }
 
   if (user && ["/login", "/signup"].includes(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    return applyRobotsHeader(NextResponse.redirect(url), request.nextUrl.pathname);
   }
 
-  return response;
+  return applyRobotsHeader(response, request.nextUrl.pathname);
 }

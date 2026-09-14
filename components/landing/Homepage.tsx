@@ -1,5 +1,4 @@
 import {
-  Bot,
   BriefcaseBusiness,
   CheckCircle2,
   CloudDownload,
@@ -15,7 +14,7 @@ import {
   Target,
   UserRoundCheck,
   UsersRound,
-  WandSparkles,
+  ListChecks,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -42,32 +41,21 @@ const pricing = [
     price: "0",
     features: ["All templates", "Preview resume", "PDF download", "No watermark"],
   },
-  {
-    name: "Premium",
-    price: "Coming soon",
-    features: ["Coming soon", "Advanced AI tools", "Priority templates", "Career extras"],
-    featured: true,
-  },
-  {
-    name: "Lifetime",
-    price: "Coming soon",
-    features: ["Coming soon", "Lifetime launch pricing", "Future pro tools", "Priority support"],
-  },
 ];
 
 type IconItem = [LucideIcon, string, string];
 
 const trustFeatures: IconItem[] = [
-  [ScanSearch, "ATS-Friendly", "Optimized to pass ATS scanners"],
-  [FileCheck2, "Expert Templates", "Designed by hiring professionals"],
-  [Bot, "AI-Powered", "Write better with smart suggestions"],
+  [ScanSearch, "ATS-Friendly", "Readable structure with selectable resume text"],
+  [FileCheck2, "Clear Templates", "Designed for fast recruiter scanning"],
+  [ListChecks, "Guided Writing", "Practical prompts help organize your content"],
   [Rocket, "Easy to Use", "Intuitive builder, no learning curve"],
-  [LockKeyhole, "Secure & Private", "Your data stays confidential"],
+  [LockKeyhole, "Privacy Controls", "Guest and account data follow clear access rules"],
 ];
 
 const aiTools: IconItem[] = [
-  [WandSparkles, "AI Summary Writer", "Turn your experience into a strong professional summary."],
-  [PenLine, "Bullet Point Improver", "Convert basic duties into achievement-focused bullet points."],
+  [ListChecks, "Summary Writing Guide", "Use focused prompts to shape your professional summary."],
+  [PenLine, "Achievement Bullet Guidance", "Capture responsibilities and measurable results clearly."],
   [Target, "ATS Keyword Checker", "Compare your resume with a job description and find missing keywords."],
   [BriefcaseBusiness, "Cover Letter Generator", "Create matching cover letters using your resume profile."],
 ];
@@ -189,7 +177,7 @@ export function Homepage() {
             </p>
             <h2 className="max-w-md text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">Edit once. Preview instantly.</h2>
             <p className="mt-5 text-base leading-7 text-slate-600">
-              Your resume updates live as you type, with polished templates, photo support, AI writing help, and export-ready formatting in one focused workspace.
+              Your resume updates live as you type, with polished templates, photo support, guided writing help, and export-ready formatting in one focused workspace.
             </p>
             <ul className="mt-7 space-y-4">
               {["Photo-ready resume preview", "Drag-and-drop sections", "Add unlimited experience and education items", "Switch templates anytime", "Auto-save resumes"].map((feature) => (
@@ -209,7 +197,7 @@ export function Homepage() {
 
       <section className="border-y border-slate-200 bg-slate-50 py-16" id="ai-tools">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading title="Write better resumes with AI" subtitle="Smarter wording, sharper achievements, and stronger job matching." />
+          <SectionHeading title="Write with practical guidance" subtitle="Focused prompts, achievement questions, and an ATS checklist keep your writing on track." />
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {aiTools.map(([Icon, title, description]) => (
               <FeatureCard key={title} icon={Icon} title={title} description={description} />
@@ -231,8 +219,8 @@ export function Homepage() {
 
       <section className="border-y border-slate-200 bg-slate-50 py-16" id="pricing">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading title="Launch offer: all templates are free" subtitle="Build, switch templates, and download PDFs without payment during MVP launch." />
-          <div className="grid gap-6 lg:grid-cols-3">
+          <SectionHeading title="Free launch access" subtitle="Build, switch templates, and download PDFs without payment during launch." />
+          <div className="mx-auto max-w-md">
             {pricing.map((plan) => (
               <PricingCard key={plan.name} {...plan} />
             ))}

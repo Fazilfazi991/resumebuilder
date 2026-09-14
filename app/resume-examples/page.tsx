@@ -4,6 +4,9 @@ import { PublicPageHeader } from "@/components/app/PublicPageHeader";
 import { SectionBadge } from "@/components/app/SectionBadge";
 import { Footer } from "@/components/landing/Footer";
 import { Navbar } from "@/components/landing/Navbar";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Resume Examples", "Explore practical resume examples for graduates, UAE roles, technology, sales, finance, creative work, healthcare, and education.", "/resume-examples");
 
 const filters = ["All", "Freshers", "UAE Jobs", "Tech", "Sales", "Marketing", "Finance", "Creative", "Healthcare", "Education"];
 const examples = [
@@ -27,7 +30,7 @@ export default function ResumeExamplesPage() {
       <main className="bg-slate-50">
         <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <div className="flex gap-2 overflow-x-auto pb-3">
-            {filters.map((filter, index) => <button key={filter} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold ${index === 0 ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{filter}</button>)}
+            {filters.map((filter, index) => <span key={filter} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold ${index === 0 ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{filter}</span>)}
           </div>
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {examples.map(([title, category, description], index) => (
@@ -36,10 +39,7 @@ export default function ResumeExamplesPage() {
                 <div className="mt-4"><SectionBadge>{category}</SectionBadge></div>
                 <h2 className="mt-3 font-bold text-slate-950">{title}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <AppButton href="/resume-examples" variant="secondary">View Example</AppButton>
-                  <AppButton href="/builder/guest">Use Template</AppButton>
-                </div>
+                <div className="mt-4"><AppButton href={`/builder/guest?template=${index % 3 === 1 ? "uae-professional" : index % 3 === 2 ? "classic-ats" : "modern-minimal"}`}>Use This Template</AppButton></div>
               </article>
             ))}
           </div>

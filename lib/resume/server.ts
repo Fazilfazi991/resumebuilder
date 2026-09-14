@@ -7,6 +7,7 @@ import { defaultSectionOrder, emptyResumeData } from "./mock-data";
 import { createResumeSchema, updateResumeSchema } from "@/lib/validations/resume";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type { ResumeData } from "@/types/resume";
+import { photoStoragePathFromUrl, privatePhotoUrl } from "./photo-url";
 
 type ResumeInput = {
   title: string;
@@ -82,17 +83,23 @@ export async function createResumeAndRedirect(formData: FormData) {
 }
 
 export async function getUserResumes() {
-  const { supabase } = await getAuthenticatedClient();
+  const { supabase, user } = await getAuthenticatedClient();
   const { data, error } = await supabase.from("resumes").select("*").order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return data;
+  return data.map((resume) => ({ ...resume, resume_data: withPrivatePhotoUrl(resume.resume_data, user.id) }));
 }
 
 export async function getResumeById(resumeId: string) {
-  const { supabase } = await getAuthenticatedClient();
+  const { supabase, user } = await getAuthenticatedClient();
   const { data, error } = await supabase.from("resumes").select("*").eq("id", resumeId).single();
   if (error) throw new Error(error.message);
-  return data;
+  return { ...data, resume_data: withPrivatePhotoUrl(data.resume_data, user.id) };
+}
+
+function withPrivatePhotoUrl(resumeData: ResumeData, userId: string): ResumeData {
+  const path = photoStoragePathFromUrl(resumeData.personal.photoUrl, userId);
+  if (!path) return resumeData;
+  return { ...resumeData, personal: { ...resumeData.personal, photoUrl: privatePhotoUrl(path) } };
 }
 
 export async function updateResume(resumeId: string, input: Partial<ResumeInput> & { isPublic?: boolean }) {

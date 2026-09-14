@@ -27,4 +27,4 @@ supabase/migrations/001_initial_schema.sql
 
 6. Restart the Next.js dev server after creating `.env.local`.
 
-The proxy protects portal routes only when Supabase keys are configured. Without keys, the mock frontend remains accessible for local UI work.
+The proxy protects account and portal routes when Supabase keys are configured. Without keys, local public-page and guest-builder UI work remains available, while account actions show a service-unavailable message.

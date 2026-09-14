@@ -51,7 +51,7 @@ export function BuilderMockup() {
           <div className="relative min-h-[430px] sm:min-h-[520px]">
             <div className="builder-float-card absolute right-3 top-5 z-20 hidden items-center gap-2 rounded-lg border border-blue-100 bg-white px-3 py-2 text-xs font-bold text-blue-700 shadow-lg shadow-slate-200/80 sm:flex">
               <Sparkles size={14} aria-hidden="true" />
-              AI improved
+              Guidance added
             </div>
             <div className="builder-float-card builder-float-card-delay absolute bottom-8 left-3 z-20 hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-lg shadow-slate-200/80 sm:flex">
               <LayoutTemplate size={14} aria-hidden="true" />

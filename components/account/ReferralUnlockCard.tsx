@@ -19,7 +19,7 @@ export function ReferralUnlockCard() {
   }, []);
 
   const referralCode = "SOPHIA92";
-  const referralLink = useMemo(() => `${origin || "https://resumi.live"}?ref=${referralCode}`, [origin]);
+  const referralLink = useMemo(() => `${origin || "https://www.resumi.live"}?ref=${referralCode}`, [origin]);
   const isUnlocked = referrals >= 1;
 
   const copyLink = async () => {

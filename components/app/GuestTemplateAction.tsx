@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppButton } from "./AppButton";
+import { useRouter } from "next/navigation";
 
 type GuestTemplateActionProps = {
   templateId: string;
@@ -20,6 +21,8 @@ type GuestDraft = {
 
 export function GuestTemplateAction({ templateId, children = "Use Template", variant = "primary" }: GuestTemplateActionProps) {
   const [showDraftChoice, setShowDraftChoice] = useState(false);
+  const [storageError, setStorageError] = useState("");
+  const router = useRouter();
 
   const builderHref = `/builder/guest?template=${encodeURIComponent(templateId)}`;
 
@@ -31,14 +34,17 @@ export function GuestTemplateAction({ templateId, children = "Use Template", var
     }
 
     if (existingDraft) {
-      writeGuestDraft({
+      if (!writeGuestDraft({
         ...existingDraft,
         templateId,
         updatedAt: new Date().toISOString(),
-      });
+      })) {
+        setStorageError("The draft is too large to update on this device. Remove its photo and try again.");
+        return;
+      }
     }
 
-    window.location.href = builderHref;
+    router.push(builderHref);
   };
 
   const applyToCurrentDraft = () => {
@@ -49,14 +55,17 @@ export function GuestTemplateAction({ templateId, children = "Use Template", var
         templateId,
         updatedAt: new Date().toISOString(),
       };
-      writeGuestDraft(nextDraft);
+      if (!writeGuestDraft(nextDraft)) {
+        setStorageError("The draft is too large to update on this device. Remove its photo and try again.");
+        return;
+      }
     }
-    window.location.href = builderHref;
+    router.push(builderHref);
   };
 
   const startNewResume = () => {
     guestDraftKeys.forEach((key) => window.localStorage.removeItem(key));
-    window.location.href = builderHref;
+    router.push(builderHref);
   };
 
   return (
@@ -69,6 +78,7 @@ export function GuestTemplateAction({ templateId, children = "Use Template", var
             <p className="mt-2 text-sm leading-6 text-slate-600">
               You already have resume details filled in. Apply this template to your current draft, or start a new resume and clear the draft.
             </p>
+            {storageError ? <p className="mt-3 rounded-lg bg-rose-50 p-3 text-sm font-semibold text-rose-700">{storageError}</p> : null}
             <div className="mt-5 grid gap-2">
               <AppButton onClick={applyToCurrentDraft}>Apply to current draft</AppButton>
               <AppButton variant="secondary" onClick={startNewResume}>Start new resume</AppButton>
@@ -100,7 +110,12 @@ function readGuestDraft(): GuestDraft | null {
 }
 
 function writeGuestDraft(draft: GuestDraft) {
-  guestDraftKeys.forEach((key) => window.localStorage.setItem(key, JSON.stringify(draft)));
+  try {
+    guestDraftKeys.forEach((key) => window.localStorage.setItem(key, JSON.stringify(draft)));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function hasResumeContent(value: unknown): boolean {

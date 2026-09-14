@@ -1,91 +1,47 @@
-# Resumi QA Report
+# Resumi Relaunch QA Report
 
 ## Test Run
 
-- Date: 2026-06-21 14:26 GST (UTC+04:00)
-- Stabilization checkpoint: credential-dependent checks confirmed passed before commit
-- Local environment: `http://127.0.0.1:3000`
-- Production smoke test: `https://resumi.live` (redirects to `https://www.resumi.live`)
-- Browser sizes exercised: desktop, 390px, and 430px
-- Build: passed (`npm run build`, 27 routes)
-- Lint: passed with zero warnings (`npm run lint`)
+- Date: 2026-09-14 (GST / UTC+04:00)
+- Branch: `codex/resumi-relaunch-google-auth-branding`
+- Baseline commit: `3ed78e615e746cb9e7e70d3f53625532bfeda9bd`
+- Local production build: passed with Next.js 16.3.5 (33 routes)
+- Lint: passed with zero warnings
+- TypeScript: passed
+- Security unit tests: 4/4 passed
+- Dependency audit: zero known vulnerabilities
+- Browser: Chrome at desktop and 390px viewport
 
-## Routes Tested
+## Browser Coverage
 
-Local browser checks covered `/`, `/login`, `/signup`, `/forgot-password`, `/dashboard`, `/my-resumes`, `/account`, `/settings`, `/billing`, `/templates`, `/pricing`, `/builder/guest`, `/builder/[resumeId]` access control, `/cover-letter`, and the template/preview/download overlays inside the guest builder.
+Chrome checks covered `/`, `/templates`, `/pricing`, `/ai-tools`, `/resume-examples`, `/about`, `/contact`, `/help`, `/privacy-policy`, `/terms`, `/cover-letter`, `/login`, `/signup`, `/forgot-password`, `/builder/guest`, `/dashboard`, `/admin`, and a missing route. Public pages rendered their expected headings, no tested page had horizontal overflow, protected routes redirected to login, and the custom 404 rendered. The guest builder accepted synthetic data, updated its live preview, advanced through the guided flow, and restored its draft.
 
-Production smoke testing confirmed the public homepage loads at `www.resumi.live`, presents the expected navigation, and renders without a production-page error observed during the smoke test.
+## Fixed in This Branch
 
-## Passed
+- Added Google OAuth entry points, safe callback handling, friendly failures, and fallback profile creation.
+- Hardened redirect validation against external, scheme-relative, encoded-backslash, and control-character redirects.
+- Added private resume-photo delivery and an owner-scoped storage migration; guest photos no longer sync to the server.
+- Restricted resume reads to owners/admins and added missing profile-insert policy.
+- Added a real server-side contact form persistence path and migration.
+- Prevented the Stripe checkout endpoint from operating while payments are disabled.
+- Removed misleading AI, paid-plan, and unfinished-control claims from the free launch experience.
+- Added deletion confirmation, guest storage failure handling, accurate privacy/terms copy, metadata, sitemap/robots updates, a branded 404, manifest, and Resumi app icon.
+- Updated the dependency lockfile and removed the critical Next.js advisory reported by the package audit.
 
-- Required public Supabase variables and local site URL are present.
-- The service-role key is referenced only by server/admin code and is not exposed through a `NEXT_PUBLIC_` variable.
-- Auth callback and confirmation routes validate safe redirects and use `exchangeCodeForSession` / `verifyOtp`.
-- Invalid login displays the friendly `Invalid login credentials` message.
-- Unauthenticated protected routes redirect to `/login?next=...` without a redirect loop.
-- `/builder/guest` remains publicly accessible.
-- Guest personal details and summary update the preview and ATS score reactively.
-- Template preview uses sample data; applying a template preserves actual guest resume data.
-- Guest draft content and the selected template restore after reload.
-- Resume Preview displays current user content and exposes zoom/close controls.
-- Guest PDF download is free in launch mode and no longer opens a payment or upgrade gate.
-- Mobile builder controls are reachable at 390px and no horizontal overflow was detected.
-- Template modal search and filters render on mobile without body overflow.
-- Coupon validation is case-insensitive and server-side; free upgrades require an authenticated user.
-- All homepage primary navigation targets resolve to implemented internal routes.
-- Signup confirmation works on `resumi.live`.
-- Login and logout work.
-- Logged-in autosave works.
-- Guest-to-account migration works.
-- Photo upload works.
-- PDF export works.
-- Coupon `THAMEEMAR` works.
-- Cover letter creation works.
-- Template switching preserves user data.
-- ATS score updates correctly.
-- Mobile layout is usable for the primary builder journey.
-- Launch mode is enabled: all templates are free, premium/payment gating is disabled for the resume flow, PDF downloads are free, and premium badges/tags are removed from template UI.
-- Payment and coupon backend code is retained for future re-enable, but checkout/coupon controls are hidden from normal launch pricing, billing, and account screens.
-- No-login launch mode is enabled: homepage and navigation CTAs point to the guest builder, login/signup are no longer promoted in the normal launch flow, and guest PDF download works without auth.
-- Guided builder flow added for mobile launch: step progress, Back/Next navigation, Template step, Preview & Download step, and low-completion download warning are available without relying on hidden horizontal tabs.
-- Anonymous resume data collection added through `anonymous_resumes`: guest session id, resume data, template, progress, ATS score, contact details entered in the resume, status, and downloaded timestamp can sync for admin follow-up when the migration and service role are available.
-- Admin lead capture added: `/admin` now includes a Resume Builder Leads table for anonymous drafts/downloads.
+## Remaining External Blockers
 
-## Bugs Found And Fixed
+- Google login is **not end-to-end verified**. In the inspected Supabase project, the Google provider is disabled and no OAuth client credentials are configured.
+- Supabase Auth still uses `https://resumi.live` and bare-domain redirect entries. Before relaunch, update the Site URL and allowed redirects to the canonical `https://www.resumi.live` routes documented in `docs/google-auth-configuration.md`.
+- Review and apply `supabase/migrations/008_auth_contact_and_storage_hardening.sql` before deploying the code. No production database or storage setting was changed during this work.
+- Run new-user, existing-user, cancel/denial, session persistence, photo upload, authenticated autosave, and PDF viewer checks in a configured preview or production-like environment.
+- No production deployment was performed.
 
-### High
+## Severity Summary
 
-- Stale production URL fallback and auth documentation referenced the retired Vercel beta domain. Updated all references to `https://resumi.live`.
-- The lint command was unusable because ESLint 9 had no flat config. Added the Next.js TypeScript configuration and resolved all resulting lint errors and warnings.
+- P0: dependency vulnerability resolved; no open code-level P0 found in the completed local checks.
+- P1: external Google/Supabase configuration and the unapplied security/contact migration remain relaunch blockers.
+- P2: authenticated and provider-dependent end-to-end scenarios remain to be exercised after configuration.
 
-### Medium
+## Relaunch Decision
 
-- The builder promoted an unrelated external portfolio-builder URL beside the Portfolio field. Removed the promotion while retaining the field.
-- Internal homepage and navbar navigation used plain anchors. Replaced them with Next.js `Link` navigation.
-- Launch friction remained in template selection and download flows through premium badges, watermark copy, and plan checks. Disabled that launch gating while preserving payment/coupon backend code.
-- Mobile builder had too many always-visible actions and hidden section tabs. Reworked the launch builder into a guided step flow and moved Download emphasis to the final step with an incomplete-resume warning.
-- Guest draft helpers used explicit `any` types. Added a bounded draft type.
-- Autosave/retry effects used unstable callbacks. Memoized them to avoid stale hook dependencies.
-- Local QA emitted a blocked dev-origin warning for `127.0.0.1`. Added a local-only allowed dev origin.
-
-### Low
-
-- Fixed an unescaped apostrophe and removed stale imports/declarations exposed by lint.
-
-## Remaining Verification Gaps
-
-These are not confirmed product defects, but they are still worth checking after each production deploy:
-
-- **Medium:** Google login is visibly marked `coming soon`; OAuth is not implemented and was not tested.
-- **Medium:** Stripe/payment completion and provider webhooks were not tested in this checkpoint.
-- **Low:** Repeat a production smoke test after the pushed build is deployed.
-
-## Risk Level
-
-**Low to Medium.** Public pages, access control, guest editing, authenticated editing, ATS updates, template switching, draft recovery, preview behavior, free launch PDF export, cover letter, responsive layout, lint, TypeScript, and production build are healthy. Remaining risk is mostly around external provider flows that were intentionally hidden during launch mode.
-
-## Recommended Next Checks
-
-1. Deploy this change set, then repeat the production smoke test and inspect Vercel/Supabase logs.
-2. Validate Standard A4 and Auto-fit PDFs with short, normal, long, and photo resumes on desktop and mobile PDF viewers after deployment.
-3. Schedule a separate payment/webhook QA pass before enabling paid promotion.
+**NO-GO for production relaunch today.** The branch is locally buildable and materially hardened, but Google OAuth configuration, the Supabase migration, and provider/authenticated end-to-end verification must be completed first.

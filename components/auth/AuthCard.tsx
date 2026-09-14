@@ -29,6 +29,9 @@ export function AuthCard({
         {error ? <p className="mt-5 rounded-lg bg-rose-50 p-3 text-sm font-semibold text-rose-700">{error}</p> : null}
         <div className="mt-6">{children}</div>
         <div className="mt-6 text-center text-sm text-slate-600">{footer}</div>
+        <p className="mt-5 text-center text-xs leading-5 text-slate-500">
+          By continuing, you agree to the <Link href="/terms" className="font-semibold text-blue-700">Terms</Link> and acknowledge the <Link href="/privacy-policy" className="font-semibold text-blue-700">Privacy Policy</Link>.
+        </p>
       </section>
     </main>
   );

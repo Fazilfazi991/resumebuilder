@@ -1,23 +1,28 @@
 -- Resumi resume photo storage setup.
 -- Create a Supabase Storage bucket named "resume-photos".
--- Recommended bucket setting: public read, with uploads restricted by these policies.
+-- Recommended bucket setting: private, with all access restricted to the owner folder.
 --
 -- Dashboard option:
--- Storage > New bucket > Name: resume-photos > Public bucket: enabled.
+-- Storage > New bucket > Name: resume-photos > Public bucket: disabled.
 --
 -- SQL option:
 insert into storage.buckets (id, name, public)
-values ('resume-photos', 'resume-photos', true)
-on conflict (id) do update set public = true;
+values ('resume-photos', 'resume-photos', false)
+on conflict (id) do update set public = false;
 
 drop policy if exists "resume_photos_public_read" on storage.objects;
+drop policy if exists "resume_photos_owner_read" on storage.objects;
 drop policy if exists "resume_photos_owner_insert" on storage.objects;
 drop policy if exists "resume_photos_owner_update" on storage.objects;
 drop policy if exists "resume_photos_owner_delete" on storage.objects;
 
-create policy "resume_photos_public_read"
+create policy "resume_photos_owner_read"
 on storage.objects for select
-using (bucket_id = 'resume-photos');
+to authenticated
+using (
+  bucket_id = 'resume-photos'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
 
 create policy "resume_photos_owner_insert"
 on storage.objects for insert

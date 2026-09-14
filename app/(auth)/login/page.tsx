@@ -3,6 +3,7 @@ import { SubmitButton } from "@/components/app/SubmitButton";
 import { AuthCard, AuthField } from "@/components/auth/AuthCard";
 import { login, resendConfirmation } from "../actions";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { GoogleSignInForm } from "@/components/auth/GoogleSignInForm";
 
 export default async function LoginPage({
   searchParams,
@@ -12,6 +13,7 @@ export default async function LoginPage({
   const params = await searchParams;
   const authReady = isSupabaseConfigured();
   const showResend = params.error?.toLowerCase().includes("confirm");
+  const nextPath = params.next ?? params.redirect ?? "/dashboard";
 
   return (
     <AuthCard
@@ -22,15 +24,15 @@ export default async function LoginPage({
       footer={<>New to Resumi? <Link href="/signup" className="font-bold text-blue-700">Create an account</Link></>}
     >
       <form action={login} className="space-y-4">
-        <input type="hidden" name="next" value={params.next ?? params.redirect ?? "/dashboard"} />
+        <input type="hidden" name="next" value={nextPath} />
         <AuthField label="Email" name="email" type="email" autoComplete="email" />
         <AuthField label="Password" name="password" type="password" autoComplete="current-password" />
         <div className="text-right">
           <Link href="/forgot-password" className="text-sm font-bold text-blue-700">Forgot password?</Link>
         </div>
         <SubmitButton disabled={!authReady} className="w-full" pendingText="Signing in...">Sign In</SubmitButton>
-        <button type="button" disabled className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 text-sm font-bold text-slate-400">Google login coming soon</button>
       </form>
+      <GoogleSignInForm next={nextPath} disabled={!authReady} />
       {showResend || params.message ? (
         <form action={resendConfirmation} className="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-4">
           <p className="text-sm font-bold text-slate-950">Need a new confirmation email?</p>

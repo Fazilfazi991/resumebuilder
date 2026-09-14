@@ -23,18 +23,14 @@ export default async function SettingsPage() {
           <Panel title="Password">
             <p className="text-sm text-slate-600">Use the forgot password flow from login to receive a secure reset link.</p>
           </Panel>
-          <Panel title="Notification preferences">
-            {["Product updates", "Resume tips", "Billing emails"].map((item) => (
-              <label key={item} className="mt-3 flex items-center gap-3 text-sm font-semibold text-slate-700"><input type="checkbox" defaultChecked />{item}</label>
-            ))}
-          </Panel>
           <Panel title="Data export">
-            <p className="text-sm text-slate-600">Export all resume data placeholder for the backend phase.</p>
+            <p className="text-sm leading-6 text-slate-600">You can download each resume as a PDF from the builder. For an account-data access request, use the contact form so the team can verify and process it safely.</p>
+            <div className="mt-4"><AppButton href="/contact?subject=Account%20data%20access" variant="secondary">Request Account Data</AppButton></div>
           </Panel>
           <section className="rounded-lg border border-rose-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-rose-700">Delete account</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Danger zone placeholder. Real deletion needs auth and database safeguards.</p>
-            <div className="mt-5"><AppButton variant="danger">Delete Account</AppButton></div>
+            <h2 className="text-xl font-bold text-rose-700">Account deletion</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Self-service deletion is not available yet. Submit a deletion request through the contact form; the team will verify ownership before removing account data.</p>
+            <div className="mt-5"><AppButton href="/contact?subject=Account%20deletion%20request" variant="danger">Request Account Deletion</AppButton></div>
           </section>
         </div>
       </section>

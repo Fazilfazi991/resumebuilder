@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/account", "/dashboard", "/my-resumes", "/settings", "/billing"],
+      disallow: ["/admin", "/account", "/dashboard", "/my-resumes", "/settings", "/billing", "/login", "/signup", "/forgot-password", "/reset-password", "/auth/", "/api/", "/builder/new"],
     },
     sitemap: "https://www.resumi.live/sitemap.xml",
   };

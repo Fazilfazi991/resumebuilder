@@ -4,6 +4,9 @@ import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { defaultResumeData } from "@/lib/resume/mock-data";
 import { createClient } from "@/lib/supabase/server";
 import type { ResumeData } from "@/types/resume";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Cover Letter Draft", "Create and edit a rule-based cover-letter draft from your resume details, then copy or download it as a PDF.", "/cover-letter");
 
 export default async function CoverLetterPage({
   searchParams,

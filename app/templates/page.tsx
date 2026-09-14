@@ -4,6 +4,9 @@ import { TemplatesClient } from "@/components/templates/TemplatesClient";
 import { createResumeAndRedirect } from "@/lib/resume/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Resume Templates", "Browse free ATS-friendly, modern, executive, creative, and UAE resume templates from Resumi.", "/templates");
 
 export default async function TemplatesPage() {
   let isLoggedIn = false;

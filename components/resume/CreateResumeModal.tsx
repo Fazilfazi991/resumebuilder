@@ -63,12 +63,12 @@ export function CreateResumeModal({ createAction, buttonLabel = "Create Resume",
 
               <article className="rounded-lg border border-slate-200 bg-white p-4">
                 <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-50 text-blue-700"><Bot size={20} /></div>
-                <h3 className="mt-4 font-bold text-slate-950">Use Assistant</h3>
+                <h3 className="mt-4 font-bold text-slate-950">Use Guided Assistant</h3>
                 <p className="mt-2 min-h-16 text-sm leading-6 text-slate-600">Answer a few questions and Resumi will prepare your first draft.</p>
                 <form action={createAction} className="mt-4">
                   <input type="hidden" name="templateId" value="modern-minimal" />
                   <input type="hidden" name="tab" value="assistant" />
-                  <SubmitButton variant="secondary" className="w-full" pendingText="Starting assistant...">Start assistant</SubmitButton>
+                  <SubmitButton variant="secondary" className="w-full" pendingText="Starting guide...">Start guided assistant</SubmitButton>
                 </form>
               </article>
             </div>

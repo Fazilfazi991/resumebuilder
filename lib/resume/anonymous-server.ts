@@ -31,7 +31,7 @@ export async function syncAnonymousResume(input: AnonymousResumeInput) {
     const supabase = createAdminClient();
     const payload = {
       session_id: input.sessionId,
-      resume_data: input.resumeData,
+      resume_data: { ...input.resumeData, personal: { ...personal, photoUrl: "" } },
       template_id: input.templateId,
       progress: Math.max(0, Math.min(100, Math.round(input.progress))),
       ats_score: Math.max(0, Math.min(100, Math.round(input.atsScore))),

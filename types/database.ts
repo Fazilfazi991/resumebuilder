@@ -238,6 +238,33 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      contact_messages: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          subject: string;
+          message: string;
+          status: "new" | "in_progress" | "resolved" | "spam";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          email: string;
+          subject: string;
+          message: string;
+          status?: "new" | "in_progress" | "resolved" | "spam";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          status?: "new" | "in_progress" | "resolved" | "spam";
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       cover_letters: {
         Row: {
           id: string;

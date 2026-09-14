@@ -155,6 +155,16 @@ export function BuilderClient({
   const zoomIn = () => setZoom((current) => current === "fit" ? 75 : 100);
 
   const draftKey = `resumi_builder_draft_${isGuest ? "guest" : resumeId ?? "guest"}`;
+  const persistLocalDraft = useCallback((draft: LocalDraft) => {
+    try {
+      window.localStorage.setItem(draftKey, JSON.stringify(draft));
+      if (isGuest) window.localStorage.setItem("resumi_guest_resume", JSON.stringify(draft));
+      return true;
+    } catch {
+      setConnectionMessage("This draft is too large to save on this device. Remove or replace the photo and try again.");
+      return false;
+    }
+  }, [draftKey, isGuest]);
 
   useEffect(() => {
     let sessionId = window.localStorage.getItem("resumi_session_id");
@@ -181,10 +191,7 @@ export function BuilderClient({
     }
 
     const draft: LocalDraft = { ...payload, updatedAt: new Date().toISOString() };
-    window.localStorage.setItem(draftKey, JSON.stringify(draft));
-    if (isGuest) {
-      window.localStorage.setItem("resumi_guest_resume", JSON.stringify(draft));
-    }
+    persistLocalDraft(draft);
 
     return payload;
   };
@@ -229,10 +236,7 @@ export function BuilderClient({
 
     if (!draftReadyRef.current) return;
     const draft: LocalDraft = { ...payload, updatedAt: new Date().toISOString() };
-    window.localStorage.setItem(draftKey, JSON.stringify(draft));
-    if (isGuest) {
-      window.localStorage.setItem("resumi_guest_resume", JSON.stringify(draft));
-    }
+    persistLocalDraft(draft);
 
     if (isGuest) {
       setSaveState("guest");
@@ -259,7 +263,7 @@ export function BuilderClient({
     }, 850);
 
     return () => window.clearTimeout(timeout);
-  }, [buildCurrentPayload, draftKey, isGuest, saveResume]);
+  }, [buildCurrentPayload, isGuest, persistLocalDraft, saveResume]);
 
   useEffect(() => {
     if (!connectionMessage) return;
@@ -726,7 +730,10 @@ export function BuilderClient({
                 isDownloading={isDownloading}
               />
             ) : (
-              <EditorPanel activeSection={mobileActiveSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} />
+              <EditorPanel activeSection={mobileActiveSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} onOpenAssistant={() => {
+                if (window.matchMedia("(min-width: 1024px)").matches) setIsAssistantOpen(true);
+                else setMobileTab("assistant");
+              }} />
             )}
           </div>
         </section>
@@ -983,6 +990,7 @@ function EditorPanel({
   sectionOrder,
   setSectionOrder,
   isGuest,
+  onOpenAssistant,
 }: {
   activeSection: ResumeSection;
   data: ResumeData;
@@ -991,10 +999,12 @@ function EditorPanel({
   sectionOrder: ResumeSection[];
   setSectionOrder: React.Dispatch<React.SetStateAction<ResumeSection[]>>;
   isGuest: boolean;
+  onOpenAssistant: () => void;
 }) {
   if (activeSection === "personal") {
     return (
       <Panel title="Personal Details" description="This information appears in the resume header.">
+        {isGuest ? <p className="mb-4 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm leading-6 text-blue-900">Your guest draft is saved in this browser for recovery and may sync to Resumi as described in the <Link href="/privacy-policy" className="font-bold text-blue-700">Privacy Policy</Link>. Guest photos stay on this device.</p> : null}
         <ResumePhotoUpload
           value={data.personal.photoUrl}
           onChange={(value) => setPersonal("photoUrl", value)}
@@ -1028,7 +1038,7 @@ function EditorPanel({
     return (
       <Panel title="Summary" description="Write a focused opening summary for your target role.">
         <TextArea label="Professional summary" value={data.summary} onChange={(value) => setData((current) => ({ ...current, summary: value }))} />
-        <div className="mt-4 [&>button]:w-full sm:[&>button]:w-auto"><AppButton variant="secondary"><WandSparkles size={16} aria-hidden="true" /> Improve with AI</AppButton></div>
+        <div className="mt-4 [&>button]:w-full sm:[&>button]:w-auto"><AppButton variant="secondary" onClick={onOpenAssistant}><WandSparkles size={16} aria-hidden="true" /> Open Summary Writing Guide</AppButton></div>
       </Panel>
     );
   }

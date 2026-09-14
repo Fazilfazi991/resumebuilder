@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Camera, ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
+import { photoStoragePathFromUrl, privatePhotoUrl } from "@/lib/resume/photo-url";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -49,7 +50,7 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
 
     setIsUploading(true);
     try {
-      const localUrl = await readAsDataUrl(file);
+      const localUrl = await readAsOptimizedDataUrl(file);
       onChange(localUrl);
 
       if (!enableCloudUpload) {
@@ -81,8 +82,11 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
         throw uploadError;
       }
 
-      const { data: publicData } = supabase.storage.from("resume-photos").getPublicUrl(path);
-      onChange(publicData.publicUrl);
+      const previousPath = photoStoragePathFromUrl(value, userId);
+      onChange(privatePhotoUrl(path));
+      if (previousPath && previousPath !== path) {
+        await supabase.storage.from("resume-photos").remove([previousPath]);
+      }
       setStatus("Photo uploaded.");
     } catch (uploadError) {
       console.error(uploadError);
@@ -117,7 +121,15 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
             {value ? (
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
+                  if (!window.confirm("Remove this photo from the resume and cloud storage?")) return;
+                  if (enableCloudUpload) {
+                    const supabase = createClient();
+                    const { data: userData } = await supabase.auth.getUser();
+                    const userId = userData.user?.id;
+                    const path = userId ? photoStoragePathFromUrl(value, userId) : null;
+                    if (path) await supabase.storage.from("resume-photos").remove([path]);
+                  }
                   onChange("");
                   setStatus("Photo removed.");
                   setError("");
@@ -158,11 +170,30 @@ function extensionFor(file: File) {
   return "jpg";
 }
 
-function readAsDataUrl(file: File) {
+function readAsOptimizedDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const maxDimension = 1200;
+      const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const context = canvas.getContext("2d");
+      if (!context) {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Photo preview could not be prepared."));
+        return;
+      }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(objectUrl);
+      resolve(canvas.toDataURL("image/jpeg", 0.86));
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Photo could not be read."));
+    };
+    image.src = objectUrl;
   });
 }

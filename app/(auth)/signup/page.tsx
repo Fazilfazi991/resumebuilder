@@ -3,6 +3,7 @@ import { SubmitButton } from "@/components/app/SubmitButton";
 import { AuthCard, AuthField } from "@/components/auth/AuthCard";
 import { resendConfirmation, signup } from "../actions";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { GoogleSignInForm } from "@/components/auth/GoogleSignInForm";
 
 export default async function SignupPage({
   searchParams,
@@ -11,6 +12,7 @@ export default async function SignupPage({
 }) {
   const params = await searchParams;
   const authReady = isSupabaseConfigured();
+  const nextPath = params.next ?? params.redirect ?? "/dashboard";
 
   return (
     <AuthCard
@@ -28,7 +30,7 @@ export default async function SignupPage({
         </div>
       ) : null}
       <form action={signup} className="space-y-4">
-        <input type="hidden" name="next" value={params.next ?? params.redirect ?? "/dashboard"} />
+        <input type="hidden" name="next" value={nextPath} />
         <AuthField label="Full name" name="fullName" autoComplete="name" />
         <AuthField label="Email" name="email" type="email" autoComplete="email" />
         <AuthField label="Password" name="password" type="password" autoComplete="new-password" />
@@ -40,6 +42,7 @@ export default async function SignupPage({
         </div>
         <SubmitButton disabled={!authReady} className="w-full" pendingText="Creating account...">Create Account</SubmitButton>
       </form>
+      <GoogleSignInForm next={nextPath} disabled={!authReady} />
       <form action={resendConfirmation} className="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-4">
         <p className="text-sm font-bold text-slate-950">Already signed up?</p>
         <p className="mt-1 text-xs leading-5 text-slate-600">Resend your confirmation email.</p>

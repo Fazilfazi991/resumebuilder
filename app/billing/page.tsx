@@ -2,12 +2,10 @@ import { AppButton } from "@/components/app/AppButton";
 import { FAQAccordion } from "@/components/app/FAQAccordion";
 import { PortalShell } from "@/components/app/PortalShell";
 import { requireUser } from "@/lib/auth/require-user";
-import { Check, CreditCard, Receipt } from "lucide-react";
+import { Check, CreditCard } from "lucide-react";
 
 const plans = [
   { name: "Launch Free", price: "Free now" },
-  { name: "Premium", price: "Coming soon" },
-  { name: "Lifetime", price: "Coming soon" },
 ];
 
 export default async function BillingPage() {
@@ -45,22 +43,12 @@ export default async function BillingPage() {
             ))}
           </div>
         </div>
-        <div className="mt-6 grid gap-5 lg:grid-cols-2">
-          <Placeholder icon={CreditCard} title="Payment method" copy="Payment methods will appear here after payment integration." />
-          <Placeholder icon={Receipt} title="Invoice history" copy="Invoices and payment history placeholder for the backend phase." />
-        </div>
+        <section className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="font-bold text-slate-950">No billing details required</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Resumi is not accepting payments during launch, so there is no payment method or invoice history to manage.</p>
+        </section>
         <div className="mt-8"><FAQAccordion items={[{ question: "Are payments active?", answer: "No. Payments are disabled during launch." }, { question: "Can I download without upgrading?", answer: "Yes. All resume templates and PDF downloads are free during launch." }]} /></div>
       </section>
     </PortalShell>
-  );
-}
-
-function Placeholder({ icon: Icon, title, copy }: { icon: typeof CreditCard; title: string; copy: string }) {
-  return (
-    <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-600"><Icon size={21} /></div>
-      <h2 className="font-bold text-slate-950">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{copy}</p>
-    </section>
   );
 }

@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { getPaidPlan } from "@/lib/payments/plans";
 import { getPaymentCurrency } from "@/lib/payments/currency";
+import { PAYMENTS_ENABLED } from "@/lib/launch-config";
+import { getSiteUrl } from "@/lib/site-url";
 
 const stripeCheckoutUrl = "https://api.stripe.com/v1/checkout/sessions";
 
 export async function POST(request: Request) {
+  if (!PAYMENTS_ENABLED) {
+    return NextResponse.json({ error: "Payments are not available during the free launch." }, { status: 503 });
+  }
+
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!stripeSecretKey) {
@@ -19,7 +25,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid plan selected." }, { status: 400 });
   }
 
-  const origin = getSiteOrigin(request);
+  const origin = getSiteUrl();
   const params = new URLSearchParams({
     mode: "payment",
     success_url: `${origin}/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -53,14 +59,4 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ url: checkoutSession.url });
-}
-
-function getSiteOrigin(request: Request) {
-  const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-
-  if (configuredSiteUrl) {
-    return configuredSiteUrl.replace(/\/$/, "");
-  }
-
-  return new URL(request.url).origin;
 }

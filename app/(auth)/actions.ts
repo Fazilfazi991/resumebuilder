@@ -19,7 +19,33 @@ function friendlyAuthError(message: string) {
     return "Confirmation email could not be sent right now. You can continue as a guest, or try signup again after email delivery is configured.";
   }
 
-  return message;
+  if (/invalid login credentials/i.test(message)) {
+    return "The email or password is incorrect.";
+  }
+
+  return "We could not complete that account request. Please try again.";
+}
+
+export async function googleLogin(formData: FormData) {
+  if (!isSupabaseConfigured()) {
+    errorRedirect("/login", authUnavailableMessage);
+  }
+
+  const nextPath = safeRedirectPath(formData.get("next"));
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+      scopes: "openid email profile",
+    },
+  });
+
+  if (error || !data.url) {
+    errorRedirect("/login", "Google sign-in could not be started. Please try again or use email.");
+  }
+
+  redirect(data.url);
 }
 
 export async function login(formData: FormData) {
@@ -38,13 +64,24 @@ export async function login(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: result.data.email,
     password: result.data.password,
   });
 
   if (error) {
-    errorRedirect("/login", error.message);
+    errorRedirect("/login", friendlyAuthError(error.message));
+  }
+
+  if (data.user) {
+    await supabase.from("profiles").upsert(
+      {
+        user_id: data.user.id,
+        full_name: String(data.user.user_metadata?.full_name ?? ""),
+        email: data.user.email ?? result.data.email,
+      },
+      { onConflict: "user_id", ignoreDuplicates: true },
+    );
   }
 
   redirect(safeRedirectPath(formData.get("next")));
@@ -160,7 +197,7 @@ export async function resetPassword(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password: result.data.password });
   if (error) {
-    errorRedirect("/reset-password", error.message);
+    errorRedirect("/reset-password", "Your password could not be updated. Request a new reset link and try again.");
   }
 
   redirect("/dashboard?message=Password updated.");
@@ -180,7 +217,7 @@ export async function updateProfile(formData: FormData) {
     : await supabase.from("profiles").insert({ user_id: user.id, full_name: result.data.fullName, email, plan: "free" });
 
   if (error) {
-    errorRedirect("/account", error.message);
+    errorRedirect("/account", "Your profile could not be updated. Please try again.");
   }
 
   await supabase.auth.updateUser({ data: { full_name: result.data.fullName } });

@@ -5,7 +5,7 @@ import { MobileNavbar } from "./MobileNavbar";
 const navItems = [
   { label: "Templates", href: "/templates" },
   { label: "Pricing", href: "/pricing" },
-  { label: "AI Tools", href: "/ai-tools" },
+  { label: "Guided Tools", href: "/ai-tools" },
 ];
 
 export function Navbar() {

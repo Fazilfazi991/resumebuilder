@@ -10,6 +10,7 @@ const routes = [
   "/contact",
   "/help",
   "/privacy-policy",
+  "/terms",
   "/cover-letter",
   "/builder/guest",
 ];
