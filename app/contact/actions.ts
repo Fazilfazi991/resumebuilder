@@ -1,8 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { contactMessageSchema } from "@/lib/validations/contact";
+import { contactRateLimitFingerprints, requestNetworkIdentifier } from "@/lib/contact/rate-limit";
 
 function contactRedirect(kind: "message" | "error", copy: string): never {
   redirect(`/contact?${kind}=${encodeURIComponent(copy)}`);
@@ -22,16 +24,27 @@ export async function submitContactMessage(formData: FormData) {
   }
 
   try {
+    const requestHeaders = await headers();
+    const rateLimitSecret = process.env.CONTACT_RATE_LIMIT_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+    const fingerprints = contactRateLimitFingerprints(
+      result.data.email,
+      requestNetworkIdentifier(requestHeaders),
+      rateLimitSecret,
+    );
     const supabase = createAdminClient();
-    const { error } = await supabase.from("contact_messages").insert({
-      name: result.data.name,
-      email: result.data.email.toLowerCase(),
-      subject: result.data.subject,
-      message: result.data.message,
-      status: "new",
+    const { error } = await supabase.rpc("submit_contact_message", {
+      contact_name: result.data.name,
+      contact_email: result.data.email.toLowerCase(),
+      contact_subject: result.data.subject,
+      contact_message: result.data.message,
+      email_fingerprint: fingerprints.emailFingerprint,
+      network_fingerprint: fingerprints.networkFingerprint,
     });
-    if (error) throw error;
-  } catch {
+    if (error) throw new Error(error.message);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("CONTACT_RATE_LIMITED")) {
+      contactRedirect("error", "Too many messages were sent recently. Please wait 15 minutes and try again.");
+    }
     contactRedirect("error", "Your message could not be saved right now. Please try again later.");
   }
 

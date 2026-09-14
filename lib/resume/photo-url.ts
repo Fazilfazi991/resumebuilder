@@ -1,3 +1,5 @@
+import type { ResumeData } from "@/types/resume";
+
 const photoRoute = "/api/resume-photo";
 const publicStorageMarker = "/storage/v1/object/public/resume-photos/";
 
@@ -21,4 +23,10 @@ export function photoStoragePathFromUrl(value: string, userId: string) {
 
   if (!path || path.includes("\\") || path.split("/").some((part) => part === "..")) return null;
   return path.startsWith(`${userId}/`) ? path : null;
+}
+
+export function withPrivatePhotoUrl(resumeData: ResumeData, userId: string): ResumeData {
+  const path = photoStoragePathFromUrl(resumeData.personal.photoUrl, userId);
+  if (!path) return resumeData;
+  return { ...resumeData, personal: { ...resumeData.personal, photoUrl: privatePhotoUrl(path) } };
 }

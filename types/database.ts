@@ -265,6 +265,28 @@ export type Database = {
         };
         Relationships: [];
       };
+      contact_submission_limits: {
+        Row: {
+          fingerprint_type: "email" | "network";
+          fingerprint: string;
+          window_started_at: string;
+          submission_count: number;
+          last_seen_at: string;
+        };
+        Insert: {
+          fingerprint_type: "email" | "network";
+          fingerprint: string;
+          window_started_at?: string;
+          submission_count?: number;
+          last_seen_at?: string;
+        };
+        Update: {
+          window_started_at?: string;
+          submission_count?: number;
+          last_seen_at?: string;
+        };
+        Relationships: [];
+      };
       cover_letters: {
         Row: {
           id: string;
@@ -305,6 +327,17 @@ export type Database = {
       increment_coupon_usage: {
         Args: { coupon_code_input: string };
         Returns: void;
+      };
+      submit_contact_message: {
+        Args: {
+          contact_name: string;
+          contact_email: string;
+          contact_subject: string;
+          contact_message: string;
+          email_fingerprint: string;
+          network_fingerprint: string;
+        };
+        Returns: undefined;
       };
     };
     Enums: Record<string, never>;

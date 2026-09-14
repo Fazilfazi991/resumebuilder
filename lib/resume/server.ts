@@ -7,7 +7,7 @@ import { defaultSectionOrder, emptyResumeData } from "./mock-data";
 import { createResumeSchema, updateResumeSchema } from "@/lib/validations/resume";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type { ResumeData } from "@/types/resume";
-import { photoStoragePathFromUrl, privatePhotoUrl } from "./photo-url";
+import { withPrivatePhotoUrl } from "./photo-url";
 
 type ResumeInput = {
   title: string;
@@ -94,12 +94,6 @@ export async function getResumeById(resumeId: string) {
   const { data, error } = await supabase.from("resumes").select("*").eq("id", resumeId).single();
   if (error) throw new Error(error.message);
   return { ...data, resume_data: withPrivatePhotoUrl(data.resume_data, user.id) };
-}
-
-function withPrivatePhotoUrl(resumeData: ResumeData, userId: string): ResumeData {
-  const path = photoStoragePathFromUrl(resumeData.personal.photoUrl, userId);
-  if (!path) return resumeData;
-  return { ...resumeData, personal: { ...resumeData.personal, photoUrl: privatePhotoUrl(path) } };
 }
 
 export async function updateResume(resumeId: string, input: Partial<ResumeInput> & { isPublic?: boolean }) {
