@@ -8,9 +8,9 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
 
   return (
-    <div className="resume-page grid grid-cols-[0.315fr_0.685fr] bg-white font-[Arial] text-[#0c1830]">
+    <div className="resume-page grid grid-cols-[minmax(0,0.315fr)_minmax(0,0.685fr)] bg-white font-[Arial] text-[#0c1830]">
       <Watermark show={isWatermarked} />
-      <aside className="bg-[#002b3d] bg-[linear-gradient(145deg,#01283a_0%,#003d4f_48%,#012538_100%)] px-[8.5mm] py-[9mm] text-white">
+      <aside className="min-w-0 bg-[#002b3d] bg-[linear-gradient(145deg,#01283a_0%,#003d4f_48%,#012538_100%)] px-[8.5mm] py-[9mm] text-white">
         <div className="mb-7 overflow-hidden rounded-[9px] border-[2px] border-white/80 bg-white/10 shadow-sm">
           {hasText(data.personal.photoUrl) ? (
             <img src={data.personal.photoUrl} alt="" className="h-[44mm] w-full object-cover" />
@@ -27,7 +27,7 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
           <SidebarSection icon={Wrench} title="Skills">
             <div className="space-y-2.5">
               {data.skills.filter((skill) => hasText(skill.name)).map((skill, index) => (
-                <div key={skill.id} className="grid grid-cols-[0.9fr_1fr] items-center gap-3">
+                <div key={skill.id} className="avoid-break grid grid-cols-[0.9fr_1fr] items-center gap-3">
                   <p className="break-words text-[10pt] leading-[1.25] text-white/95">{skill.name}</p>
                   <div className="h-[3.5px] overflow-hidden rounded-full bg-white/25">
                     <div className="h-full rounded-full bg-[#27c5bd]" style={{ width: `${skillWidth(skill.level, index)}%` }} />
@@ -56,7 +56,7 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
           <SidebarSection icon={Languages} title="Languages">
             <div className="space-y-1.5">
               {data.languages.filter((language) => hasText(language.name)).map((language) => (
-                <p key={language.id} className="flex gap-2 text-[10pt] leading-[1.35] text-white/90">
+                <p key={language.id} className="avoid-break flex gap-2 text-[10pt] leading-[1.35] text-white/90">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#27c5bd]" />
                   <span className="font-bold text-white">{language.name}</span>
                   {hasText(language.level) ? <span className="text-white/70">- {language.level}</span> : null}
@@ -70,7 +70,7 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
           <SidebarSection icon={Award} title="Certifications">
             <div className="space-y-2.5">
               {data.certificates.filter((cert) => hasText(cert.name)).map((cert) => (
-                <div key={cert.id} className="grid grid-cols-[7px_1fr] gap-3 text-[10pt] leading-[1.35]">
+                <div key={cert.id} className="avoid-break grid grid-cols-[7px_1fr] gap-3 text-[10pt] leading-[1.35]">
                   <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#27c5bd]" />
                   <p><span className="font-bold text-white">{cert.name}</span><br /><span className="italic text-white/78">{[cert.issuer, cert.date].filter(hasText).join("  |  ")}</span></p>
                 </div>
@@ -80,7 +80,7 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
         ) : null}
       </aside>
 
-      <main className="px-[13mm] py-[10.5mm]">
+      <main className="min-w-0 px-[13mm] py-[10.5mm]">
         <header>
           <h1 className="font-[Georgia] text-[24pt] font-bold uppercase leading-none tracking-[0.08em] text-[#07162e]">
             {splitName(data.personal.fullName).first} <span className="text-[#0b7478]">{splitName(data.personal.fullName).last}</span>
@@ -101,17 +101,19 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
           <MainSection icon={BriefcaseBusiness} title="Experience">
             <div className="relative space-y-4 pl-7 before:absolute before:bottom-2 before:left-[7px] before:top-2 before:w-px before:bg-[#0b7478]">
               {data.experience.filter((item) => hasText(item.role) || hasText(item.company)).map((item) => (
-                <article key={item.id} className="avoid-break resume-item relative">
+                <article key={item.id} className="allow-break resume-item relative">
                   <span className="absolute -left-[24px] top-1 h-2.5 w-2.5 rounded-full bg-[#0b7478] ring-2 ring-white" />
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <h3 className="text-[11pt] font-bold text-[#0c1830]">{item.role}</h3>
-                      {hasText(item.company) ? <p className="mt-0.5 text-[10pt] font-bold text-[#0b7478]">{item.company}</p> : null}
+                  <div className="avoid-break">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <h3 className="text-[11pt] font-bold text-[#0c1830]">{item.role}</h3>
+                        {hasText(item.company) ? <p className="mt-0.5 text-[10pt] font-bold text-[#0b7478]">{item.company}</p> : null}
+                      </div>
+                      <p className="shrink-0 text-right text-[10pt] font-semibold text-[#4d5b70]">{dateRange(item.startDate, item.endDate, item.isCurrent)}</p>
                     </div>
-                    <p className="shrink-0 text-right text-[10pt] font-semibold text-[#4d5b70]">{dateRange(item.startDate, item.endDate, item.isCurrent)}</p>
+                    {hasText(item.description) ? <p className="mt-1.5 text-[10pt] leading-[1.45] text-[#26324a]">{item.description}</p> : null}
                   </div>
-                  {hasText(item.description) ? <p className="mt-1.5 text-[10pt] leading-[1.45] text-[#26324a]">{item.description}</p> : null}
-                  {item.bullets.some(hasText) ? <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-[10pt] leading-[1.42] text-[#18233a]">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
+                  {item.bullets.some(hasText) ? <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-[10pt] leading-[1.42] text-[#18233a]">{item.bullets.filter(hasText).map((bullet) => <li key={bullet} className="avoid-break">{bullet}</li>)}</ul> : null}
                 </article>
               ))}
             </div>
@@ -133,8 +135,8 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
 
         {hasItems(data.certificates) ? (
           <MainSection icon={Award} title="Certifications & Training">
-            <div className="grid grid-cols-3 gap-4">
-              {data.certificates.filter((cert) => hasText(cert.name)).slice(0, 3).map((cert) => (
+            <div className="grid grid-cols-2 gap-4">
+              {data.certificates.filter((cert) => hasText(cert.name)).map((cert) => (
                 <div key={cert.id} className="avoid-break grid grid-cols-[13px_1fr] gap-2 text-[10pt] leading-[1.35]">
                   <CheckCircle2 size={11} className="mt-0.5 text-[#27a9a4]" aria-hidden="true" />
                   <p><span className="font-bold text-[#0c1830]">{cert.name}</span><br /><span className="text-[#4d5b70]">{[cert.issuer, cert.date].filter(hasText).join(" | ")}</span></p>
@@ -178,7 +180,7 @@ function TimelineList({ children }: { children: React.ReactNode }) {
 
 function SidebarTimelineItem({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[7px_1fr] gap-3 text-[10pt] leading-[1.35]">
+    <div className="avoid-break grid grid-cols-[7px_1fr] gap-3 text-[10pt] leading-[1.35]">
       <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#27c5bd]" />
       <div>{children}</div>
     </div>

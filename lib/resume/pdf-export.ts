@@ -19,6 +19,7 @@ export type ResumePdfBreakTarget = {
   top: number;
   height: number;
   breakBefore?: number;
+  hasBreakableChildren?: boolean;
 };
 
 export type ResumePdfPageSlice = {
@@ -74,23 +75,31 @@ export function resumePdfPageSlices(
   if (captureHeightPx <= 0 || pageHeightPx <= 0) return [];
 
   const safeTargets = targets
+    .filter(({ hasBreakableChildren }) => !hasBreakableChildren)
     .filter(({ top, height }) => Number.isFinite(top) && Number.isFinite(height) && top >= 0 && height > 0)
     .filter(({ height }) => height <= pageHeightPx - RESUME_PDF_PAGE_BREAK_GUARD_PX)
     .map((target) => ({ ...target, breakBefore: target.breakBefore ?? target.top }))
     .sort((left, right) => left.top - right.top);
   const slices: ResumePdfPageSlice[] = [];
   let start = 0;
+  const isSafeBoundary = (boundary: number) => safeTargets.every(({ top, height }) => top >= boundary || top + height <= boundary);
 
   while (start < captureHeightPx) {
     const desiredEnd = Math.min(start + pageHeightPx, captureHeightPx);
     let end = desiredEnd;
 
     if (desiredEnd < captureHeightPx) {
-      const crossingTarget = safeTargets
+      const crossingTargets = safeTargets
         .filter(({ top, height, breakBefore }) => breakBefore > start + RESUME_PDF_PAGE_BREAK_GUARD_PX && top < desiredEnd && top + height > desiredEnd)
         .sort((left, right) => left.breakBefore - right.breakBefore)
-        .at(-1);
-      if (crossingTarget) end = crossingTarget.breakBefore;
+      if (crossingTargets.length) {
+        const preferredEnd = crossingTargets[0].breakBefore;
+        const safeEnd = safeTargets
+          .map(({ breakBefore }) => breakBefore)
+          .filter((boundary) => boundary > start + RESUME_PDF_PAGE_BREAK_GUARD_PX && boundary <= preferredEnd && isSafeBoundary(boundary))
+          .sort((left, right) => right - left)[0];
+        if (safeEnd !== undefined) end = safeEnd;
+      }
 
       if (captureHeightPx - end < pageHeightPx * RESUME_PDF_MIN_TAIL_FILL_FRACTION) {
         const balancingTarget = safeTargets
@@ -98,6 +107,7 @@ export function resumePdfPageSlices(
             top < end &&
             breakBefore > start + pageHeightPx * RESUME_PDF_MIN_CURRENT_PAGE_FILL_FRACTION &&
             breakBefore < end - RESUME_PDF_PAGE_BREAK_GUARD_PX &&
+            isSafeBoundary(breakBefore) &&
             captureHeightPx - breakBefore >= pageHeightPx * RESUME_PDF_MIN_TAIL_FILL_FRACTION,
           )
           .sort((left, right) => left.breakBefore - right.breakBefore)

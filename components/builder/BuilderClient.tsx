@@ -107,6 +107,20 @@ const guidedSteps: { id: BuilderStepId; title: string; helper: string; section?:
   { id: "download", title: "Preview & Download", helper: "Review your resume and export your PDF." },
 ];
 
+const mobileSectionGroups: Partial<Record<BuilderStepId, { id: ResumeSection; label: string }[]>> = {
+  education: [
+    { id: "education", label: "Education" },
+    { id: "certificates", label: "Certifications" },
+  ],
+  extras: [
+    { id: "projects", label: "Projects" },
+    { id: "languages", label: "Languages" },
+    { id: "achievements", label: "Achievements" },
+    { id: "references", label: "References" },
+    { id: "customSections", label: "Custom Sections" },
+  ],
+};
+
 const sampleTextValues = new Set<string>();
 collectSampleText(defaultResumeData, sampleTextValues);
 
@@ -162,7 +176,7 @@ export function BuilderClient({
   const selectedTemplate = useMemo(() => resumeTemplates.find((template) => template.id === templateId) ?? resumeTemplates[0], [templateId]);
   const completion = useMemo(() => calculateResumeCompletion(data, templateId), [data, templateId]);
   const currentStep = guidedSteps[mobileStepIndex] ?? guidedSteps[0];
-  const mobileActiveSection = currentStep.section ?? activeSection;
+  const mobileSections = mobileSectionGroups[currentStep.id];
   const zoomLabel = zoom === "fit" ? "Fit" : `${zoom}%`;
   const zoomOut = () => setZoom((current) => current === 100 ? 75 : "fit");
   const zoomIn = () => setZoom((current) => current === "fit" ? 75 : 100);
@@ -462,9 +476,16 @@ export function BuilderClient({
   const openEditorSection = (section: ResumeSection) => {
     setActiveSection(section);
     const stepIndex = guidedSteps.findIndex((step) => step.section === section);
-    if (stepIndex >= 0) {
-      setMobileStepIndex(stepIndex);
-    }
+    const fallbackStepId = section === "certificates" ? "education" : "extras";
+    setMobileStepIndex(stepIndex >= 0 ? stepIndex : guidedSteps.findIndex((step) => step.id === fallbackStepId));
+    setMobileTab("edit");
+  };
+
+  const goToMobileStep = (direction: -1 | 1) => {
+    const nextIndex = Math.max(0, Math.min(guidedSteps.length - 1, mobileStepIndex + direction));
+    setMobileStepIndex(nextIndex);
+    const section = guidedSteps[nextIndex]?.section;
+    if (section) setActiveSection(section);
     setMobileTab("edit");
   };
 
@@ -573,7 +594,10 @@ export function BuilderClient({
       }
       const captureHeight = shouldAutoHeight ? contentHeight : Math.max(pagePixelHeight, pdfRef.current.scrollHeight, contentHeight);
       const singlePageScale = shouldAutoHeight ? null : resumePdfSinglePageFitScale(captureHeight);
-      const pageSlices = shouldAutoHeight
+      const columns = !shouldAutoHeight && singlePageScale === null
+        ? measureResumePdfColumns(pdfRef.current, captureHeight)
+        : null;
+      const pageSlices = columns ? [] : shouldAutoHeight
         ? [{ start: 0, height: captureHeight }]
         : singlePageScale !== null
           ? [{ start: 0, height: captureHeight }]
@@ -598,36 +622,58 @@ export function BuilderClient({
         compress: true,
       });
 
-      for (let pageIndex = 0; pageIndex < pageSlices.length; pageIndex += 1) {
-        if (pageIndex > 0) {
-          pdf.addPage();
+      if (columns) {
+        const pageBackground = getComputedStyle(pdfRef.current.querySelector<HTMLElement>(".resume-page") ?? pdfRef.current).backgroundColor;
+        const columnSlices = columns.map(({ element, contentHeight }) =>
+          resumePdfPageSlices(contentHeight, pagePixelHeight, measureResumePdfBreakTargets(pdfRef.current!, element)));
+        const pageCount = Math.max(...columnSlices.map((slices) => slices.length));
+        for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+          if (pageIndex > 0) pdf.addPage();
+          const canvas = document.createElement("canvas");
+          canvas.width = sourceImage.width;
+          canvas.height = Math.round((pagePixelHeight * sourceImage.width) / captureWidth);
+          const context = canvas.getContext("2d");
+          if (!context) throw new Error("PDF canvas could not be created.");
+          context.fillStyle = pageBackground === "rgba(0, 0, 0, 0)" ? "#ffffff" : pageBackground;
+          context.fillRect(0, 0, canvas.width, canvas.height);
+
+          columns.forEach(({ element, left, width }, columnIndex) => {
+            const destinationX = Math.round((left * sourceImage.width) / captureWidth);
+            const destinationWidth = Math.round((width * sourceImage.width) / captureWidth);
+            const background = getComputedStyle(element).backgroundColor;
+            if (background !== "rgba(0, 0, 0, 0)") {
+              context.fillStyle = background;
+              context.fillRect(destinationX, 0, destinationWidth, canvas.height);
+            }
+            const slice = columnSlices[columnIndex][pageIndex];
+            if (!slice) return;
+            const sourceY = Math.round((slice.start * sourceImage.height) / captureHeight);
+            const sourceEnd = Math.round(((slice.start + slice.height) * sourceImage.height) / captureHeight);
+            context.drawImage(sourceImage, destinationX, sourceY, destinationWidth, sourceEnd - sourceY,
+              destinationX, 0, destinationWidth, sourceEnd - sourceY);
+          });
+          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfPage.width, pdfPage.height, undefined, "FAST");
         }
-        const pageSlice = pageSlices[pageIndex];
-        const sourceY = Math.round((pageSlice.start / captureHeight) * sourceImage.height);
-        const sourceEnd = Math.round(((pageSlice.start + pageSlice.height) / captureHeight) * sourceImage.height);
-        const canvas = document.createElement("canvas");
-        canvas.width = sourceImage.width;
-        canvas.height = Math.max(1, sourceEnd - sourceY);
-        const context = canvas.getContext("2d");
-        if (!context) {
-          throw new Error("PDF canvas could not be created.");
+      } else {
+        for (let pageIndex = 0; pageIndex < pageSlices.length; pageIndex += 1) {
+          if (pageIndex > 0) pdf.addPage();
+          const pageSlice = pageSlices[pageIndex];
+          const sourceY = Math.round((pageSlice.start / captureHeight) * sourceImage.height);
+          const sourceEnd = Math.round(((pageSlice.start + pageSlice.height) / captureHeight) * sourceImage.height);
+          const canvas = document.createElement("canvas");
+          canvas.width = sourceImage.width;
+          canvas.height = Math.max(1, sourceEnd - sourceY);
+          const context = canvas.getContext("2d");
+          if (!context) throw new Error("PDF canvas could not be created.");
+          context.fillStyle = "#ffffff";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(sourceImage, 0, sourceY, sourceImage.width, canvas.height,
+            0, 0, sourceImage.width, canvas.height);
+          const pageImageWidth = pdfPage.width * (singlePageScale ?? 1);
+          const pageImageX = (pdfPage.width - pageImageWidth) / 2;
+          pdf.addImage(canvas.toDataURL("image/png"), "PNG", pageImageX, 0, pageImageWidth,
+            shouldAutoHeight ? pdfPage.height : (pageSlice.height * pageImageWidth) / captureWidth, undefined, "FAST");
         }
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(
-          sourceImage,
-          0,
-          sourceY,
-          sourceImage.width,
-          canvas.height,
-          0,
-          0,
-          sourceImage.width,
-          canvas.height,
-        );
-        const pageImageWidth = pdfPage.width * (singlePageScale ?? 1);
-        const pageImageX = (pdfPage.width - pageImageWidth) / 2;
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", pageImageX, 0, pageImageWidth, shouldAutoHeight ? pdfPage.height : (pageSlice.height * pageImageWidth) / captureWidth, undefined, "FAST");
       }
       const pdfBlob = pdf.output("blob");
       const blobUrl = URL.createObjectURL(pdfBlob);
@@ -804,6 +850,21 @@ export function BuilderClient({
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700">Step {mobileStepIndex + 1} of {guidedSteps.length}</p>
               <h2 className="mt-1 text-xl font-bold text-slate-950">{currentStep.title}</h2>
               <p className="mt-1 text-sm leading-6 text-slate-600">{currentStep.helper}</p>
+              {mobileSections ? (
+                <div className="mt-4 flex flex-wrap gap-2" aria-label={`${currentStep.title} sections`}>
+                  {mobileSections.map((section) => (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => openEditorSection(section.id)}
+                      aria-pressed={activeSection === section.id}
+                      className={`min-h-10 rounded-full border px-3 py-2 text-xs font-bold transition ${activeSection === section.id ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50"}`}
+                    >
+                      {section.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
               <p className="mt-3 text-sm font-bold text-slate-700">{completion.completedCount} of {completion.totalCount} key sections complete</p>
             </div>
             {currentStep.id === "template" ? (
@@ -818,7 +879,7 @@ export function BuilderClient({
                 isDownloading={isDownloading}
               />
             ) : (
-              <EditorPanel activeSection={mobileActiveSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} onOpenAssistant={() => {
+              <EditorPanel activeSection={activeSection} data={data} setData={setData} setPersonal={setPersonal} sectionOrder={sectionOrder} setSectionOrder={setSectionOrder} isGuest={isGuest} onOpenAssistant={() => {
                 if (window.matchMedia("(min-width: 1024px)").matches) setIsAssistantOpen(true);
                 else setMobileTab("assistant");
               }} />
@@ -848,7 +909,7 @@ export function BuilderClient({
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-[1fr_1.2fr_1fr] border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <button
-          onClick={() => setMobileStepIndex((index) => Math.max(0, index - 1))}
+          onClick={() => goToMobileStep(-1)}
           disabled={mobileStepIndex === 0}
           className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500 disabled:opacity-40"
         >
@@ -862,7 +923,7 @@ export function BuilderClient({
           <button onClick={openPdfOptions} disabled={isDownloading} className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white disabled:opacity-70"><Download size={19} />{isDownloading ? "Preparing" : "Download"}</button>
         ) : (
           <button
-            onClick={() => setMobileStepIndex((index) => Math.min(guidedSteps.length - 1, index + 1))}
+            onClick={() => goToMobileStep(1)}
             className="flex min-h-16 flex-col items-center justify-center gap-1 bg-blue-700 text-xs font-bold text-white"
           >
             Next
@@ -1026,9 +1087,36 @@ export function BuilderClient({
   );
 }
 
-function measureResumePdfBreakTargets(root: HTMLElement) {
+function measureResumePdfColumns(root: HTMLElement, captureHeight: number) {
+  const page = root.querySelector<HTMLElement>(".resume-page");
+  const aside = page?.querySelector<HTMLElement>(":scope > aside");
+  const main = page?.querySelector<HTMLElement>(":scope > main");
+  if (!aside || !main) return null;
+  const rootRect = root.getBoundingClientRect();
+  const asideRect = aside.getBoundingClientRect();
+  const mainRect = main.getBoundingClientRect();
+  if (Math.abs(asideRect.top - mainRect.top) > 4 ||
+    Math.abs(asideRect.left - rootRect.left) > 4 ||
+    Math.abs(mainRect.right - rootRect.right) > 4 ||
+    Math.abs(asideRect.right - mainRect.left) > 4) return null;
+
+  return [aside, main].map((element) => {
+    const rect = element.getBoundingClientRect();
+    const contentBottom = Math.max(...Array.from(element.children)
+      .filter((child) => getComputedStyle(child).position !== "absolute")
+      .map((child) => child.getBoundingClientRect().bottom - rootRect.top), 0);
+    return {
+      element,
+      left: rect.left - rootRect.left,
+      width: rect.width,
+      contentHeight: Math.min(captureHeight, Math.ceil(contentBottom + 36)),
+    };
+  });
+}
+
+function measureResumePdfBreakTargets(root: HTMLElement, within: HTMLElement = root) {
   const rootTop = root.getBoundingClientRect().top;
-  const candidates = Array.from(root.querySelectorAll<HTMLElement>(".resume-section, .resume-item, .avoid-break"));
+  const candidates = Array.from(within.querySelectorAll<HTMLElement>(".resume-section, .resume-item, .avoid-break"));
   return candidates.map((element) => {
     const rect = element.getBoundingClientRect();
     const top = rect.top - rootTop;
@@ -1036,7 +1124,9 @@ function measureResumePdfBreakTargets(root: HTMLElement) {
     const parentRect = parentSection?.getBoundingClientRect();
     const parentTop = parentRect ? parentRect.top - rootTop : top;
     const breakBefore = parentSection !== element && top - parentTop <= 120 ? parentTop : top;
-    return { top, height: rect.height, breakBefore };
+    const hasBreakableChildren = Boolean(element.querySelector(".resume-item, .avoid-break")) &&
+      (element.classList.contains("resume-section") || (element.classList.contains("resume-item") && rect.height > RESUME_PDF_PAGE_HEIGHT_PX * 0.55));
+    return { top, height: rect.height, breakBefore, hasBreakableChildren };
   });
 }
 

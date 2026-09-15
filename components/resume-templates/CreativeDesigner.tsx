@@ -8,9 +8,9 @@ export function CreativeDesigner({ data, sectionOrder, isWatermarked }: ResumeTe
   const hasSelectedWork = data.experience.some((item) => hasText(item.role) || hasText(item.company))
     || data.projects.some((item) => hasText(item.name) || hasText(item.description));
   return (
-    <div className="resume-page grid grid-cols-[0.35fr_0.65fr] font-[Arial] text-slate-900">
+    <div className="resume-page grid grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)] font-[Arial] text-slate-900">
       <Watermark show={isWatermarked} />
-      <aside className="bg-[#251b36] px-[10mm] py-[13mm] text-white">
+      <aside className="min-w-0 bg-[#251b36] px-[10mm] py-[13mm] text-white">
         {hasText(data.personal.photoUrl) ? (
           <img src={data.personal.photoUrl} alt="" className="mb-5 h-[30mm] w-[30mm] rounded-[10px] border-[3px] border-[#e06f76] object-cover shadow-lg" />
         ) : (
@@ -22,7 +22,7 @@ export function CreativeDesigner({ data, sectionOrder, isWatermarked }: ResumeTe
         <ResumeContactBlock personal={data.personal} variant="sidebar" className="mt-6 text-slate-200" />
         <div className="mt-6 space-y-5">{sidebar.map((section) => <RenderSection key={section} id={section} data={data} variant="uae" />)}</div>
       </aside>
-      <main className="px-[12mm] py-[14mm]">
+      <main className="min-w-0 px-[12mm] py-[14mm]">
         <div className="mb-6 flex items-center gap-3"><div className="h-px flex-1 bg-violet-300" /><span className="text-[10pt] font-bold uppercase tracking-[0.2em] text-violet-700">{hasSelectedWork ? "Selected Work" : "Professional Profile"}</span></div>
         <div className="space-y-4.5">{main.map((section) => <RenderSection key={section} id={section} data={data} variant="modern" />)}</div>
       </main>

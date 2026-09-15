@@ -8,9 +8,9 @@ export function ModernEngineer({ data, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
 
   return (
-    <div className="resume-page grid grid-cols-[0.29fr_0.71fr] bg-[#fbfbfa] font-[Arial] text-[#111827]">
+    <div className="resume-page grid grid-cols-[minmax(0,0.29fr)_minmax(0,0.71fr)] bg-[#fbfbfa] font-[Arial] text-[#111827]">
       <Watermark show={isWatermarked} />
-      <aside className="bg-[#4b5f48] px-[7.8mm] py-[8mm] text-white">
+      <aside className="min-w-0 bg-[#4b5f48] px-[7.8mm] py-[8mm] text-white">
         <div className="mb-7 flex justify-center">
           <div className="h-[42mm] w-[42mm] overflow-hidden rounded-full border-[2px] border-white bg-white/12">
             {hasText(data.personal.photoUrl) ? (
@@ -81,7 +81,7 @@ export function ModernEngineer({ data, isWatermarked }: ResumeTemplateProps) {
         ) : null}
       </aside>
 
-      <main className="px-[11mm] py-[9mm]">
+      <main className="min-w-0 px-[11mm] py-[9mm]">
         <header>
           <h1 className="font-[Georgia] text-[24pt] font-bold leading-none tracking-normal text-[#20262f]">{data.personal.fullName || "Your Name"}</h1>
           {hasText(data.personal.jobTitle) ? <p className="mt-3 text-[12pt] font-bold uppercase tracking-[0.28em] text-[#5e6f52]">{data.personal.jobTitle}</p> : null}
@@ -144,8 +144,8 @@ export function ModernEngineer({ data, isWatermarked }: ResumeTemplateProps) {
 
         {hasItems(data.achievements) ? (
           <MainSection icon={Star} title="Achievements">
-            <div className="grid grid-cols-3 gap-3">
-              {data.achievements.filter((achievement) => hasText(achievement.title)).slice(0, 3).map((achievement, index) => (
+            <div className="grid grid-cols-2 gap-3">
+              {data.achievements.filter((achievement) => hasText(achievement.title)).map((achievement, index) => (
                 <article key={achievement.id} className="avoid-break rounded-md border border-[#e2e6de] bg-[#f7f8f5] p-3">
                   <div className="mb-2 text-[#5e6f52]">{index === 0 ? <Award size={20} /> : index === 1 ? <Wrench size={20} /> : <Heart size={20} />}</div>
                   <h3 className="text-[10pt] font-bold text-[#111827]">{achievement.title}</h3>

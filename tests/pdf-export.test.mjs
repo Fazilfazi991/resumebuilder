@@ -76,9 +76,23 @@ test("A4 pagination keeps normal boundaries for fitting or oversized content", (
 
 test("A4 pagination prefers the latest nested boundary before the cut", () => {
   assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [
-    { top: 700, height: 600 },
+    { top: 700, height: 600, hasBreakableChildren: true },
     { top: 1040, height: 180 },
   ])[0], { start: 0, height: 1040 });
+});
+
+test("A4 pagination protects items crossing the break in both columns", () => {
+  assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [
+    { top: 900, height: 300 },
+    { top: 1050, height: 180 },
+  ])[0], { start: 0, height: 900 });
+});
+
+test("A4 pagination does not move a boundary inside another item", () => {
+  assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [
+    { top: 700, height: 170 },
+    { top: 820, height: 380 },
+  ])[0], { start: 0, height: 700 });
 });
 
 test("A4 pagination carries a nearby section heading with its first item", () => {

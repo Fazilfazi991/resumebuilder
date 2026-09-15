@@ -11,13 +11,13 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
   const interests = [
     ...(interestsSection?.description.split(/,|\n|•/) ?? []),
     ...(interestsSection?.bullets ?? []),
-  ].map((interest) => interest.trim()).filter(Boolean).slice(0, 4);
+  ].map((interest) => interest.trim()).filter(Boolean);
   const interestIcons = [Camera, Palette, Globe, Heart];
 
   return (
-    <div className="resume-page grid grid-cols-[0.3fr_0.7fr] bg-white font-[Arial] text-[#111827]">
+    <div className="resume-page grid grid-cols-[minmax(0,0.3fr)_minmax(0,0.7fr)] bg-white font-[Arial] text-[#111827]">
       <Watermark show={isWatermarked} />
-      <aside className="bg-[#fbf9ff] text-[#111827]">
+      <aside className="min-w-0 bg-[#fbf9ff] text-[#111827]">
         <div className="relative mb-7 bg-[#5a3ea6] px-[8mm] pb-[17mm] pt-[7mm]">
           <div className="mx-auto h-[43mm] w-[43mm] overflow-hidden rounded-full border-[2.5px] border-white bg-white/15">
             {hasText(data.personal.photoUrl) ? (
@@ -98,7 +98,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
 
           {interests.length ? (
             <SidebarSection icon={Heart} title="Interests">
-              <div className="grid grid-cols-4 gap-2 text-center text-[10pt] font-semibold text-[#111827]">
+              <div className="grid grid-cols-2 gap-2 text-center text-[10pt] font-semibold text-[#111827]">
                 {interests.map((label, index) => {
                   const Icon = interestIcons[index % interestIcons.length];
                   return (
@@ -114,7 +114,7 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
         </div>
       </aside>
 
-      <main className="px-[11mm] py-[8.5mm]">
+      <main className="min-w-0 px-[11mm] py-[8.5mm]">
         <header>
           <h1 className="text-[24pt] font-bold uppercase leading-none tracking-[0.02em] text-[#111827]">
             {firstName || "Your"} <span className="text-[#5a3ea6]">{restName.join(" ") || "Name"}</span>
@@ -150,8 +150,8 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
 
         {hasItems(data.projects) ? (
           <MainSection icon={Folder} title="Projects">
-            <div className="grid grid-cols-3 gap-3">
-              {data.projects.filter((project) => hasText(project.name)).slice(0, 3).map((project, index) => (
+            <div className="grid grid-cols-2 gap-3">
+              {data.projects.filter((project) => hasText(project.name)).map((project, index) => (
                 <article key={project.id} className="avoid-break rounded-md border border-[#e0daf5] bg-[#fbf9ff] p-3">
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#5a3ea6] text-white">{index + 1}</span>
@@ -159,7 +159,8 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
                   </div>
                   <h3 className="text-[10pt] font-bold text-[#111827]">{project.name}</h3>
                   {hasText(project.description) ? <p className="mt-2 text-[10pt] leading-[1.4] text-[#111827]">{project.description}</p> : null}
-                  {project.bullets.some(hasText) ? <p className="mt-3 w-fit rounded-full border border-[#5a3ea6] px-2 py-0.5 text-[10pt] font-bold text-[#5a3ea6]">{project.bullets.filter(hasText)[0]}</p> : null}
+                  {project.bullets.some(hasText) ? <ul className="mt-2 list-disc space-y-0.5 pl-4 text-[10pt] leading-[1.35] text-[#111827]">{project.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
+                  {hasText(project.link) ? <p className="mt-2 break-all text-[10pt] font-semibold text-[#5a3ea6]">{project.link}</p> : null}
                 </article>
               ))}
             </div>
@@ -168,9 +169,9 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
 
         {hasItems(data.achievements) ? (
           <MainSection icon={Star} title="Achievements">
-            <div className="grid grid-cols-4 gap-3 text-center">
-              {data.achievements.filter((achievement) => hasText(achievement.title)).slice(0, 4).map((achievement, index) => (
-                <article key={achievement.id} className="avoid-break border-r border-[#d8cff5] px-2 last:border-r-0">
+            <div className="grid grid-cols-2 gap-3 text-center">
+              {data.achievements.filter((achievement) => hasText(achievement.title)).map((achievement, index) => (
+                <article key={achievement.id} className="avoid-break rounded-md border border-[#d8cff5] bg-[#fbf9ff] px-3 py-2">
                   <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-[#5a3ea6] text-white">
                     {index === 0 ? <Award size={15} /> : index === 1 ? <Star size={15} /> : index === 2 ? <UserRound size={15} /> : <Heart size={15} />}
                   </span>

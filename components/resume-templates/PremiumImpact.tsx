@@ -14,9 +14,9 @@ export function PremiumImpact({ data, isWatermarked }: ResumeTemplateProps) {
   ].filter((item) => hasText(item.value));
 
   return (
-    <div className="resume-page grid grid-cols-[0.3fr_0.7fr] bg-white font-[Arial] text-[#111827]">
+    <div className="resume-page grid grid-cols-[minmax(0,0.3fr)_minmax(0,0.7fr)] bg-white font-[Arial] text-[#111827]">
       <Watermark show={isWatermarked} />
-      <aside className="bg-[#0b1f2a] px-[8mm] py-[8.5mm] text-white">
+      <aside className="min-w-0 bg-[#0b1f2a] px-[8mm] py-[8.5mm] text-white">
         <div className="mb-7 flex justify-center">
           <div className="h-[43mm] w-[43mm] overflow-hidden rounded-full border-[2px] border-[#d6bd7a] bg-white/10">
             {hasText(data.personal.photoUrl) ? (
@@ -87,7 +87,7 @@ export function PremiumImpact({ data, isWatermarked }: ResumeTemplateProps) {
         ) : null}
       </aside>
 
-      <main className="px-[12mm] py-[10mm]">
+      <main className="min-w-0 px-[12mm] py-[10mm]">
         <header className="text-center">
           <h1 className="font-[Georgia] text-[24pt] font-bold uppercase leading-none tracking-[0.11em] text-[#0b1f2a]">{data.personal.fullName || "Your Name"}</h1>
           {hasText(data.personal.jobTitle) ? <p className="mt-3 text-[13pt] font-bold uppercase tracking-[0.28em] text-[#b99245]">{data.personal.jobTitle}</p> : null}

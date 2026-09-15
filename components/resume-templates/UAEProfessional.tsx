@@ -7,9 +7,9 @@ export function UAEProfessional({ data, sectionOrder, isWatermarked }: ResumeTem
   const mainSections = sectionOrder.filter((section) => !sidebarSections.includes(section));
 
   return (
-    <div className="resume-page grid grid-cols-[0.32fr_0.68fr] font-[Arial] text-slate-900">
+    <div className="resume-page grid grid-cols-[minmax(0,0.32fr)_minmax(0,0.68fr)] font-[Arial] text-slate-900">
       <Watermark show={isWatermarked} />
-      <aside className="bg-[#0b3f4a] px-[9mm] py-[13mm] text-white">
+      <aside className="min-w-0 bg-[#0b3f4a] px-[9mm] py-[13mm] text-white">
         <div className="mb-5 flex justify-center">
           {hasText(data.personal.photoUrl) ? (
             <img src={data.personal.photoUrl} alt="" className="h-[27mm] w-[27mm] rounded-full border-[3px] border-white object-cover" />
@@ -31,7 +31,7 @@ export function UAEProfessional({ data, sectionOrder, isWatermarked }: ResumeTem
           ))}
         </div>
       </aside>
-      <main className="px-[12mm] py-[14mm]">
+      <main className="min-w-0 px-[12mm] py-[14mm]">
         <div className="mb-6 flex items-center gap-3"><div className="h-px flex-1 bg-teal-700" /><span className="font-bold uppercase tracking-[0.12em] text-teal-800" style={{ fontSize: resumeTypography.meta }}>Professional Profile</span></div>
         <div className="space-y-4.5">
           {mainSections.map((section) => (
