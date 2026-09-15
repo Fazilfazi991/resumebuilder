@@ -97,7 +97,7 @@ export function CoverLetterClient({ resumes }: { resumes: ResumeOption[] }) {
       <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-bold text-slate-950">Live Cover Letter</h2>
+            <h2 id="cover-letter-editor-heading" className="font-bold text-slate-950">Live Cover Letter</h2>
             <p className="text-sm text-slate-500">Edit, copy, or download as PDF.</p>
           </div>
           <div className="flex gap-2">
@@ -105,7 +105,7 @@ export function CoverLetterClient({ resumes }: { resumes: ResumeOption[] }) {
             <AppButton onClick={downloadPdf} variant="secondary"><Download size={16} />Download PDF</AppButton>
           </div>
         </div>
-        <textarea value={content} onChange={(event) => setContent(event.target.value)} className="min-h-[620px] w-full rounded-lg border border-blue-100 bg-blue-50/30 px-5 py-5 font-serif text-base leading-8 text-slate-950 outline-none focus:border-blue-600" />
+        <textarea aria-labelledby="cover-letter-editor-heading" value={content} onChange={(event) => setContent(event.target.value)} className="min-h-[620px] w-full rounded-lg border border-blue-100 bg-blue-50/30 px-5 py-5 font-serif text-base leading-8 text-slate-950 outline-none focus:border-blue-600" />
       </section>
     </div>
   );
