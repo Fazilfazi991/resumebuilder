@@ -17,6 +17,7 @@ export function TechResume({ data, sectionOrder, isWatermarked }: ResumeTemplate
         <main className="space-y-4.5"><div className="border-l-[3px] border-cyan-500 pl-4"><RenderSection id="projects" data={data} variant="modern" /></div><RenderSection id="experience" data={data} variant="modern" /><RenderSection id="education" data={data} variant="modern" /></main>
       </div>
       {sectionOrder.includes("achievements") ? <div className="mt-4"><RenderSection id="achievements" data={data} variant="modern" /></div> : null}
+      {sectionOrder.includes("customSections") ? <div className="mt-4"><RenderSection id="customSections" data={data} variant="modern" /></div> : null}
     </div>
   );
 }

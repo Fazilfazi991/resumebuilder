@@ -1,10 +1,11 @@
 import type { ResumeTemplateProps } from "@/types/resume";
 import { Award, BriefcaseBusiness, CheckCircle2, GraduationCap, Languages, Star, UserRound, Wrench } from "lucide-react";
 import { ResumeContactBlock } from "./ResumeContactBlock";
+import { RenderSection } from "./TemplateHelpers";
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
-export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
+export function PremiumCorporate({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
 
   return (
@@ -144,6 +145,9 @@ export function PremiumCorporate({ data, isWatermarked }: ResumeTemplateProps) {
               ))}
             </div>
           </MainSection>
+        ) : null}
+        {sectionOrder.includes("customSections") ? (
+          <div className="mt-5"><RenderSection id="customSections" data={data} variant="classic" headingTone="navy" /></div>
         ) : null}
       </main>
     </div>

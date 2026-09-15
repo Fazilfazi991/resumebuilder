@@ -17,9 +17,9 @@ export function DateRange({ start, end, current }: { start: string; end: string;
   return <span>{dateRange(start, end, current)}</span>;
 }
 
-export function RenderSection({ id, data, variant }: { id: string; data: ResumeData; variant: "classic" | "modern" | "uae" }) {
+export function RenderSection({ id, data, variant, headingTone, excludeCustomSectionIds = [] }: { id: string; data: ResumeData; variant: "classic" | "modern" | "uae"; headingTone?: Parameters<typeof TemplateHeading>[0]["tone"]; excludeCustomSectionIds?: string[] }) {
   const sidebar = variant === "uae";
-  const tone = variant === "classic" ? "slate" : "teal";
+  const tone = headingTone ?? (variant === "classic" ? "slate" : "teal");
   const body = sidebar ? "text-teal-50/90" : "text-slate-700";
   const muted = sidebar ? "text-teal-100/75" : "text-slate-500";
   const heading = (title: string) => sidebar ? <SectionTitle className="mb-2 text-teal-100">{title}</SectionTitle> : <TemplateHeading tone={tone}>{title}</TemplateHeading>;
@@ -28,10 +28,12 @@ export function RenderSection({ id, data, variant }: { id: string; data: ResumeD
 
   if (id === "experience" && hasItems(data.experience)) return (
     <section className="resume-section">{heading("Professional Experience")}<div className="space-y-3.5">{data.experience.map((item) => (
-      <article key={item.id} className="resume-item">
-        <div className="flex items-start justify-between gap-5"><div className="min-w-0"><h4 className={`font-bold ${sidebar ? "text-white" : "text-slate-950"}`} style={{ fontSize: resumeTypography.bodyLarge }}>{item.role}</h4><p className={`font-semibold ${muted}`} style={{ fontSize: resumeTypography.body }}>{[item.company, item.location].filter(hasText).join(" | ")}</p></div><p className={`shrink-0 text-right font-semibold ${muted}`} style={{ fontSize: resumeTypography.meta }}>{dateRange(item.startDate, item.endDate, item.isCurrent)}</p></div>
-        {hasText(item.description) ? <p className={`mt-1 ${body}`} style={{ fontSize: resumeTypography.body, lineHeight: resumeTypography.lineHeightBody }}>{item.description}</p> : null}
-        {item.bullets.some(hasText) ? <ul className={`mt-1.5 list-disc space-y-1 pl-4 ${body}`} style={{ fontSize: resumeTypography.bullet, lineHeight: resumeTypography.lineHeightBody }}>{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
+      <article key={item.id} className="allow-break">
+        <div className="avoid-break">
+          <div className="flex items-start justify-between gap-5"><div className="min-w-0"><h4 className={`font-bold ${sidebar ? "text-white" : "text-slate-950"}`} style={{ fontSize: resumeTypography.bodyLarge }}>{item.role}</h4><p className={`font-semibold ${muted}`} style={{ fontSize: resumeTypography.body }}>{[item.company, item.location].filter(hasText).join(" | ")}</p></div><p className={`shrink-0 text-right font-semibold ${muted}`} style={{ fontSize: resumeTypography.meta }}>{dateRange(item.startDate, item.endDate, item.isCurrent)}</p></div>
+          {hasText(item.description) ? <p className={`mt-1 ${body}`} style={{ fontSize: resumeTypography.body, lineHeight: resumeTypography.lineHeightBody }}>{item.description}</p> : null}
+        </div>
+        {item.bullets.some(hasText) ? <ul className={`mt-1.5 list-disc space-y-1 pl-4 ${body}`} style={{ fontSize: resumeTypography.bullet, lineHeight: resumeTypography.lineHeightBody }}>{item.bullets.filter(hasText).map((bullet) => <li key={bullet} className="avoid-break">{bullet}</li>)}</ul> : null}
       </article>
     ))}</div></section>
   );
@@ -56,19 +58,26 @@ export function RenderSection({ id, data, variant }: { id: string; data: ResumeD
 
   if (id === "references" && hasItems(data.references)) return <section className="resume-section">{heading("References")}<div className={`space-y-1.5 ${body}`} style={{ fontSize: resumeTypography.sidebar }}>{data.references.map((reference) => <p key={reference.id} className="resume-item"><span className="font-bold">{reference.name}</span><br />{[reference.role, reference.company].filter(hasText).join(", ")}</p>)}</div></section>;
 
-  if (id === "customSections" && hasItems(data.customSections)) return (
-    <section className="resume-section">
-      <div className="space-y-3">
-        {data.customSections.filter((section) => hasText(section.title) || hasText(section.description) || section.bullets.some(hasText)).map((section) => (
-          <article key={section.id} className="resume-item">
-            {heading(section.title || "Custom Section")}
-            {hasText(section.description) ? <p className={body} style={{ fontSize: resumeTypography.body, lineHeight: resumeTypography.lineHeightBody }}>{section.description}</p> : null}
-            {section.bullets.some(hasText) ? <ul className={`mt-1.5 list-disc space-y-1 pl-4 ${body}`} style={{ fontSize: resumeTypography.bullet, lineHeight: resumeTypography.lineHeightBody }}>{section.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
-          </article>
-        ))}
-      </div>
-    </section>
-  );
+  if (id === "customSections" && hasItems(data.customSections)) {
+    const items = data.customSections.filter((section) => !excludeCustomSectionIds.includes(section.id) &&
+      (hasText(section.title) || hasText(section.description) || section.bullets.some(hasText)));
+    if (!items.length) return null;
+    return (
+      <section className="resume-section">
+        <div className="space-y-3">
+          {items.map((section) => (
+            <article key={section.id} className="allow-break">
+              <div className="avoid-break">
+                {heading(section.title || "Custom Section")}
+                {hasText(section.description) ? <p className={body} style={{ fontSize: resumeTypography.body, lineHeight: resumeTypography.lineHeightBody }}>{section.description}</p> : null}
+              </div>
+              {section.bullets.some(hasText) ? <ul className={`mt-1.5 list-disc space-y-1 pl-4 ${body}`} style={{ fontSize: resumeTypography.bullet, lineHeight: resumeTypography.lineHeightBody }}>{section.bullets.filter(hasText).map((bullet) => <li key={bullet} className="avoid-break">{bullet}</li>)}</ul> : null}
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return null;
 }

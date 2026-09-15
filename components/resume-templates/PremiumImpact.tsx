@@ -1,10 +1,11 @@
 import type { ResumeTemplateProps } from "@/types/resume";
 import { Award, BriefcaseBusiness, CalendarDays, GraduationCap, Languages, Settings, Star, Trophy, UserRound, Users, Wrench } from "lucide-react";
 import { ResumeContactBlock } from "./ResumeContactBlock";
+import { RenderSection } from "./TemplateHelpers";
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
-export function PremiumImpact({ data, isWatermarked }: ResumeTemplateProps) {
+export function PremiumImpact({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
   const stats = [
     { icon: Trophy, value: data.experience.length ? `${data.experience.length}+` : "", label: "Experience Roles" },
@@ -166,6 +167,9 @@ export function PremiumImpact({ data, isWatermarked }: ResumeTemplateProps) {
               ))}
             </div>
           </MainBlock>
+        ) : null}
+        {sectionOrder.includes("customSections") ? (
+          <div className="mt-5"><RenderSection id="customSections" data={data} variant="classic" headingTone="gold" /></div>
         ) : null}
       </main>
     </div>

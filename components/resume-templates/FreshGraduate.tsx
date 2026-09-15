@@ -20,6 +20,7 @@ export function FreshGraduate({ data, sectionOrder, isWatermarked }: ResumeTempl
         <aside className="space-y-5 border-l border-sky-200 pl-5"><RenderSection id="summary" data={data} variant="modern" /><RenderSection id="skills" data={data} variant="modern" /><RenderSection id="certificates" data={data} variant="modern" /><RenderSection id="languages" data={data} variant="modern" /></aside>
       </div>
       {sectionOrder.includes("achievements") ? <div className="mt-4"><RenderSection id="achievements" data={data} variant="modern" /></div> : null}
+      {sectionOrder.includes("customSections") ? <div className="mt-4"><RenderSection id="customSections" data={data} variant="modern" /></div> : null}
     </div>
   );
 }

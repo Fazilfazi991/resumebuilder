@@ -18,7 +18,7 @@ export function ElegantTwoColumn({ data, sectionOrder, isWatermarked }: ResumeTe
       </aside>
       <main className="min-w-0 px-[12mm] py-[14mm]">
         <div className="mb-6 flex items-center gap-3"><div className="h-px flex-1 bg-stone-400" /><span className="font-[Georgia] text-[10pt] italic text-stone-600">Professional Portfolio</span></div>
-        <div className="space-y-5"><RenderSection id="summary" data={data} variant="classic" /><RenderSection id="experience" data={data} variant="classic" /><RenderSection id="education" data={data} variant="classic" /><RenderSection id="projects" data={data} variant="classic" />{sectionOrder.includes("achievements") ? <RenderSection id="achievements" data={data} variant="classic" /> : null}</div>
+        <div className="space-y-5"><RenderSection id="summary" data={data} variant="classic" /><RenderSection id="experience" data={data} variant="classic" /><RenderSection id="education" data={data} variant="classic" /><RenderSection id="projects" data={data} variant="classic" />{sectionOrder.includes("achievements") ? <RenderSection id="achievements" data={data} variant="classic" /> : null}{sectionOrder.includes("customSections") ? <RenderSection id="customSections" data={data} variant="classic" /> : null}</div>
       </main>
     </div>
   );

@@ -1,13 +1,16 @@
 import type { ResumeTemplateProps } from "@/types/resume";
 import { Award, BriefcaseBusiness, CalendarDays, Camera, Folder, Globe, GraduationCap, Heart, Languages, Palette, Star, UserRound, Wrench } from "lucide-react";
 import { ResumeContactBlock } from "./ResumeContactBlock";
+import { RenderSection } from "./TemplateHelpers";
 import { Watermark } from "./Watermark";
 import { dateRange, hasItems, hasText } from "./template-utils";
 
-export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) {
+export function CreativePortfolio({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
   const [firstName, ...restName] = (data.personal.fullName || "Your Name").split(" ");
-  const interestsSection = data.customSections.find((section) => /^interests?$/i.test(section.title.trim()));
+  const interestsSection = sectionOrder.includes("customSections")
+    ? data.customSections.find((section) => /^interests?$/i.test(section.title.trim()))
+    : undefined;
   const interests = [
     ...(interestsSection?.description.split(/,|\n|•/) ?? []),
     ...(interestsSection?.bullets ?? []),
@@ -194,6 +197,12 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
               ))}
             </div>
           </MainSection>
+        ) : null}
+        {sectionOrder.includes("customSections") ? (
+          <div className="mt-5">
+            <RenderSection id="customSections" data={data} variant="classic" headingTone="purple"
+              excludeCustomSectionIds={interestsSection ? [interestsSection.id] : []} />
+          </div>
         ) : null}
       </main>
     </div>

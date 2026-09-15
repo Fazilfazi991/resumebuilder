@@ -27,6 +27,7 @@ export function SalesResume({ data, sectionOrder, isWatermarked }: ResumeTemplat
       {data.achievements.length ? <section className="resume-section mt-5 bg-[#f4f8f4] p-4"><p className="mb-3 text-[10pt] font-bold uppercase tracking-[0.18em] text-emerald-800">Performance Highlights</p><div className="grid grid-cols-3 gap-3">{data.achievements.map((item, index) => <article key={item.id} className="resume-item border-l-2 border-orange-500 pl-3"><p className="text-[16pt] font-bold text-emerald-700">{index === 0 ? "#1" : "+"}</p><h3 className="text-[10pt] font-bold text-slate-950">{item.title}</h3><p className="mt-1 text-[10pt] leading-[1.4] text-slate-600">{item.description}</p></article>)}</div></section> : null}
       <div className="mt-5 grid grid-cols-[0.7fr_0.3fr] gap-6"><main className="space-y-4.5"><RenderSection id="experience" data={data} variant="modern" /><RenderSection id="projects" data={data} variant="modern" /></main><aside className="space-y-5 border-l border-emerald-200 pl-5"><RenderSection id="summary" data={data} variant="modern" /><RenderSection id="skills" data={data} variant="modern" /><RenderSection id="education" data={data} variant="modern" /><RenderSection id="certificates" data={data} variant="modern" /></aside></div>
       {sectionOrder.includes("languages") ? <div className="mt-4"><RenderSection id="languages" data={data} variant="modern" /></div> : null}
+      {sectionOrder.includes("customSections") ? <div className="mt-4"><RenderSection id="customSections" data={data} variant="modern" /></div> : null}
     </div>
   );
 }

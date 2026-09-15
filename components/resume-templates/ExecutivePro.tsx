@@ -4,7 +4,7 @@ import { ContactLine, RenderSection, Watermark } from "./TemplateHelpers";
 import { hasText } from "./template-utils";
 
 export function ExecutivePro({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
-  const remaining = ["experience", "education", "skills", "projects", "certificates", "languages", "references"].filter((id) => sectionOrder.includes(id));
+  const remaining = ["experience", "education", "skills", "projects", "certificates", "languages", "references", "customSections"].filter((id) => sectionOrder.includes(id));
   return (
     <div className="resume-page font-[Arial] text-slate-900">
       <Watermark show={isWatermarked} />

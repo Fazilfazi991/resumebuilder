@@ -14,6 +14,7 @@ import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/r
 import {
   RESUME_PDF_CAPTURE_WIDTH_PX,
   RESUME_PDF_PAGE_HEIGHT_PX,
+  resumePdfOffsetPageSlices,
   resumePdfPageSlices,
   resumePdfPageConfig,
   resumePdfSinglePageFitScale,
@@ -594,9 +595,13 @@ export function BuilderClient({
       }
       const captureHeight = shouldAutoHeight ? contentHeight : Math.max(pagePixelHeight, pdfRef.current.scrollHeight, contentHeight);
       const singlePageScale = shouldAutoHeight ? null : resumePdfSinglePageFitScale(captureHeight);
-      const columns = !shouldAutoHeight && singlePageScale === null
+      const directColumns = !shouldAutoHeight && singlePageScale === null
         ? measureResumePdfColumns(pdfRef.current, captureHeight)
         : null;
+      const nestedColumns = !shouldAutoHeight && singlePageScale === null && !directColumns
+        ? measureResumePdfNestedColumns(pdfRef.current, captureHeight)
+        : null;
+      const columns = directColumns ?? nestedColumns?.columns ?? null;
       const pageSlices = columns ? [] : shouldAutoHeight
         ? [{ start: 0, height: captureHeight }]
         : singlePageScale !== null
@@ -624,8 +629,18 @@ export function BuilderClient({
 
       if (columns) {
         const pageBackground = getComputedStyle(pdfRef.current.querySelector<HTMLElement>(".resume-page") ?? pdfRef.current).backgroundColor;
-        const columnSlices = columns.map(({ element, contentHeight }) =>
-          resumePdfPageSlices(contentHeight, pagePixelHeight, measureResumePdfBreakTargets(pdfRef.current!, element)));
+        const columnTop = nestedColumns?.top ?? 0;
+        const columnSlices = columns.map(({ element, contentHeight }) => {
+          const targets = measureResumePdfBreakTargets(pdfRef.current!, element);
+          if (!nestedColumns) return resumePdfPageSlices(contentHeight, pagePixelHeight, targets);
+          const relativeTargets = targets.map((target) => ({
+            ...target,
+            top: target.top - columnTop,
+            breakBefore: (target.breakBefore ?? target.top) - columnTop,
+          }));
+          return resumePdfOffsetPageSlices(contentHeight, pagePixelHeight - columnTop,
+            pagePixelHeight - 36, relativeTargets);
+        });
         const pageCount = Math.max(...columnSlices.map((slices) => slices.length));
         for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
           if (pageIndex > 0) pdf.addPage();
@@ -636,21 +651,27 @@ export function BuilderClient({
           if (!context) throw new Error("PDF canvas could not be created.");
           context.fillStyle = pageBackground === "rgba(0, 0, 0, 0)" ? "#ffffff" : pageBackground;
           context.fillRect(0, 0, canvas.width, canvas.height);
+          if (nestedColumns && pageIndex === 0) {
+            const headerHeight = Math.round((columnTop * sourceImage.width) / captureWidth);
+            context.drawImage(sourceImage, 0, 0, sourceImage.width, headerHeight,
+              0, 0, sourceImage.width, headerHeight);
+          }
 
           columns.forEach(({ element, left, width }, columnIndex) => {
             const destinationX = Math.round((left * sourceImage.width) / captureWidth);
             const destinationWidth = Math.round((width * sourceImage.width) / captureWidth);
+            const destinationY = Math.round(((nestedColumns ? pageIndex === 0 ? columnTop : 36 : 0) * sourceImage.width) / captureWidth);
             const background = getComputedStyle(element).backgroundColor;
             if (background !== "rgba(0, 0, 0, 0)") {
               context.fillStyle = background;
-              context.fillRect(destinationX, 0, destinationWidth, canvas.height);
+              context.fillRect(destinationX, destinationY, destinationWidth, canvas.height - destinationY);
             }
             const slice = columnSlices[columnIndex][pageIndex];
             if (!slice) return;
-            const sourceY = Math.round((slice.start * sourceImage.height) / captureHeight);
-            const sourceEnd = Math.round(((slice.start + slice.height) * sourceImage.height) / captureHeight);
+            const sourceY = Math.round(((columnTop + slice.start) * sourceImage.height) / captureHeight);
+            const sourceEnd = Math.round(((columnTop + slice.start + slice.height) * sourceImage.height) / captureHeight);
             context.drawImage(sourceImage, destinationX, sourceY, destinationWidth, sourceEnd - sourceY,
-              destinationX, 0, destinationWidth, sourceEnd - sourceY);
+              destinationX, destinationY, destinationWidth, sourceEnd - sourceY);
           });
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfPage.width, pdfPage.height, undefined, "FAST");
         }
@@ -1112,6 +1133,48 @@ function measureResumePdfColumns(root: HTMLElement, captureHeight: number) {
       contentHeight: Math.min(captureHeight, Math.ceil(contentBottom + 36)),
     };
   });
+}
+
+function measureResumePdfNestedColumns(root: HTMLElement, captureHeight: number) {
+  const page = root.querySelector<HTMLElement>(".resume-page");
+  const aside = page?.querySelector<HTMLElement>("aside");
+  const main = page?.querySelector<HTMLElement>("main");
+  const grid = aside?.parentElement;
+  if (!page || !aside || !main || !grid || grid.parentElement !== page || main.parentElement !== grid ||
+    getComputedStyle(grid).display !== "grid") return null;
+
+  const rootRect = root.getBoundingClientRect();
+  const gridRect = grid.getBoundingClientRect();
+  const asideRect = aside.getBoundingClientRect();
+  const mainRect = main.getBoundingClientRect();
+  const top = gridRect.top - rootRect.top;
+  if (top < 0 || top >= RESUME_PDF_PAGE_HEIGHT_PX * 0.45 ||
+    Math.abs(asideRect.top - mainRect.top) > 4 ||
+    (asideRect.right > mainRect.left + 4 && mainRect.right > asideRect.left + 4) ||
+    Math.min(asideRect.left, mainRect.left) < rootRect.left - 4 ||
+    Math.max(asideRect.right, mainRect.right) > rootRect.right + 4) return null;
+
+  const trailingContent = Array.from(page.children)
+    .filter((child) => child !== grid && getComputedStyle(child).position !== "absolute")
+    .some((child) => {
+      const rect = child.getBoundingClientRect();
+      return rect.height > 4 && rect.bottom > gridRect.bottom + 4;
+    });
+  if (trailingContent) return null;
+
+  const columns = [aside, main].map((element) => {
+    const rect = element.getBoundingClientRect();
+    const contentBottom = Math.max(...Array.from(element.children)
+      .filter((child) => getComputedStyle(child).position !== "absolute")
+      .map((child) => child.getBoundingClientRect().bottom - rect.top), 0);
+    return {
+      element,
+      left: rect.left - rootRect.left,
+      width: rect.width,
+      contentHeight: Math.min(captureHeight - top, Math.ceil(contentBottom + 36)),
+    };
+  });
+  return { top, columns };
 }
 
 function measureResumePdfBreakTargets(root: HTMLElement, within: HTMLElement = root) {

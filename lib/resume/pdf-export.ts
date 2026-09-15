@@ -123,3 +123,26 @@ export function resumePdfPageSlices(
 
   return slices;
 }
+
+export function resumePdfOffsetPageSlices(
+  captureHeightPx: number,
+  firstPageHeightPx: number,
+  pageHeightPx = RESUME_PDF_PAGE_HEIGHT_PX,
+  targets: ResumePdfBreakTarget[] = [],
+): ResumePdfPageSlice[] {
+  if (!Number.isFinite(firstPageHeightPx) || firstPageHeightPx <= 0) return [];
+  const firstSlice = resumePdfPageSlices(captureHeightPx, firstPageHeightPx, targets)[0];
+  if (!firstSlice) return [];
+  if (firstSlice.height >= captureHeightPx) return [firstSlice];
+
+  const offset = firstSlice.height;
+  const remainingTargets = targets
+    .filter(({ top, height }) => top + height > offset)
+    .map((target) => ({
+      ...target,
+      top: Math.max(0, target.top - offset),
+      breakBefore: Math.max(0, (target.breakBefore ?? target.top) - offset),
+    }));
+  const remainingSlices = resumePdfPageSlices(captureHeightPx - offset, pageHeightPx, remainingTargets);
+  return [firstSlice, ...remainingSlices.map((slice) => ({ start: slice.start + offset, height: slice.height }))];
+}

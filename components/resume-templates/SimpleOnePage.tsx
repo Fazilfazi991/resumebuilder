@@ -19,6 +19,7 @@ export function SimpleOnePage({ data, sectionOrder, isWatermarked }: ResumeTempl
           <RenderSection id="experience" data={data} variant="classic" />
           <RenderSection id="projects" data={data} variant="classic" />
           <RenderSection id="education" data={data} variant="classic" />
+          {sectionOrder.includes("customSections") ? <RenderSection id="customSections" data={data} variant="classic" /> : null}
         </main>
         <aside className="min-w-0 space-y-3 border-l border-slate-200 pl-4">
           <RenderSection id="skills" data={data} variant="classic" />

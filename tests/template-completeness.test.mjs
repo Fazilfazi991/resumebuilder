@@ -53,3 +53,23 @@ for (const file of [
     assert.match(source, /<main className="min-w-0 /);
   });
 }
+
+for (const file of [
+  "CreativePortfolio.tsx", "ModernEngineer.tsx", "PremiumImpact.tsx", "PremiumCorporate.tsx",
+  "ElegantTwoColumn.tsx", "ExecutivePro.tsx", "FreshGraduate.tsx", "TechResume.tsx",
+  "SalesResume.tsx", "SimpleOnePage.tsx",
+]) {
+  test(`${file} renders enabled custom sections`, () => {
+    const source = readFileSync(new URL(`../components/resume-templates/${file}`, import.meta.url), "utf8");
+    assert.match(source, /customSections/);
+    assert.match(source, /RenderSection/);
+  });
+}
+
+for (const file of ["ClassicATS.tsx", "ModernMinimal.tsx", "UAEProfessional.tsx", "CreativeDesigner.tsx"]) {
+  test(`${file} preserves section-order-driven custom content`, () => {
+    const source = readFileSync(new URL(`../components/resume-templates/${file}`, import.meta.url), "utf8");
+    assert.match(source, /sectionOrder\.(?:map|filter)\(/);
+    assert.match(source, /RenderSection/);
+  });
+}

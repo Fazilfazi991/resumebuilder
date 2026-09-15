@@ -5,6 +5,7 @@ import {
   RESUME_PDF_A4_HEIGHT_PT,
   RESUME_PDF_PAGE_HEIGHT_PX,
   RESUME_PDF_WIDTH_PT,
+  resumePdfOffsetPageSlices,
   resumePdfPageSlices,
   resumePdfPageConfig,
   resumePdfSinglePageFitScale,
@@ -55,6 +56,24 @@ test("slightly overflowing A4 content fits one page without distortion", () => {
 test("substantial overflow stays at full-size A4 pagination", () => {
   assert.equal(resumePdfSinglePageFitScale(1300), null);
   assert.equal(resumePdfSinglePageFitScale(1123), 1);
+});
+
+test("nested columns use a shorter first page below the resume header", () => {
+  const slices = resumePdfOffsetPageSlices(1500, 800, RESUME_PDF_PAGE_HEIGHT_PX, [
+    { top: 780, height: 130, breakBefore: 780 },
+  ]);
+  assert.deepEqual(slices, [
+    { start: 0, height: 780 },
+    { start: 780, height: 720 },
+  ]);
+});
+
+test("nested-column slices cover every pixel without repeating content", () => {
+  const slices = resumePdfOffsetPageSlices(2400, 800, RESUME_PDF_PAGE_HEIGHT_PX);
+  assert.equal(slices[0].height, 800);
+  assert.equal(slices.at(-1).start + slices.at(-1).height, 2400);
+  assert.ok(slices.every((slice, index) => index === 0 || slice.start === slices[index - 1].start + slices[index - 1].height));
+  assert.ok(slices.slice(1).every((slice) => slice.height <= RESUME_PDF_PAGE_HEIGHT_PX));
 });
 
 test("A4 pagination cuts before a short element that would straddle a boundary", () => {
