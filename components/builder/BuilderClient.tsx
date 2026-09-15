@@ -16,6 +16,7 @@ import {
   RESUME_PDF_PAGE_HEIGHT_PX,
   resumePdfPageSlices,
   resumePdfPageConfig,
+  resumePdfSinglePageFitScale,
 } from "@/lib/resume/pdf-export";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import { createClient } from "@/lib/supabase/client";
@@ -138,6 +139,7 @@ export function BuilderClient({
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const [isPdfOptionsOpen, setIsPdfOptionsOpen] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [isIncompleteDownloadOpen, setIsIncompleteDownloadOpen] = useState(false);
   const [pdfRenderMode, setPdfRenderMode] = useState<PdfExportMode>("standard-a4");
   const [templateToast, setTemplateToast] = useState("");
@@ -147,6 +149,9 @@ export function BuilderClient({
   const [mobileStepIndex, setMobileStepIndex] = useState(0);
   const [anonymousSessionId, setAnonymousSessionId] = useState("");
   const pdfRef = useRef<HTMLDivElement>(null);
+  const pdfPreviewDialogRef = useRef<HTMLElement>(null);
+  const pdfPreviewCloseRef = useRef<HTMLButtonElement>(null);
+  const pdfPreviewReturnModeRef = useRef<PdfExportMode>("standard-a4");
   const hasMountedRef = useRef(false);
   const draftReadyRef = useRef(false);
   const pendingRecoveryRef = useRef(false);
@@ -161,6 +166,39 @@ export function BuilderClient({
   const zoomLabel = zoom === "fit" ? "Fit" : `${zoom}%`;
   const zoomOut = () => setZoom((current) => current === 100 ? 75 : "fit");
   const zoomIn = () => setZoom((current) => current === "fit" ? 75 : 100);
+
+  useEffect(() => {
+    if (!pdfPreviewUrl) return;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    pdfPreviewCloseRef.current?.focus();
+    const handlePreviewKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setPdfPreviewUrl(null);
+        return;
+      }
+      if (event.key !== "Tab" || !pdfPreviewDialogRef.current) return;
+      const focusable = Array.from(pdfPreviewDialogRef.current.querySelectorAll<HTMLElement>("button:not(:disabled), iframe, a[href], [tabindex]:not([tabindex='-1'])"));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handlePreviewKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handlePreviewKeyDown);
+      URL.revokeObjectURL(pdfPreviewUrl);
+      const returnOptionId = pdfPreviewReturnModeRef.current === "auto-height" ? "pdf-option-auto-fit" : "pdf-option-standard";
+      const returnButton = document.querySelector<HTMLButtonElement>(`#${returnOptionId} button`);
+      if (returnButton) returnButton.focus();
+      else if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [pdfPreviewUrl]);
 
   const draftKey = `resumi_builder_draft_${isGuest ? "guest" : resumeId ?? "guest"}`;
   const persistLocalDraft = useCallback((draft: LocalDraft) => {
@@ -469,7 +507,38 @@ export function BuilderClient({
     setIsPdfOptionsOpen(true);
   };
 
-  const downloadPdf = async (exportMode: PdfExportMode = "standard-a4") => {
+  const recordPdfDownload = async () => {
+    if (trackDownload) {
+      try {
+        await trackDownload(templateId);
+      } catch (error) {
+        console.error("Download tracking failed", error);
+      }
+    }
+    if (isGuest && anonymousSessionId) {
+      void syncAnonymousResume({
+        sessionId: anonymousSessionId,
+        resumeData: data,
+        templateId,
+        progress: completion.percentage,
+        atsScore: atsScore.percentage,
+        status: "downloaded",
+        downloaded: true,
+      });
+    }
+  };
+
+  const savePdfBlob = async (url: string) => {
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${slugify(resumeTitle || "resume")}.pdf`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    await recordPdfDownload();
+  };
+
+  const exportPdf = async (exportMode: PdfExportMode, action: "download" | "preview") => {
     if (!pdfRef.current || isDownloading) {
       return;
     }
@@ -502,10 +571,13 @@ export function BuilderClient({
         setPdfRenderMode("standard-a4");
         await waitForNextFrame();
       }
-      const captureHeight = shouldAutoHeight ? contentHeight : Math.max(pagePixelHeight, pdfRef.current.scrollHeight);
+      const captureHeight = shouldAutoHeight ? contentHeight : Math.max(pagePixelHeight, pdfRef.current.scrollHeight, contentHeight);
+      const singlePageScale = shouldAutoHeight ? null : resumePdfSinglePageFitScale(captureHeight);
       const pageSlices = shouldAutoHeight
         ? [{ start: 0, height: captureHeight }]
-        : resumePdfPageSlices(captureHeight, pagePixelHeight, measureResumePdfBreakTargets(pdfRef.current));
+        : singlePageScale !== null
+          ? [{ start: 0, height: captureHeight }]
+          : resumePdfPageSlices(captureHeight, pagePixelHeight, measureResumePdfBreakTargets(pdfRef.current));
       const imageData = await toPng(pdfRef.current, {
         backgroundColor: "#ffffff",
         cacheBust: true,
@@ -553,39 +625,26 @@ export function BuilderClient({
           sourceImage.width,
           canvas.height,
         );
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfPage.width, shouldAutoHeight ? pdfPage.height : (pageSlice.height * pdfPage.width) / captureWidth, undefined, "FAST");
+        const pageImageWidth = pdfPage.width * (singlePageScale ?? 1);
+        const pageImageX = (pdfPage.width - pageImageWidth) / 2;
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", pageImageX, 0, pageImageWidth, shouldAutoHeight ? pdfPage.height : (pageSlice.height * pageImageWidth) / captureWidth, undefined, "FAST");
       }
       const pdfBlob = pdf.output("blob");
-      const downloadUrl = URL.createObjectURL(pdfBlob);
-      const anchor = document.createElement("a");
-      anchor.href = downloadUrl;
-      anchor.download = `${slugify(resumeTitle || "resume")}.pdf`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
-      if (trackDownload) {
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      if (action === "preview") {
+        pdfPreviewReturnModeRef.current = exportMode;
+        setPdfPreviewUrl(blobUrl);
+      } else {
         try {
-          await trackDownload(templateId);
-        } catch (error) {
-          console.error("Download tracking failed", error);
+          await savePdfBlob(blobUrl);
+        } finally {
+          window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
         }
+        setIsPdfOptionsOpen(false);
       }
-      if (isGuest && anonymousSessionId) {
-        void syncAnonymousResume({
-          sessionId: anonymousSessionId,
-          resumeData: data,
-          templateId,
-          progress: completion.percentage,
-          atsScore: atsScore.percentage,
-          status: "downloaded",
-          downloaded: true,
-        });
-      }
-      setIsPdfOptionsOpen(false);
     } catch (error) {
       console.error(error);
-      setDownloadError("PDF export failed. Please try again after switching to Preview.");
+      setDownloadError("PDF export failed. Please try again after switching to Resume Preview.");
     } finally {
       setIsDownloading(false);
       setPdfRenderMode("standard-a4");
@@ -862,25 +921,47 @@ export function BuilderClient({
               </button>
             </div>
             <div className="mt-5 grid gap-3">
-              <button
-                onClick={() => downloadPdf("standard-a4")}
-                disabled={isDownloading}
-                className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-400 disabled:opacity-60"
-              >
-                <span className="block font-bold text-blue-950">Standard A4</span>
-                <span className="mt-1 block text-sm leading-6 text-blue-800">Best for job applications, printing, and long resumes. Keeps normal A4 pagination.</span>
-              </button>
-              <button
-                onClick={() => downloadPdf("auto-height")}
-                disabled={isDownloading}
-                className="rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-blue-300 hover:bg-slate-50 disabled:opacity-60"
-              >
-                <span className="block font-bold text-slate-950">Auto-fit content</span>
-                <span className="mt-1 block text-sm leading-6 text-slate-600">Removes extra blank space when your resume is shorter than one page. Long resumes use Standard A4 automatically.</span>
-              </button>
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <p className="font-bold text-blue-950">Standard A4</p>
+                <p className="mt-1 text-sm leading-6 text-blue-800">Best for job applications, printing, and long resumes. Keeps normal A4 pagination.</p>
+                <div id="pdf-option-standard" className="mt-3 flex flex-wrap gap-2">
+                  <AppButton variant="secondary" onClick={() => exportPdf("standard-a4", "preview")} disabled={isDownloading}><Eye size={16} aria-hidden="true" /> Preview PDF</AppButton>
+                  <AppButton onClick={() => exportPdf("standard-a4", "download")} disabled={isDownloading}><Download size={16} aria-hidden="true" /> Download</AppButton>
+                </div>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white p-4">
+                <p className="font-bold text-slate-950">Auto-fit content</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Removes extra blank space when your resume is shorter than one page. Long resumes use Standard A4 automatically.</p>
+                <div id="pdf-option-auto-fit" className="mt-3 flex flex-wrap gap-2">
+                  <AppButton variant="secondary" onClick={() => exportPdf("auto-height", "preview")} disabled={isDownloading}><Eye size={16} aria-hidden="true" /> Preview PDF</AppButton>
+                  <AppButton onClick={() => exportPdf("auto-height", "download")} disabled={isDownloading}><Download size={16} aria-hidden="true" /> Download</AppButton>
+                </div>
+              </div>
             </div>
+            {downloadError ? <p role="alert" className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{downloadError}</p> : null}
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <AppButton variant="secondary" onClick={() => setIsPdfOptionsOpen(false)}>Cancel</AppButton>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      {pdfPreviewUrl ? (
+        <div className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/75 p-2 backdrop-blur-sm sm:p-4">
+          <section ref={pdfPreviewDialogRef} role="dialog" aria-modal="true" aria-labelledby="pdf-preview-title" className="flex h-[calc(100dvh-1rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl sm:h-[calc(100dvh-2rem)]">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-3 py-2 sm:px-5 sm:py-3">
+              <div className="min-w-0">
+                <h2 id="pdf-preview-title" className="text-base font-bold text-slate-950 sm:text-lg">Generated PDF preview</h2>
+                <p className="text-xs text-slate-600 sm:text-sm">This is the exact PDF that will download, not the editor preview.</p>
+              </div>
+              <button ref={pdfPreviewCloseRef} onClick={() => setPdfPreviewUrl(null)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600" aria-label="Close generated PDF preview">
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+            <iframe title="Generated resume PDF" src={pdfPreviewUrl} className="min-h-0 w-full flex-1 bg-slate-100" />
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-200 p-3 sm:px-5">
+              {downloadError ? <p role="alert" className="mr-auto text-sm font-semibold text-rose-700">{downloadError}</p> : null}
+              <AppButton variant="secondary" onClick={() => setPdfPreviewUrl(null)}>Close</AppButton>
+              <AppButton onClick={() => { void savePdfBlob(pdfPreviewUrl).catch(() => setDownloadError("PDF download failed. Please try again.")); }}><Download size={16} aria-hidden="true" /> Download this PDF</AppButton>
             </div>
           </section>
         </div>

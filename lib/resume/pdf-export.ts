@@ -4,6 +4,9 @@ export const RESUME_PDF_WIDTH_PT = 595.28;
 export const RESUME_PDF_A4_HEIGHT_PT = 841.89;
 export const RESUME_PDF_MIN_HEIGHT_PT = 72;
 export const RESUME_PDF_PAGE_BREAK_GUARD_PX = 24;
+export const RESUME_PDF_MIN_SINGLE_PAGE_SCALE = 0.92;
+export const RESUME_PDF_MIN_TAIL_FILL_FRACTION = 0.25;
+export const RESUME_PDF_MIN_CURRENT_PAGE_FILL_FRACTION = 0.70;
 
 export type ResumePdfPageConfig = {
   orientation: "portrait" | "landscape";
@@ -22,6 +25,19 @@ export type ResumePdfPageSlice = {
   start: number;
   height: number;
 };
+
+export function resumePdfSinglePageFitScale(
+  captureHeightPx: number,
+  pageHeightPx = RESUME_PDF_PAGE_HEIGHT_PX,
+): number | null {
+  if (!Number.isFinite(captureHeightPx) || !Number.isFinite(pageHeightPx) || captureHeightPx <= 0 || pageHeightPx <= 0) return null;
+  if (captureHeightPx <= pageHeightPx) return 1;
+  const scale = Math.min(
+    pageHeightPx / captureHeightPx,
+    RESUME_PDF_A4_HEIGHT_PT / ((captureHeightPx * RESUME_PDF_WIDTH_PT) / RESUME_PDF_CAPTURE_WIDTH_PX),
+  );
+  return scale >= RESUME_PDF_MIN_SINGLE_PAGE_SCALE ? scale : null;
+}
 
 export function resumePdfPageConfig(captureHeightPx: number, autoHeight: boolean): ResumePdfPageConfig {
   if (!autoHeight) {
@@ -75,6 +91,19 @@ export function resumePdfPageSlices(
         .sort((left, right) => left.breakBefore - right.breakBefore)
         .at(-1);
       if (crossingTarget) end = crossingTarget.breakBefore;
+
+      if (captureHeightPx - end < pageHeightPx * RESUME_PDF_MIN_TAIL_FILL_FRACTION) {
+        const balancingTarget = safeTargets
+          .filter(({ top, breakBefore }) =>
+            top < end &&
+            breakBefore > start + pageHeightPx * RESUME_PDF_MIN_CURRENT_PAGE_FILL_FRACTION &&
+            breakBefore < end - RESUME_PDF_PAGE_BREAK_GUARD_PX &&
+            captureHeightPx - breakBefore >= pageHeightPx * RESUME_PDF_MIN_TAIL_FILL_FRACTION,
+          )
+          .sort((left, right) => left.breakBefore - right.breakBefore)
+          .at(-1);
+        if (balancingTarget) end = balancingTarget.breakBefore;
+      }
     }
 
     if (end <= start) end = desiredEnd;

@@ -7,6 +7,7 @@ import {
   RESUME_PDF_WIDTH_PT,
   resumePdfPageSlices,
   resumePdfPageConfig,
+  resumePdfSinglePageFitScale,
 } from "../lib/resume/pdf-export.ts";
 
 const withinPointTolerance = (actual, expected) => Math.abs(actual - expected) < 0.02;
@@ -41,6 +42,21 @@ test("taller auto-fit exports keep portrait orientation and fixed resume width",
   assert.ok(withinPointTolerance(pdf.internal.pageSize.getHeight(), config.height));
 });
 
+test("slightly overflowing A4 content fits one page without distortion", () => {
+  const scale = resumePdfSinglePageFitScale(1200);
+  assert.ok(scale !== null);
+  assert.ok(scale >= 0.92 && scale < 1);
+  const pageWidth = RESUME_PDF_WIDTH_PT * scale;
+  const pageHeight = (1200 * pageWidth) / 794;
+  assert.ok(pageWidth < RESUME_PDF_WIDTH_PT);
+  assert.ok(pageHeight <= RESUME_PDF_A4_HEIGHT_PT);
+});
+
+test("substantial overflow stays at full-size A4 pagination", () => {
+  assert.equal(resumePdfSinglePageFitScale(1300), null);
+  assert.equal(resumePdfSinglePageFitScale(1123), 1);
+});
+
 test("A4 pagination cuts before a short element that would straddle a boundary", () => {
   assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [{ top: 1050, height: 180 }]), [
     { start: 0, height: 1050 },
@@ -69,4 +85,20 @@ test("A4 pagination carries a nearby section heading with its first item", () =>
   assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [
     { top: 1040, height: 180, breakBefore: 995 },
   ])[0], { start: 0, height: 995 });
+});
+
+test("a tiny second page pulls a complete nearby item across the break", () => {
+  assert.deepEqual(resumePdfPageSlices(1300, RESUME_PDF_PAGE_HEIGHT_PX, [
+    { top: 820, height: 130 },
+    { top: 980, height: 110 },
+  ]), [
+    { start: 0, height: 980 },
+    { start: 980, height: 320 },
+  ]);
+});
+
+test("normal second pages keep the original A4 boundary", () => {
+  assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [
+    { top: 980, height: 110 },
+  ])[0], { start: 0, height: RESUME_PDF_PAGE_HEIGHT_PX });
 });
