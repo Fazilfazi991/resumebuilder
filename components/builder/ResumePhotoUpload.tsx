@@ -5,6 +5,7 @@ import { Camera, ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { photoStoragePathFromUrl, privatePhotoUrl } from "@/lib/resume/photo-url";
+import { uploadAndCommitResumePhoto } from "@/lib/resume/photo-upload";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -21,9 +22,9 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
   const params = useParams<{ resumeId?: string }>();
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
-  const [note, setNote] = useState("");
   const [status, setStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
 
   const chooseFile = () => {
     if (disabledReason) {
@@ -35,8 +36,8 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
 
   const uploadFile = async (file: File) => {
     setError("");
-    setNote("");
     setStatus("");
+    setPreviewUrl("");
 
     if (!ACCEPTED_TYPES.includes(file.type)) {
       setError("Upload a JPG, PNG, or WEBP image.");
@@ -51,14 +52,15 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
     setIsUploading(true);
     try {
       const localUrl = await readAsOptimizedDataUrl(file);
-      onChange(localUrl);
+      setPreviewUrl(localUrl);
 
       if (!enableCloudUpload) {
+        onChange(localUrl);
         setStatus("Photo added to preview.");
         return;
       }
 
-      setStatus("Photo preview added. Uploading to cloud storage...");
+      setStatus("Uploading photo to cloud storage...");
 
       const supabase = createClient();
       const { data: userData } = await supabase.auth.getUser();
@@ -67,32 +69,20 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
       const resumeId = params?.resumeId ?? "sample-resume";
 
       if (!userId) {
-        setStatus("Photo preview added. Sign in to save it to cloud storage.");
+        setError("Sign in to save a photo. Your resume was not changed.");
         return;
       }
 
-      const path = `${userId}/${resumeId}/profile-photo-${Date.now()}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from("resume-photos").upload(path, file, {
-        cacheControl: "3600",
-        contentType: file.type,
-        upsert: true,
-      });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const previousPath = photoStoragePathFromUrl(value, userId);
-      onChange(privatePhotoUrl(path));
-      if (previousPath && previousPath !== path) {
-        await supabase.storage.from("resume-photos").remove([previousPath]);
-      }
-      setStatus("Photo uploaded.");
+      const path = `${userId}/${resumeId}/profile-photo-${crypto.randomUUID()}.${extension}`;
+      // Only a short storage URL enters the resume's autosave payload after upload.
+      await uploadAndCommitResumePhoto(supabase.storage.from("resume-photos"), path, file, privatePhotoUrl, onChange);
+      setStatus("Photo uploaded to cloud storage. The resume will autosave next.");
     } catch (uploadError) {
       console.error(uploadError);
-      setStatus("Photo added to preview.");
-      setNote("Cloud sync is pending until the resume-photos storage bucket and policies are active.");
+      setStatus("");
+      setError("Photo could not be saved. Your resume is unchanged; please try again.");
     } finally {
+      setPreviewUrl("");
       setIsUploading(false);
     }
   };
@@ -101,8 +91,8 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
     <section className="rounded-lg border border-slate-200 bg-slate-50 p-4">
       <div className="grid gap-4 sm:grid-cols-[88px_1fr]">
         <div className="flex h-[88px] w-[88px] items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white sm:h-24 sm:w-24">
-          {value ? (
-            <img src={value} alt="" className="h-full w-full object-cover" />
+          {previewUrl || value ? (
+            <img src={previewUrl || value} alt="" className="h-full w-full object-cover" />
           ) : (
             <Camera size={28} className="text-slate-400" aria-hidden="true" />
           )}
@@ -133,7 +123,6 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
                   onChange("");
                   setStatus("Photo removed.");
                   setError("");
-                  setNote("");
                 }}
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-rose-100 bg-white px-4 text-sm font-bold text-rose-700"
               >
@@ -145,7 +134,6 @@ export function ResumePhotoUpload({ value, onChange, disabledReason, onAuthRequi
           <p className="mt-3 text-sm leading-5 text-slate-600">JPG, PNG, or WEBP. Maximum 5MB.</p>
           {disabledReason ? <p className="mt-2 text-sm font-semibold text-blue-700">{disabledReason}</p> : null}
           {status ? <p className="mt-2 text-sm font-semibold text-emerald-700">{status}</p> : null}
-          {note ? <p className="mt-2 max-w-md text-sm font-semibold leading-5 text-amber-700">{note}</p> : null}
           {error ? <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p> : null}
         </div>
       </div>
