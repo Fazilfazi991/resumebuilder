@@ -21,6 +21,7 @@ export function FreshGraduate({ data, sectionOrder, isWatermarked }: ResumeTempl
       </div>
       {sectionOrder.includes("achievements") ? <div className="mt-4"><RenderSection id="achievements" data={data} variant="modern" /></div> : null}
       {sectionOrder.includes("customSections") ? <div className="mt-4"><RenderSection id="customSections" data={data} variant="modern" /></div> : null}
+      {sectionOrder.includes("references") ? <div className="mt-4"><RenderSection id="references" data={data} variant="modern" /></div> : null}
     </div>
   );
 }

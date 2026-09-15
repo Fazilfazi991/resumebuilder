@@ -149,6 +149,7 @@ export function PremiumCorporate({ data, sectionOrder, isWatermarked }: ResumeTe
         {sectionOrder.includes("customSections") ? (
           <div className="mt-5"><RenderSection id="customSections" data={data} variant="classic" headingTone="navy" /></div>
         ) : null}
+        {sectionOrder.includes("references") ? <div className="mt-5"><RenderSection id="references" data={data} variant="classic" headingTone="navy" /></div> : null}
       </main>
     </div>
   );

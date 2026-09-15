@@ -28,6 +28,7 @@ export function SalesResume({ data, sectionOrder, isWatermarked }: ResumeTemplat
       <div className="mt-5 grid grid-cols-[0.7fr_0.3fr] gap-6"><main className="space-y-4.5"><RenderSection id="experience" data={data} variant="modern" /><RenderSection id="projects" data={data} variant="modern" /></main><aside className="space-y-5 border-l border-emerald-200 pl-5"><RenderSection id="summary" data={data} variant="modern" /><RenderSection id="skills" data={data} variant="modern" /><RenderSection id="education" data={data} variant="modern" /><RenderSection id="certificates" data={data} variant="modern" /></aside></div>
       {sectionOrder.includes("languages") ? <div className="mt-4"><RenderSection id="languages" data={data} variant="modern" /></div> : null}
       {sectionOrder.includes("customSections") ? <div className="mt-4"><RenderSection id="customSections" data={data} variant="modern" /></div> : null}
+      {sectionOrder.includes("references") ? <div className="mt-4"><RenderSection id="references" data={data} variant="modern" /></div> : null}
     </div>
   );
 }

@@ -171,6 +171,7 @@ export function PremiumImpact({ data, sectionOrder, isWatermarked }: ResumeTempl
         {sectionOrder.includes("customSections") ? (
           <div className="mt-5"><RenderSection id="customSections" data={data} variant="classic" headingTone="gold" /></div>
         ) : null}
+        {sectionOrder.includes("references") ? <div className="mt-5"><RenderSection id="references" data={data} variant="classic" headingTone="gold" /></div> : null}
       </main>
     </div>
   );

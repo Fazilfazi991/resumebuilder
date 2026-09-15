@@ -204,6 +204,7 @@ export function CreativePortfolio({ data, sectionOrder, isWatermarked }: ResumeT
               excludeCustomSectionIds={interestsSection ? [interestsSection.id] : []} />
           </div>
         ) : null}
+        {sectionOrder.includes("references") ? <div className="mt-5"><RenderSection id="references" data={data} variant="classic" headingTone="purple" /></div> : null}
       </main>
     </div>
   );

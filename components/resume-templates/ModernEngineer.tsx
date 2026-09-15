@@ -169,6 +169,7 @@ export function ModernEngineer({ data, sectionOrder, isWatermarked }: ResumeTemp
         {sectionOrder.includes("customSections") ? (
           <div className="mt-5"><RenderSection id="customSections" data={data} variant="modern" /></div>
         ) : null}
+        {sectionOrder.includes("references") ? <div className="mt-5"><RenderSection id="references" data={data} variant="modern" /></div> : null}
       </main>
     </div>
   );
