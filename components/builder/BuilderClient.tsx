@@ -149,6 +149,7 @@ export function BuilderClient({
   const pdfRef = useRef<HTMLDivElement>(null);
   const hasMountedRef = useRef(false);
   const draftReadyRef = useRef(false);
+  const pendingRecoveryRef = useRef(false);
   const latestPayloadRef = useRef<SavePayload>({ title: initialTitle, templateId: initialTemplate, resumeData: initialData, sectionOrder: initialSectionOrder });
   const [sectionOrder, setSectionOrder] = useState<ResumeSection[]>(initialSectionOrder as ResumeSection[]);
   const [draggedSection, setDraggedSection] = useState<ResumeSection | null>(null);
@@ -204,6 +205,7 @@ export function BuilderClient({
   };
 
   const restoreDraft = (draft: LocalDraft) => {
+    pendingRecoveryRef.current = false;
     latestPayloadRef.current = {
       title: draft.title,
       templateId: draft.templateId,
@@ -216,6 +218,12 @@ export function BuilderClient({
     setSectionOrder(draft.sectionOrder as ResumeSection[]);
     setRecoveryDraft(null);
     setConnectionMessage("Draft restored.");
+  };
+
+  const keepCloudVersion = () => {
+    pendingRecoveryRef.current = false;
+    setRecoveryDraft(null);
+    persistLocalDraft({ ...buildCurrentPayload(), updatedAt: new Date().toISOString() });
   };
 
   useEffect(() => {
@@ -232,6 +240,7 @@ export function BuilderClient({
             resumeData: initialData,
             sectionOrder: initialSectionOrder,
           }, initialUpdatedAt)) {
+            pendingRecoveryRef.current = true;
             setRecoveryDraft(draft);
           }
         }
@@ -248,7 +257,8 @@ export function BuilderClient({
 
     if (!draftReadyRef.current) return;
     const draft: LocalDraft = { ...payload, updatedAt: new Date().toISOString() };
-    persistLocalDraft(draft);
+    // Do not replace a newer local draft with the initial cloud payload on load.
+    if (!pendingRecoveryRef.current || hasMountedRef.current) persistLocalDraft(draft);
 
     if (isGuest) {
       setSaveState("guest");
@@ -662,7 +672,7 @@ export function BuilderClient({
             <p className="font-semibold">We found newer unsaved changes on this device.</p>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => restoreDraft(recoveryDraft)} className="min-h-10 rounded-lg bg-amber-600 px-3 text-sm font-bold text-white">Restore draft</button>
-              <button onClick={() => setRecoveryDraft(null)} className="min-h-10 rounded-lg border border-amber-200 bg-white px-3 text-sm font-bold text-amber-800">Keep cloud version</button>
+              <button onClick={keepCloudVersion} className="min-h-10 rounded-lg border border-amber-200 bg-white px-3 text-sm font-bold text-amber-800">Keep cloud version</button>
             </div>
           </div>
         </div>
