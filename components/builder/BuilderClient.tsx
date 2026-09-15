@@ -9,6 +9,7 @@ import { TemplateSelectionModal } from "@/components/builder/TemplateSelectionMo
 import { ResumeRenderer } from "@/components/resume-templates/ResumeRenderer";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { syncAnonymousResume } from "@/lib/resume/anonymous-server";
+import { shouldOfferDraftRecovery } from "@/lib/resume/draft-recovery";
 import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/resume/mock-data";
 import {
   RESUME_PDF_CAPTURE_WIDTH_PX,
@@ -225,7 +226,12 @@ export function BuilderClient({
         if (draft) {
           if (isGuest) {
             restoreDraft(draft);
-          } else if (!initialUpdatedAt || new Date(draft.updatedAt).getTime() > new Date(initialUpdatedAt).getTime()) {
+          } else if (shouldOfferDraftRecovery(draft, {
+            title: initialTitle,
+            templateId: initialTemplate,
+            resumeData: initialData,
+            sectionOrder: initialSectionOrder,
+          }, initialUpdatedAt)) {
             setRecoveryDraft(draft);
           }
         }
@@ -234,7 +240,7 @@ export function BuilderClient({
       }
     }
     draftReadyRef.current = true;
-  }, [draftKey, initialUpdatedAt, isGuest]);
+  }, [draftKey, initialTitle, initialTemplate, initialData, initialSectionOrder, initialUpdatedAt, isGuest]);
 
   useEffect(() => {
     const payload = buildCurrentPayload();
