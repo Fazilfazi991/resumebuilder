@@ -3,7 +3,7 @@
 import { SubmitButton } from "@/components/app/SubmitButton";
 import { Bot, FileText, LayoutTemplate, Plus, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type CreateResumeModalProps = {
   createAction: (formData: FormData) => void | Promise<void>;
@@ -13,10 +13,29 @@ type CreateResumeModalProps = {
 
 export function CreateResumeModal({ createAction, buttonLabel = "Create Resume", buttonClassName }: CreateResumeModalProps) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const trigger = triggerRef.current;
+    closeRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      trigger?.focus();
+    };
+  }, [open]);
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         className={buttonClassName ?? "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[0.98]"}
@@ -27,14 +46,20 @@ export function CreateResumeModal({ createAction, buttonLabel = "Create Resume",
 
       {open ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 px-4 backdrop-blur-sm">
-          <section className="w-full max-w-4xl rounded-lg border border-slate-200 bg-white p-5 shadow-2xl sm:p-6">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-resume-title"
+            aria-describedby="create-resume-description"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-4xl overflow-y-auto rounded-lg border border-slate-200 bg-white p-5 shadow-2xl sm:p-6"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-slate-950">Create your resume</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">Choose how you want to begin. You can change templates anytime.</p>
+                <h2 id="create-resume-title" className="text-2xl font-bold text-slate-950">Create your resume</h2>
+                <p id="create-resume-description" className="mt-2 text-sm leading-6 text-slate-600">Choose how you want to begin. You can change templates anytime.</p>
                 <p className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-sm font-bold text-blue-900">Enter your details once. Try every template instantly.</p>
               </div>
-              <button onClick={() => setOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50" aria-label="Close create resume modal">
+              <button ref={closeRef} type="button" onClick={() => setOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50" aria-label="Close create resume modal">
                 <X size={18} aria-hidden="true" />
               </button>
             </div>

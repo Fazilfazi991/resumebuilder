@@ -19,7 +19,11 @@ export default async function CoverLetterPage({
 
   if (user) {
     const supabase = await createClient();
-    const { data } = await supabase.from("resumes").select("id,title,resume_data").order("updated_at", { ascending: false });
+    const { data } = await supabase
+      .from("resumes")
+      .select("id,title,resume_data")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false });
     if (data?.length) {
       resumes = data.map((resume) => ({ id: resume.id, title: resume.title, data: resume.resume_data as ResumeData }));
     }

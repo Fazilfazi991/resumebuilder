@@ -47,7 +47,8 @@ export default async function SignupPage({
         <p className="text-sm font-bold text-slate-950">Already signed up?</p>
         <p className="mt-1 text-xs leading-5 text-slate-600">Resend your confirmation email.</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
-          <input name="email" type="email" required placeholder="Email address" className="h-11 rounded-lg border border-blue-200 bg-white px-3 text-sm outline-none focus:border-blue-600" />
+          <label className="sr-only" htmlFor="signup-resend-email">Email address</label>
+          <input id="signup-resend-email" name="email" type="email" autoComplete="email" required placeholder="Email address" className="h-11 rounded-lg border border-blue-200 bg-white px-3 text-sm outline-none focus:border-blue-600" />
           <SubmitButton disabled={!authReady} pendingText="Sending...">Resend</SubmitButton>
         </div>
       </form>

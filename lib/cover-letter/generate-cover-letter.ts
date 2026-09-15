@@ -27,10 +27,19 @@ export function generateCoverLetter({
   const company = companyName || "your company";
   const jobTitle = targetJobTitle || currentTitle;
   const greeting = hiringManagerName ? `Dear ${hiringManagerName},` : "Dear Hiring Manager,";
-  const topSkills = resumeData.skills.slice(0, 4).map((skill) => skill.name).filter(Boolean).join(", ");
-  const recentExperience = resumeData.experience[0];
-  const recentRole = recentExperience ? `${recentExperience.role} at ${recentExperience.company}` : currentTitle;
-  const project = resumeData.projects[0];
+  const topSkills = resumeData.skills.slice(0, 4).map((skill) => skill.name.trim()).filter(Boolean).join(", ");
+  const recentExperience = resumeData.experience.find((item) => Boolean(item.role.trim() || item.company.trim() || item.description.trim() || item.bullets.some((bullet) => bullet.trim())));
+  const recentRole = recentExperience
+    ? [recentExperience.role.trim(), recentExperience.company.trim() ? `at ${recentExperience.company.trim()}` : ""].filter(Boolean).join(" ") || currentTitle
+    : currentTitle;
+  const project = resumeData.projects.find((item) => Boolean(item.name.trim() || item.description.trim() || item.bullets.some((bullet) => bullet.trim())));
+  const projectDetail = project
+    ? project.name.trim() && project.description.trim()
+      ? `I also contributed to ${project.name.trim()}, where ${project.description.trim()}`
+      : project.name.trim()
+        ? `I also contributed to ${project.name.trim()}, strengthening my planning, execution, and collaboration.`
+        : `I also delivered project work where ${project.description.trim()}`
+    : "I bring a clear, structured approach to solving business problems.";
   const toneLine = {
     Professional: "I am excited to submit my application",
     Friendly: "I would be delighted to be considered",
@@ -40,7 +49,7 @@ export function generateCoverLetter({
   const jobFit = jobDescription?.trim()
     ? "The role description strongly aligns with my background in building measurable outcomes, collaborating across teams, and turning business goals into practical execution."
     : `I am drawn to ${company} because this opportunity aligns with my experience, strengths, and career focus.`;
-  const extra = length === "Short" ? "" : `\n\nIn my recent work as ${recentRole}, I have focused on ${recentExperience?.description || resumeData.summary || "delivering practical business results"}. ${project ? `I also contributed to ${project.name}, where ${project.description}` : "I bring a clear, structured approach to solving business problems."}`;
+  const extra = length === "Short" ? "" : `\n\nIn my recent work as ${recentRole}, I have focused on ${recentExperience?.description.trim() || resumeData.summary || "delivering practical business results"}. ${projectDetail}`;
   const detailed = length === "Detailed" ? `\n\nI would welcome the chance to discuss how my experience with ${topSkills || "cross-functional execution"} can support your team’s priorities and help ${company} move faster with clarity and confidence.` : "";
 
   return `${greeting}
