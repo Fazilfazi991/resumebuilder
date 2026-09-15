@@ -173,10 +173,12 @@ function TemplateDetailPreview({
                   </button>
                 ))}
               </div>
-              <p className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">Preview uses sample content to show the full template design.</p>
+              <p className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">
+                {previewMode === "sample" ? "Sample content shows the full template design." : "Showing your resume content in this template."}
+              </p>
             </div>
             {previewMode === "mine" && isUserResumeIncomplete ? (
-              <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">Your resume is still incomplete. Sample preview shows the full design.</p>
+              <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">Your resume is still incomplete. Switch to Sample Resume to see the full design.</p>
             ) : null}
             <A4Preview templateId={template.id} data={previewData} sectionOrder={previewSectionOrder} scale="builder" />
           </div>
