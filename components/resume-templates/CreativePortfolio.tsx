@@ -66,7 +66,7 @@ export function CreativePortfolio({ data, sectionOrder, isWatermarked }: ResumeT
           {hasItems(data.skills) ? (
             <SidebarSection icon={Palette} title="Tools">
               <div className="grid grid-cols-3 gap-2">
-                {data.skills.filter((skill) => hasText(skill.name)).slice(0, 12).map((skill) => (
+                {data.skills.filter((skill) => hasText(skill.name)).map((skill) => (
                   <span key={skill.id} className="rounded-md border border-[#cfc7ec] bg-white px-2 py-1 text-center text-[10pt] font-semibold text-[#111827]">{skill.name}</span>
                 ))}
               </div>
