@@ -549,7 +549,11 @@ export function BuilderClient({
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
       if (trackDownload) {
-        void trackDownload(templateId).catch((error) => console.error("Download tracking failed", error));
+        try {
+          await trackDownload(templateId);
+        } catch (error) {
+          console.error("Download tracking failed", error);
+        }
       }
       if (isGuest && anonymousSessionId) {
         void syncAnonymousResume({

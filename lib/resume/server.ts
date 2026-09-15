@@ -89,6 +89,29 @@ export async function getUserResumes() {
   return data.map((resume) => ({ ...resume, resume_data: withPrivatePhotoUrl(resume.resume_data, user.id) }));
 }
 
+export async function getUserDownloads(limit = 100) {
+  const { supabase, user } = await getAuthenticatedClient();
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+  const { data, error } = await supabase
+    .from("downloads")
+    .select("id, resume_id, template_id, downloaded_at")
+    .eq("user_id", user.id)
+    .order("downloaded_at", { ascending: false })
+    .limit(safeLimit);
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function getUserDownloadCount() {
+  const { supabase, user } = await getAuthenticatedClient();
+  const { count, error } = await supabase
+    .from("downloads")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
 export async function getResumeById(resumeId: string) {
   const { supabase, user } = await getAuthenticatedClient();
   const { data, error } = await supabase.from("resumes").select("*").eq("id", resumeId).single();
@@ -183,6 +206,7 @@ export async function recordDownload(resumeId: string, templateId: string) {
     .single();
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");
+  revalidatePath("/account");
   revalidatePath("/admin");
   return data;
 }

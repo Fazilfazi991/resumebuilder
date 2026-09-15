@@ -6,13 +6,13 @@ import { SubmitButton } from "@/components/app/SubmitButton";
 import { CreateResumeModal } from "@/components/resume/CreateResumeModal";
 import { calculateAtsScore } from "@/lib/ats/score-resume";
 import { requireUser } from "@/lib/auth/require-user";
-import { createResumeAndRedirect, deleteResume, duplicateResume, getUserResumes } from "@/lib/resume/server";
+import { createResumeAndRedirect, deleteResume, duplicateResume, getUserDownloadCount, getUserResumes } from "@/lib/resume/server";
 import { resumeTemplates } from "@/lib/resume/template-registry";
 import { Copy, Download, FileText, LayoutTemplate, Pencil, Trash2, TrendingUp } from "lucide-react";
 
 export default async function DashboardPage() {
   const { user, profile } = await requireUser("/dashboard");
-  const resumes = await getUserResumes();
+  const [resumes, downloadCount] = await Promise.all([getUserResumes(), getUserDownloadCount()]);
   const firstName = (profile?.full_name || user.user_metadata?.full_name || user.email || "there").split(" ")[0];
 
   return (
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard icon={FileText} label="Resumes Created" value={String(resumes.length)} helper="Saved to your account" />
-            <StatCard icon={Download} label="Downloads" value="0" helper="Tracked after PDF export" />
+            <StatCard icon={Download} label="Downloads" value={String(downloadCount)} helper="Tracked after PDF export" />
             <StatCard icon={TrendingUp} label="Launch Access" value="Free" helper="All templates included" />
             <StatCard icon={LayoutTemplate} label="Templates Used" value={String(new Set(resumes.map((resume) => resume.template_id)).size)} helper="Across saved resumes" />
           </div>

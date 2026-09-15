@@ -3,6 +3,10 @@ import { AppHeader } from "@/components/app/AppHeader";
 import { CreditCard, Download, Settings, ShieldCheck, UserRound } from "lucide-react";
 import { logout, updateProfile } from "@/app/(auth)/actions";
 import { requireUser } from "@/lib/auth/require-user";
+import { getUserDownloads } from "@/lib/resume/server";
+import { resumeTemplates } from "@/lib/resume/template-registry";
+
+const templateNameById = new Map(resumeTemplates.map((template) => [template.id, template.name]));
 
 export default async function AccountPage({
   searchParams,
@@ -11,6 +15,7 @@ export default async function AccountPage({
 }) {
   const params = await searchParams;
   const { user, profile } = await requireUser("/account");
+  const downloads = await getUserDownloads(20);
   const fullName = profile?.full_name || user.user_metadata?.full_name || "";
   const email = profile?.email || user.email || "";
   const plan = profile?.plan ?? "free";
@@ -62,7 +67,24 @@ export default async function AccountPage({
 
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             <AccountPanel icon={Download} title="Download history">
-              <p className="text-sm leading-6 text-slate-600">Your exported PDFs and invoices will appear here after downloads are saved to your account.</p>
+              {downloads.length ? (
+                <div className="space-y-3">
+                  {downloads.map((download) => {
+                    const templateName = templateNameById.get(download.template_id) ?? download.template_id;
+                    return (
+                      <div key={download.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-slate-950">{templateName}</p>
+                          <p className="mt-1 text-xs text-slate-500">{formatDateTime(download.downloaded_at)}</p>
+                        </div>
+                        <AppButton href={`/builder/${download.resume_id}`} variant="secondary">Open</AppButton>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm leading-6 text-slate-600">Your PDF downloads will appear here after they are saved to your account.</p>
+              )}
             </AccountPanel>
             <AccountPanel icon={Settings} title="Settings">
               <p className="text-sm leading-6 text-slate-600">Notification, privacy, and account preferences are managed in settings.</p>
@@ -88,4 +110,8 @@ function AccountPanel({ icon: Icon, title, children }: { icon: typeof UserRound;
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(value));
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
