@@ -7,6 +7,12 @@ import { dateRange, hasItems, hasText } from "./template-utils";
 export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) {
   const initials = (data.personal.fullName || "RC").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("");
   const [firstName, ...restName] = (data.personal.fullName || "Your Name").split(" ");
+  const interestsSection = data.customSections.find((section) => /^interests?$/i.test(section.title.trim()));
+  const interests = [
+    ...(interestsSection?.description.split(/,|\n|•/) ?? []),
+    ...(interestsSection?.bullets ?? []),
+  ].map((interest) => interest.trim()).filter(Boolean).slice(0, 4);
+  const interestIcons = [Camera, Palette, Globe, Heart];
 
   return (
     <div className="resume-page grid grid-cols-[0.3fr_0.7fr] bg-white font-[Arial] text-[#111827]">
@@ -90,21 +96,21 @@ export function CreativePortfolio({ data, isWatermarked }: ResumeTemplateProps) 
             </SidebarSection>
           ) : null}
 
-          <SidebarSection icon={Heart} title="Interests">
-            <div className="grid grid-cols-4 gap-2 text-center text-[10pt] font-semibold text-[#111827]">
-              {[
-                [Camera, "Portfolio"],
-                [Palette, "Design"],
-                [Globe, "Research"],
-                [Heart, "Reading"],
-              ].map(([Icon, label]) => (
-                <div key={String(label)} className="space-y-1">
-                  <Icon size={15} className="mx-auto text-[#5a3ea6]" aria-hidden="true" />
-                  <p>{String(label)}</p>
-                </div>
-              ))}
-            </div>
-          </SidebarSection>
+          {interests.length ? (
+            <SidebarSection icon={Heart} title="Interests">
+              <div className="grid grid-cols-4 gap-2 text-center text-[10pt] font-semibold text-[#111827]">
+                {interests.map((label, index) => {
+                  const Icon = interestIcons[index % interestIcons.length];
+                  return (
+                    <div key={`${label}-${index}`} className="space-y-1">
+                      <Icon size={15} className="mx-auto text-[#5a3ea6]" aria-hidden="true" />
+                      <p className="break-words">{label}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </SidebarSection>
+          ) : null}
         </div>
       </aside>
 

@@ -3,6 +3,17 @@ import { ContactLine, RenderSection, Watermark } from "./TemplateHelpers";
 import { hasText } from "./template-utils";
 
 export function SalesResume({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
+  const profileStrength = Math.round(([
+    hasText(data.personal.fullName) && hasText(data.personal.jobTitle),
+    hasText(data.personal.email) && hasText(data.personal.phone) && hasText(data.personal.location),
+    hasText(data.summary),
+    data.experience.some((item) => hasText(item.role) || hasText(item.company)),
+    data.skills.filter((item) => hasText(item.name)).length >= 4,
+    data.education.some((item) => hasText(item.degree) || hasText(item.institution)),
+    data.projects.some((item) => hasText(item.name) || hasText(item.description)),
+    data.achievements.some((item) => hasText(item.title) || hasText(item.description)),
+  ].filter(Boolean).length / 8) * 100);
+
   return (
     <div className="resume-page px-[14mm] py-[12mm] font-[Arial] text-slate-900">
       <Watermark show={isWatermarked} />
@@ -10,7 +21,7 @@ export function SalesResume({ data, sectionOrder, isWatermarked }: ResumeTemplat
         <div><p className="mb-2 text-[10pt] font-bold uppercase tracking-[0.2em] text-orange-600">Revenue / Growth / Partnerships</p><h1 className="text-[23pt] font-bold text-slate-950">{data.personal.fullName}</h1><p className="mt-1 text-[12pt] font-bold text-emerald-700">{data.personal.jobTitle}</p><div className="mt-2"><ContactLine data={data} /></div></div>
         <div className="flex shrink-0 items-center gap-3">
           {hasText(data.personal.photoUrl) ? <img src={data.personal.photoUrl} alt="" className="h-[22mm] w-[22mm] rounded-lg border border-emerald-100 object-cover" /> : null}
-          <div className="bg-emerald-50 px-5 py-3 text-center"><p className="text-[20pt] font-bold text-emerald-700">92%</p><p className="text-[10pt] font-bold uppercase tracking-[0.12em] text-slate-500">Profile Strength</p></div>
+          <div className="bg-emerald-50 px-5 py-3 text-center"><p className="text-[20pt] font-bold text-emerald-700">{profileStrength}%</p><p className="text-[10pt] font-bold uppercase tracking-[0.12em] text-slate-500">Profile Strength</p></div>
         </div>
       </header>
       {data.achievements.length ? <section className="resume-section mt-5 bg-[#f4f8f4] p-4"><p className="mb-3 text-[10pt] font-bold uppercase tracking-[0.18em] text-emerald-800">Performance Highlights</p><div className="grid grid-cols-3 gap-3">{data.achievements.map((item, index) => <article key={item.id} className="resume-item border-l-2 border-orange-500 pl-3"><p className="text-[16pt] font-bold text-emerald-700">{index === 0 ? "#1" : "+"}</p><h3 className="text-[10pt] font-bold text-slate-950">{item.title}</h3><p className="mt-1 text-[10pt] leading-[1.4] text-slate-600">{item.description}</p></article>)}</div></section> : null}

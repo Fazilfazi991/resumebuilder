@@ -3,7 +3,9 @@ import test from "node:test";
 import { jsPDF } from "jspdf";
 import {
   RESUME_PDF_A4_HEIGHT_PT,
+  RESUME_PDF_PAGE_HEIGHT_PX,
   RESUME_PDF_WIDTH_PT,
+  resumePdfPageSlices,
   resumePdfPageConfig,
 } from "../lib/resume/pdf-export.ts";
 
@@ -37,4 +39,34 @@ test("taller auto-fit exports keep portrait orientation and fixed resume width",
   assert.ok(config.height > config.width);
   assert.ok(withinPointTolerance(pdf.internal.pageSize.getWidth(), RESUME_PDF_WIDTH_PT));
   assert.ok(withinPointTolerance(pdf.internal.pageSize.getHeight(), config.height));
+});
+
+test("A4 pagination cuts before a short element that would straddle a boundary", () => {
+  assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [{ top: 1050, height: 180 }]), [
+    { start: 0, height: 1050 },
+    { start: 1050, height: 550 },
+  ]);
+});
+
+test("A4 pagination keeps normal boundaries for fitting or oversized content", () => {
+  assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [
+    { top: 900, height: 200 },
+    { top: 950, height: RESUME_PDF_PAGE_HEIGHT_PX },
+  ]), [
+    { start: 0, height: RESUME_PDF_PAGE_HEIGHT_PX },
+    { start: RESUME_PDF_PAGE_HEIGHT_PX, height: 477 },
+  ]);
+});
+
+test("A4 pagination prefers the latest nested boundary before the cut", () => {
+  assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [
+    { top: 700, height: 600 },
+    { top: 1040, height: 180 },
+  ])[0], { start: 0, height: 1040 });
+});
+
+test("A4 pagination carries a nearby section heading with its first item", () => {
+  assert.deepEqual(resumePdfPageSlices(1600, RESUME_PDF_PAGE_HEIGHT_PX, [
+    { top: 1040, height: 180, breakBefore: 995 },
+  ])[0], { start: 0, height: 995 });
 });

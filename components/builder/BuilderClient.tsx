@@ -13,6 +13,7 @@ import { defaultResumeData, defaultSectionOrder, emptyResumeData } from "@/lib/r
 import {
   RESUME_PDF_CAPTURE_WIDTH_PX,
   RESUME_PDF_PAGE_HEIGHT_PX,
+  resumePdfPageSlices,
   resumePdfPageConfig,
 } from "@/lib/resume/pdf-export";
 import { resumeTemplates } from "@/lib/resume/template-registry";
@@ -90,7 +91,7 @@ const sections: { id: ResumeSection; label: string; icon: typeof UserRound }[] =
   { id: "projects", label: "Projects", icon: LinkIcon },
   { id: "certificates", label: "Certifications", icon: FileBadge },
   { id: "achievements", label: "Achievements", icon: Award },
-  { id: "references", label: "Interests", icon: BookOpen },
+  { id: "references", label: "References", icon: BookOpen },
 ];
 
 const guidedSteps: { id: BuilderStepId; title: string; helper: string; section?: ResumeSection }[] = [
@@ -486,6 +487,9 @@ export function BuilderClient({
         await waitForNextFrame();
       }
       const captureHeight = shouldAutoHeight ? contentHeight : Math.max(pagePixelHeight, pdfRef.current.scrollHeight);
+      const pageSlices = shouldAutoHeight
+        ? [{ start: 0, height: captureHeight }]
+        : resumePdfPageSlices(captureHeight, pagePixelHeight, measureResumePdfBreakTargets(pdfRef.current));
       const imageData = await toPng(pdfRef.current, {
         backgroundColor: "#ffffff",
         cacheBust: true,
@@ -498,7 +502,6 @@ export function BuilderClient({
         },
       });
       const sourceImage = await loadImage(imageData);
-      const pageChunks = Math.ceil(captureHeight / pagePixelHeight);
       const pdfPage = resumePdfPageConfig(captureHeight, shouldAutoHeight);
       const pdf = new jsPDF({
         orientation: pdfPage.orientation,
@@ -507,14 +510,16 @@ export function BuilderClient({
         compress: true,
       });
 
-      for (let pageIndex = 0; pageIndex < pageChunks; pageIndex += 1) {
+      for (let pageIndex = 0; pageIndex < pageSlices.length; pageIndex += 1) {
         if (pageIndex > 0) {
           pdf.addPage();
         }
-        const chunkHeight = Math.min(pagePixelHeight, captureHeight - pageIndex * pagePixelHeight);
+        const pageSlice = pageSlices[pageIndex];
+        const sourceY = Math.round((pageSlice.start / captureHeight) * sourceImage.height);
+        const sourceEnd = Math.round(((pageSlice.start + pageSlice.height) / captureHeight) * sourceImage.height);
         const canvas = document.createElement("canvas");
         canvas.width = sourceImage.width;
-        canvas.height = Math.round((chunkHeight / captureHeight) * sourceImage.height);
+        canvas.height = Math.max(1, sourceEnd - sourceY);
         const context = canvas.getContext("2d");
         if (!context) {
           throw new Error("PDF canvas could not be created.");
@@ -524,7 +529,7 @@ export function BuilderClient({
         context.drawImage(
           sourceImage,
           0,
-          Math.round((pageIndex * pagePixelHeight / captureHeight) * sourceImage.height),
+          sourceY,
           sourceImage.width,
           canvas.height,
           0,
@@ -532,7 +537,7 @@ export function BuilderClient({
           sourceImage.width,
           canvas.height,
         );
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfPage.width, shouldAutoHeight ? pdfPage.height : (chunkHeight * pdfPage.width) / captureWidth, undefined, "FAST");
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfPage.width, shouldAutoHeight ? pdfPage.height : (pageSlice.height * pdfPage.width) / captureWidth, undefined, "FAST");
       }
       const pdfBlob = pdf.output("blob");
       const downloadUrl = URL.createObjectURL(pdfBlob);
@@ -918,6 +923,20 @@ export function BuilderClient({
       ) : null}
     </main>
   );
+}
+
+function measureResumePdfBreakTargets(root: HTMLElement) {
+  const rootTop = root.getBoundingClientRect().top;
+  const candidates = Array.from(root.querySelectorAll<HTMLElement>(".resume-section, .resume-item, .avoid-break"));
+  return candidates.map((element) => {
+    const rect = element.getBoundingClientRect();
+    const top = rect.top - rootTop;
+    const parentSection = element.closest<HTMLElement>(".resume-section");
+    const parentRect = parentSection?.getBoundingClientRect();
+    const parentTop = parentRect ? parentRect.top - rootTop : top;
+    const breakBefore = parentSection !== element && top - parentTop <= 120 ? parentTop : top;
+    return { top, height: rect.height, breakBefore };
+  });
 }
 
 function TemplateStep({ selectedTemplate, onChangeTemplate }: { selectedTemplate: typeof resumeTemplates[number]; onChangeTemplate: () => void }) {

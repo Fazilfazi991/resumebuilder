@@ -5,6 +5,8 @@ import { hasText } from "./template-utils";
 export function CreativeDesigner({ data, sectionOrder, isWatermarked }: ResumeTemplateProps) {
   const sidebar = ["skills", "languages", "certificates"];
   const main = sectionOrder.filter((item) => !sidebar.includes(item));
+  const hasSelectedWork = data.experience.some((item) => hasText(item.role) || hasText(item.company))
+    || data.projects.some((item) => hasText(item.name) || hasText(item.description));
   return (
     <div className="resume-page grid grid-cols-[0.35fr_0.65fr] font-[Arial] text-slate-900">
       <Watermark show={isWatermarked} />
@@ -21,7 +23,7 @@ export function CreativeDesigner({ data, sectionOrder, isWatermarked }: ResumeTe
         <div className="mt-6 space-y-5">{sidebar.map((section) => <RenderSection key={section} id={section} data={data} variant="uae" />)}</div>
       </aside>
       <main className="px-[12mm] py-[14mm]">
-        <div className="mb-6 flex items-center gap-3"><div className="h-px flex-1 bg-violet-300" /><span className="text-[10pt] font-bold uppercase tracking-[0.2em] text-violet-700">Selected Work</span></div>
+        <div className="mb-6 flex items-center gap-3"><div className="h-px flex-1 bg-violet-300" /><span className="text-[10pt] font-bold uppercase tracking-[0.2em] text-violet-700">{hasSelectedWork ? "Selected Work" : "Professional Profile"}</span></div>
         <div className="space-y-4.5">{main.map((section) => <RenderSection key={section} id={section} data={data} variant="modern" />)}</div>
       </main>
     </div>
