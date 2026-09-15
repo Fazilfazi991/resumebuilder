@@ -5,6 +5,7 @@ import { safeRedirectPath } from "../lib/auth/redirects.ts";
 import { getSiteUrl } from "../lib/site-url.ts";
 import { photoStoragePathFromUrl, privatePhotoUrl, withPrivatePhotoUrl } from "../lib/resume/photo-url.ts";
 import { contactRateLimitFingerprints, requestNetworkIdentifier } from "../lib/contact/rate-limit.ts";
+import nextConfig from "../next.config.ts";
 
 test("safeRedirectPath keeps internal paths and their query/hash", () => {
   assert.equal(safeRedirectPath("/builder/abc?tab=preview#top"), "/builder/abc?tab=preview#top");
@@ -97,4 +98,15 @@ test("migration 010 fixes the contact timestamp collision without weakening RPC 
   assert.match(migration, /grant execute on function public\.submit_contact_message[^;]+to service_role/is);
   assert.match(migration, /revoke all on function public\.submit_contact_message[^;]+from anon/is);
   assert.match(migration, /revoke all on function public\.submit_contact_message[^;]+from authenticated/is);
+});
+
+test("global responses include baseline browser security headers", async () => {
+  const rules = await nextConfig.headers();
+  const globalRule = rules.find((rule) => rule.source === "/(.*)");
+  const headers = new Map(globalRule?.headers.map(({ key, value }) => [key.toLowerCase(), value]));
+
+  assert.equal(headers.get("x-content-type-options"), "nosniff");
+  assert.equal(headers.get("x-frame-options"), "DENY");
+  assert.equal(headers.get("referrer-policy"), "strict-origin-when-cross-origin");
+  assert.equal(headers.get("permissions-policy"), "camera=(), microphone=(), geolocation=()");
 });
