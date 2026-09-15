@@ -32,7 +32,28 @@ test("cover-letter drafts personalize the role, company, experience, and closing
   assert.match(letter, /Lead Product Manager position at Acme/);
   assert.match(letter, /Senior Product Manager at Northstar/);
   assert.match(letter, /Activation redesign/);
+  assert.match(letter, /my work focused on launching products that improved activation\./);
+  assert.match(letter, /where I led discovery and delivery\./);
+  assert.doesNotMatch(letter, /\.\./);
   assert.match(letter, /Sincerely,\nAlex Morgan$/);
+});
+
+test("sentence-style source descriptions become clean inline phrases", () => {
+  const letter = generateCoverLetter({
+    resumeData: {
+      ...resumeData,
+      experience: [{ role: "Product Manager", company: "Northstar", description: "Owned the roadmap.", bullets: [] }],
+      projects: [{ name: "Analytics launch", description: "Created a reporting experience.", bullets: [] }],
+    },
+    companyName: "Acme",
+    targetJobTitle: "Product Manager",
+    tone: "Professional",
+    length: "Standard",
+  });
+
+  assert.match(letter, /I owned the roadmap\./);
+  assert.match(letter, /where I created a reporting experience\./);
+  assert.doesNotMatch(letter, /\.\./);
 });
 
 test("short drafts omit extended experience and detailed closing paragraphs", () => {

@@ -33,12 +33,14 @@ export function generateCoverLetter({
     ? [recentExperience.role.trim(), recentExperience.company.trim() ? `at ${recentExperience.company.trim()}` : ""].filter(Boolean).join(" ") || currentTitle
     : currentTitle;
   const project = resumeData.projects.find((item) => Boolean(item.name.trim() || item.description.trim() || item.bullets.some((bullet) => bullet.trim())));
+  const experienceDetail = experienceNarrative(recentRole, recentExperience?.description || resumeData.summary || "delivering practical business results");
+  const projectDescription = cleanFragment(project?.description || "");
   const projectDetail = project
-    ? project.name.trim() && project.description.trim()
-      ? `I also contributed to ${project.name.trim()}, where ${project.description.trim()}`
+    ? project.name.trim() && projectDescription
+      ? `I also contributed to ${project.name.trim()}, ${projectClause(projectDescription)}.`
       : project.name.trim()
         ? `I also contributed to ${project.name.trim()}, strengthening my planning, execution, and collaboration.`
-        : `I also delivered project work where ${project.description.trim()}`
+        : `I also delivered project work ${projectClause(projectDescription)}.`
     : "I bring a clear, structured approach to solving business problems.";
   const toneLine = {
     Professional: "I am excited to submit my application",
@@ -49,7 +51,7 @@ export function generateCoverLetter({
   const jobFit = jobDescription?.trim()
     ? "The role description strongly aligns with my background in building measurable outcomes, collaborating across teams, and turning business goals into practical execution."
     : `I am drawn to ${company} because this opportunity aligns with my experience, strengths, and career focus.`;
-  const extra = length === "Short" ? "" : `\n\nIn my recent work as ${recentRole}, I have focused on ${recentExperience?.description.trim() || resumeData.summary || "delivering practical business results"}. ${projectDetail}`;
+  const extra = length === "Short" ? "" : `\n\n${experienceDetail} ${projectDetail}`;
   const detailed = length === "Detailed" ? `\n\nI would welcome the chance to discuss how my experience with ${topSkills || "cross-functional execution"} can support your team’s priorities and help ${company} move faster with clarity and confidence.` : "";
 
   return `${greeting}
@@ -64,4 +66,30 @@ Thank you for your time and consideration. I would appreciate the opportunity to
 
 Sincerely,
 ${name}`;
+}
+
+const actionVerb = /^(?:lead|led|own(?:ed)?|manage(?:d)?|develop(?:ed)?|create(?:d)?|deliver(?:ed)?|improve(?:d)?|increase(?:d)?|reduce(?:d)?|launch(?:ed)?|design(?:ed)?|implement(?:ed)?|drive|drove|driven|grow|grew|grown|run|ran|oversee|oversaw|overseen|achieve(?:d)?|generate(?:d)?|coordinate(?:d)?|collaborate(?:d)?|support(?:ed)?|direct(?:ed)?|establish(?:ed)?|streamline(?:d)?|automate(?:d)?|optimize(?:d)?|mentor(?:ed)?|negotiate(?:d)?|secure(?:d)?|build|built)\b/i;
+
+function cleanFragment(value: string) {
+  return value.trim().replace(/[.!?]+$/, "");
+}
+
+function lowerFirst(value: string) {
+  if (/^I\b/.test(value) || /^[A-Z]{2,}\b/.test(value)) return value;
+  return `${value[0]?.toLowerCase() ?? ""}${value.slice(1)}`;
+}
+
+function experienceNarrative(recentRole: string, value: string) {
+  const detail = cleanFragment(value);
+  if (/^I\b/.test(detail)) return `In my recent work as ${recentRole}, ${detail}.`;
+  if (/^(?:Responsible|Accountable)\s+for\b/i.test(detail)) return `In my recent work as ${recentRole}, I was ${lowerFirst(detail)}.`;
+  if (actionVerb.test(detail)) return `In my recent work as ${recentRole}, I ${lowerFirst(detail)}.`;
+  return `In my recent work as ${recentRole}, my work focused on ${lowerFirst(detail)}.`;
+}
+
+function projectClause(value: string) {
+  if (/^I\b/.test(value)) return `where ${value}`;
+  if (actionVerb.test(value)) return `where I ${lowerFirst(value)}`;
+  if (/^[A-Za-z]+ing\b/.test(value)) return `where the work involved ${lowerFirst(value)}`;
+  return `which involved ${lowerFirst(value)}`;
 }
